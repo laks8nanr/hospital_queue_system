@@ -1,0 +1,82 @@
+<!-- Staff Login Page -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DORA Hospital - Staff Login</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="center">
+
+<h1 class="hospital-title">DORA Hospital</h1>
+<h2>Staff Login</h2>
+
+<div class="login-container">
+  <form id="staffLoginForm" onsubmit="return handleStaffLogin(event)">
+    <div class="form-group">
+      <label for="staffId">Staff ID</label>
+      <input type="text" id="staffId" name="staffId" placeholder="Enter Staff ID" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="Enter Password" required>
+    </div>
+    
+    <div class="error-message" id="errorMsg"></div>
+    
+    <button type="submit" class="login-btn">🔐 Login</button>
+  </form>
+</div>
+
+<script>
+  function handleStaffLogin(event) {
+    event.preventDefault();
+    
+    const staffId = document.getElementById('staffId').value;
+    const password = document.getElementById('password').value;
+    const errorMsg = document.getElementById('errorMsg');
+    
+    if (!staffId || !password) {
+      errorMsg.textContent = 'Please enter Staff ID and Password';
+      return false;
+    }
+
+    // Call PHP API
+    fetch('api/staff_login.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        staff_id: staffId,
+        password: password
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Store staff info in session
+        sessionStorage.setItem('staffId', data.data.staff_id);
+        sessionStorage.setItem('staffName', data.data.name);
+        sessionStorage.setItem('staffDepartment', data.data.department);
+        sessionStorage.setItem('userType', 'staff');
+        
+        // Redirect to staff dashboard
+        window.location.href = 'staff/dashboard.html';
+      } else {
+        errorMsg.textContent = data.message;
+      }
+    })
+    .catch(error => {
+      errorMsg.textContent = 'Login failed. Please try again.';
+      console.error('Error:', error);
+    });
+    
+    return false;
+  }
+</script>
+
+</body>
+</html>

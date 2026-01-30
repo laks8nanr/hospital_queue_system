@@ -1,0 +1,82 @@
+<!-- Admin Login Page -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DORA Hospital - Admin Login</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="center">
+
+<h1 class="hospital-title">DORA Hospital</h1>
+<h2>Admin Login</h2>
+
+<div class="login-container admin-login">
+  <form id="adminLoginForm" onsubmit="return handleAdminLogin(event)">
+    <div class="form-group">
+      <label for="adminId">Admin ID</label>
+      <input type="text" id="adminId" name="adminId" placeholder="Enter Admin ID" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="Enter Password" required>
+    </div>
+    
+    <div class="error-message" id="errorMsg"></div>
+    
+    <button type="submit" class="login-btn admin-btn">🔒 Admin Login</button>
+  </form>
+  
+</div>
+
+<script>
+  function handleAdminLogin(event) {
+    event.preventDefault();
+    
+    const adminId = document.getElementById('adminId').value;
+    const password = document.getElementById('password').value;
+    const errorMsg = document.getElementById('errorMsg');
+    
+    if (!adminId || !password) {
+      errorMsg.textContent = 'Please enter Admin ID and Password';
+      return false;
+    }
+
+    // Call PHP API
+    fetch('api/admin_login.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        admin_id: adminId,
+        password: password
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Store admin info in session
+        sessionStorage.setItem('adminId', data.data.admin_id);
+        sessionStorage.setItem('adminName', data.data.name);
+        sessionStorage.setItem('userType', 'admin');
+        
+        // Redirect to admin dashboard
+        window.location.href = 'admin/dashboard.html';
+      } else {
+        errorMsg.textContent = data.message;
+      }
+    })
+    .catch(error => {
+      errorMsg.textContent = 'Login failed. Please try again.';
+      console.error('Error:', error);
+    });
+    
+    return false;
+  }
+</script>
+
+</body>
+</html>

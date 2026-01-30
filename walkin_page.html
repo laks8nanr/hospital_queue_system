@@ -1,0 +1,49 @@
+<!-- Walk-in patient requirement selection -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DORA Hospital - Walk-in</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="center">
+
+<h1 class="hospital-title">DORA Hospital</h1>
+<h2>Select the Requirement</h2>
+
+<div class="button-container">
+  <!-- Consultation button -->
+  <div class="box-btn" onclick="selectRequirement('consultation')">
+    <div class="box-content">
+      <span class="box-icon">🩺</span>
+      <span class="box-text">Consultation</span>
+    </div>
+  </div>
+
+  <!-- Pharmacy button -->
+  <div class="box-btn pharmacy" onclick="selectRequirement('pharmacy')">
+    <div class="box-content">
+      <span class="box-icon">💊</span>
+      <span class="box-text">Pharmacy</span>
+    </div>
+  </div>
+
+  <!-- Lab button -->
+  <div class="box-btn lab" onclick="selectRequirement('lab')">
+    <div class="box-content">
+      <span class="box-icon">🔬</span>
+      <span class="box-text">Lab</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  function selectRequirement(type) {
+    sessionStorage.setItem('selectedRequirement', type);
+    window.location.href = 'patient_details.html';
+  }
+</script>
+
+</body>
+</html>

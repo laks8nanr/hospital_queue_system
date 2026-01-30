@@ -1,0 +1,155 @@
+<!-- Generate Token Page -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DORA Hospital - Generate Token</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="center">
+
+<h1 class="hospital-title">DORA Hospital</h1>
+<h2>Confirm Appointment</h2>
+
+<div class="selection-summary" id="summary">
+  <!-- Summary will be loaded here -->
+</div>
+
+<button class="generate-btn" id="generateBtn" onclick="generateToken()">
+  🎫 Generate Token
+</button>
+
+<!-- Token Result (hidden initially) -->
+<div class="token-result" id="tokenResult" style="display: none;">
+  <h2>Your Token</h2>
+  <div class="token-card">
+    <div class="token-number" id="tokenNumber"></div>
+    <div class="token-details">
+      <div class="token-info-row">
+        <span class="label">Expected Time:</span>
+        <span class="value" id="expectedTime"></span>
+      </div>
+      <div class="token-info-row">
+        <span class="label">Patients Ahead:</span>
+        <span class="value" id="patientsAhead"></span>
+      </div>
+      <div class="token-info-row">
+        <span class="label">Currently Consulting:</span>
+        <span class="value" id="currentToken"></span>
+      </div>
+      <div class="token-info-row">
+        <span class="label">Doctor:</span>
+        <span class="value" id="doctorName"></span>
+      </div>
+      <div class="token-info-row">
+        <span class="label">Department:</span>
+        <span class="value" id="deptName"></span>
+      </div>
+    </div>
+  </div>
+  <a href="index.html" class="back-home-btn">🏠 Back to Home</a>
+</div>
+
+<script>
+  // Get stored selection
+  const doctorId = sessionStorage.getItem('selectedDoctorId') || 0;
+  const doctor = sessionStorage.getItem('selectedDoctor') || 'Not Selected';
+  const time = sessionStorage.getItem('selectedTime') || 'Not Selected';
+  const dept = sessionStorage.getItem('selectedDept') || 'Not Selected';
+  
+  // Get patient details
+  const patientName = sessionStorage.getItem('patientName') || 'Walk-in Patient';
+  const patientAge = sessionStorage.getItem('patientAge') || '';
+  const patientPhone = sessionStorage.getItem('patientPhone') || '';
+
+  // Display summary
+  document.getElementById('summary').innerHTML = `
+    <div class="summary-item">
+      <span class="summary-label">Patient Name:</span>
+      <span class="summary-value">${patientName}</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Age:</span>
+      <span class="summary-value">${patientAge} years</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Phone:</span>
+      <span class="summary-value">${patientPhone}</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Department:</span>
+      <span class="summary-value">${dept}</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Doctor:</span>
+      <span class="summary-value">${doctor}</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Time Slot:</span>
+      <span class="summary-value">${time}</span>
+    </div>
+  `;
+
+  function generateToken() {
+    const generateBtn = document.getElementById('generateBtn');
+    generateBtn.disabled = true;
+    generateBtn.textContent = 'Generating...';
+
+    // Call PHP API to generate token
+    fetch('api/generate_token.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        doctor_id: doctorId,
+        department: dept,
+        patient_name: patientName,
+        patient_age: patientAge,
+        patient_phone: patientPhone,
+        type: 'walkin'
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Display token result
+        document.getElementById('tokenNumber').textContent = data.data.token_number;
+        document.getElementById('expectedTime').textContent = data.data.expected_time;
+        document.getElementById('patientsAhead').textContent = data.data.patients_ahead;
+        document.getElementById('currentToken').textContent = data.data.current_token;
+        document.getElementById('doctorName').textContent = doctor;
+        document.getElementById('deptName').textContent = dept;
+
+        // Hide generate button, show result
+        generateBtn.style.display = 'none';
+        document.getElementById('summary').style.display = 'none';
+        document.getElementById('tokenResult').style.display = 'block';
+
+        // Clear session storage
+        sessionStorage.removeItem('selectedDoctorId');
+        sessionStorage.removeItem('selectedDoctor');
+        sessionStorage.removeItem('selectedTime');
+        sessionStorage.removeItem('selectedDept');
+        sessionStorage.removeItem('patientName');
+        sessionStorage.removeItem('patientAge');
+        sessionStorage.removeItem('patientPhone');
+        sessionStorage.removeItem('selectedRequirement');
+      } else {
+        alert('Failed to generate token: ' + data.message);
+        generateBtn.disabled = false;
+        generateBtn.textContent = '🎫 Generate Token';
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Failed to generate token. Please try again.');
+      generateBtn.disabled = false;
+      generateBtn.textContent = '🎫 Generate Token';
+    });
+  }
+</script>
+
+</body>
+</html>

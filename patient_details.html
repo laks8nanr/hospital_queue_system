@@ -1,0 +1,83 @@
+<!-- Patient Details Form -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DORA Hospital - Patient Details</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="center">
+
+<h1 class="hospital-title">DORA Hospital</h1>
+<h2>Enter Patient Details</h2>
+
+<div class="login-container">
+  <form id="patientForm" onsubmit="return submitPatientForm(event)">
+    <div class="form-group">
+      <label for="patientName">Patient Name *</label>
+      <input type="text" id="patientName" name="patientName" placeholder="Enter Full Name" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="patientAge">Age *</label>
+      <input type="number" id="patientAge" name="patientAge" placeholder="Enter Age" min="1" max="120" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="patientPhone">Phone Number *</label>
+      <input type="tel" id="patientPhone" name="patientPhone" placeholder="Enter Phone Number" pattern="[0-9]{10}" maxlength="10" required>
+      <small class="form-hint">Enter 10 digit mobile number</small>
+    </div>
+    
+    <div class="error-message" id="errorMsg"></div>
+    
+    <button type="submit" class="login-btn">Continue →</button>
+  </form>
+</div>
+
+<script>
+  // Get the selected requirement from session
+  const requirement = sessionStorage.getItem('selectedRequirement') || 'consultation';
+  
+  function submitPatientForm(event) {
+    event.preventDefault();
+    
+    const name = document.getElementById('patientName').value.trim();
+    const age = document.getElementById('patientAge').value;
+    const phone = document.getElementById('patientPhone').value.trim();
+    const errorMsg = document.getElementById('errorMsg');
+    
+    // Validation
+    if (!name || !age || !phone) {
+      errorMsg.textContent = 'Please fill all fields';
+      return false;
+    }
+    
+    if (phone.length !== 10 || !/^\d+$/.test(phone)) {
+      errorMsg.textContent = 'Please enter valid 10 digit phone number';
+      return false;
+    }
+    
+    // Store patient info in session
+    sessionStorage.setItem('patientName', name);
+    sessionStorage.setItem('patientAge', age);
+    sessionStorage.setItem('patientPhone', phone);
+    
+    // Redirect based on requirement
+    if (requirement === 'consultation') {
+      window.location.href = 'walkin.html';  // Go to department selection
+    } else if (requirement === 'pharmacy') {
+      window.location.href = 'pharmacy_token.html';
+    } else if (requirement === 'lab') {
+      window.location.href = 'lab_token.html';
+    } else {
+      window.location.href = 'walkin.html';
+    }
+    
+    return false;
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!-- Doctors list for selected department -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DORA Hospital - Select Doctor</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="center">
+
+<h1 class="hospital-title">DORA Hospital</h1>
+<h2>Select Doctor</h2>
+<p id="dept-name" class="dept-subtitle"></p>
+
+<div class="doctors-list" id="doctors-container">
+  <!-- Doctors will be loaded here by JavaScript -->
+</div>
+
+<script>
+  // Get department from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const department = urlParams.get('dept') || 'General Medicine';
+  
+  document.getElementById('dept-name').textContent = department;
+
+  const container = document.getElementById('doctors-container');
+
+  // Fetch doctors from PHP API
+  fetch(`api/get_doctors.php?department=${encodeURIComponent(department)}`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.success && data.data.length > 0) {
+        data.data.forEach(doctor => {
+          const doctorCard = document.createElement('div');
+          doctorCard.className = 'doctor-card';
+          doctorCard.onclick = function() {
+            selectDoctor(doctor.id, doctor.name, doctor.time_slot, department);
+          };
+          doctorCard.innerHTML = `
+            <div class="doctor-info">
+              <span class="doctor-icon">👨‍⚕️</span>
+              <div class="doctor-details">
+                <span class="doctor-name">${doctor.name}</span>
+                <span class="doctor-time">🕐 ${doctor.time_slot}</span>
+              </div>
+            </div>
+          `;
+          container.appendChild(doctorCard);
+        });
+      } else {
+        container.innerHTML = '<p>No doctors available for this department.</p>';
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      container.innerHTML = '<p>Failed to load doctors. Please try again.</p>';
+    });
+
+  function selectDoctor(id, name, time, dept) {
+    // Store selected doctor info and redirect
+    sessionStorage.setItem('selectedDoctorId', id);
+    sessionStorage.setItem('selectedDoctor', name);
+    sessionStorage.setItem('selectedTime', time);
+    sessionStorage.setItem('selectedDept', dept);
+    window.location.href = 'generate_token_page.html';
+  }
+</script>
+
+</body>
+</html>
