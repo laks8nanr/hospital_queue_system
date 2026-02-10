@@ -6,64 +6,1167 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DORA Hospital - Select Doctor</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .view-mode { display: block; }
+    .form-mode { display: none; }
+    .token-mode { display: none; }
+    
+    .doctor-card-expanded {
+      background: linear-gradient(135deg, #fff, #f0f9ff);
+      border: 2px solid #3498db;
+      border-radius: 16px;
+      padding: 20px;
+      margin: 15px 0;
+      box-shadow: 0 4px 20px rgba(52, 152, 219, 0.2);
+      transition: all 0.3s;
+    }
+    
+    .doctor-card-expanded:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(52, 152, 219, 0.3);
+    }
+    
+    .doctor-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .doctor-avatar {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #3498db, #2980b9);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+    }
+    
+    .doctor-main-info h3 {
+      margin: 0;
+      color: #2c3e50;
+      font-size: 20px;
+    }
+    
+    .doctor-qualification {
+      color: #7f8c8d;
+      font-size: 14px;
+      margin-top: 3px;
+    }
+    
+    .doctor-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    .stat-box {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 12px 8px;
+      text-align: center;
+    }
+    
+    .stat-icon {
+      font-size: 20px;
+      display: block;
+      margin-bottom: 5px;
+    }
+    
+    .stat-value {
+      font-size: 16px;
+      font-weight: bold;
+      color: #2c3e50;
+      display: block;
+    }
+    
+    .stat-label {
+      font-size: 11px;
+      color: #95a5a6;
+      display: block;
+    }
+    
+    .wait-time-low { color: #27ae60; }
+    .wait-time-medium { color: #f39c12; }
+    .wait-time-high { color: #e74c3c; }
+    
+    .select-doctor-btn {
+      width: 100%;
+      padding: 12px;
+      margin-top: 15px;
+      background: linear-gradient(135deg, #3498db, #2980b9);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .select-doctor-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+    }
+    
+    /* Patient Form Styles */
+    .patient-form-container {
+      max-width: 450px;
+      margin: 20px auto;
+      background: #fff;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+      border-top: 5px solid #3498db;
+    }
+    
+    .selected-doctor-info {
+      background: linear-gradient(135deg, #e8f4f8, #d4edda);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    
+    .selected-doctor-info h4 {
+      margin: 0 0 5px 0;
+      color: #2c3e50;
+    }
+    
+    .selected-doctor-info p {
+      margin: 0;
+      color: #666;
+      font-size: 14px;
+    }
+    
+    .pay-fees-btn {
+      width: 100%;
+      padding: 15px;
+      margin-top: 15px;
+      background: linear-gradient(135deg, #f39c12, #e67e22);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .pay-fees-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4);
+    }
+    
+    .pay-fees-btn.paid {
+      background: linear-gradient(135deg, #27ae60, #2ecc71);
+      cursor: default;
+    }
+    
+    .generate-token-btn {
+      width: 100%;
+      padding: 15px;
+      margin-top: 10px;
+      background: #bdc3c7;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: not-allowed;
+      transition: all 0.3s;
+    }
+    
+    .generate-token-btn.active {
+      background: linear-gradient(135deg, #27ae60, #2ecc71);
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+    }
+    
+    .generate-token-btn.active:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(39, 174, 96, 0.5);
+    }
+    
+    .back-btn {
+      background: none;
+      border: none;
+      color: #3498db;
+      cursor: pointer;
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+    
+    .back-btn:hover {
+      text-decoration: underline;
+    }
+    
+    /* Token Display Styles */
+    .token-display-container {
+      max-width: 500px;
+      margin: 20px auto;
+    }
+    
+    .your-token-card {
+      background: linear-gradient(135deg, #2c3e50, #34495e);
+      border-radius: 20px;
+      padding: 25px;
+      color: white;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+      margin-bottom: 25px;
+    }
+    
+    .token-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .your-token-number {
+      font-size: 70px;
+      font-weight: bold;
+      color: #2ecc71;
+      text-shadow: 0 2px 10px rgba(46, 204, 113, 0.5);
+      line-height: 1;
+    }
+    
+    .token-type-badge {
+      display: inline-block;
+      background: #3498db;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 12px;
+      margin-top: 10px;
+    }
+    
+    .token-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .token-stat-item {
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 15px;
+      text-align: center;
+    }
+    
+    .token-stat-item .icon {
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+    
+    .token-stat-item .value {
+      font-size: 22px;
+      font-weight: bold;
+      color: #2ecc71;
+    }
+    
+    .token-stat-item .label {
+      font-size: 12px;
+      color: #bdc3c7;
+    }
+    
+    /* Queue Visualization */
+    .queue-section {
+      background: #fff;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .queue-title {
+      font-size: 18px;
+      color: #2c3e50;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .queue-track {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .queue-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px;
+      border-radius: 12px;
+      background: #f8f9fa;
+      border-left: 4px solid #bdc3c7;
+      transition: all 0.3s;
+    }
+    
+    .queue-item.current {
+      background: linear-gradient(135deg, #d4edda, #c3e6cb);
+      border-left-color: #27ae60;
+      animation: pulse 2s infinite;
+    }
+    
+    .queue-item.prebooked {
+      border-left-color: #9b59b6;
+      background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+    }
+    
+    .queue-item.walkin {
+      border-left-color: #3498db;
+      background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    }
+    
+    .queue-item.review {
+      border-left-color: #e67e22;
+      background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+    }
+    
+    .queue-item.you {
+      border-left-color: #2ecc71;
+      background: linear-gradient(135deg, #e8f8f5, #a9dfbf);
+      box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+    }
+    
+    .queue-item.you-highlight {
+      border: 3px solid #2ecc71;
+      animation: youPulse 1.5s infinite;
+    }
+    
+    @keyframes youPulse {
+      0%, 100% { box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3); }
+      50% { box-shadow: 0 4px 25px rgba(46, 204, 113, 0.6); }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    
+    .queue-position {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 16px;
+      margin-right: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .queue-item.current .queue-position { background: #27ae60; color: white; }
+    .queue-item.prebooked .queue-position { background: #9b59b6; color: white; }
+    .queue-item.walkin .queue-position { background: #3498db; color: white; }
+    .queue-item.review .queue-position { background: #e67e22; color: white; }
+    .queue-item.you .queue-position { background: #2ecc71; color: white; }
+    
+    .queue-item.not-arrived {
+      opacity: 0.6;
+      border-style: dashed;
+    }
+    
+    .queue-info {
+      flex: 1;
+    }
+    
+    .queue-name {
+      font-weight: bold;
+      color: #2c3e50;
+      font-size: 14px;
+    }
+    
+    .queue-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-left: 8px;
+    }
+    
+    .badge-prebooked { background: #9b59b6; color: white; }
+    .badge-walkin { background: #3498db; color: white; }
+    .badge-review { background: #e67e22; color: white; }
+    .badge-you { background: #2ecc71; color: white; }
+    .badge-current { background: #27ae60; color: white; }
+    
+    .queue-status {
+      font-size: 12px;
+      color: #7f8c8d;
+    }
+    
+    /* Legend */
+    .queue-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+      justify-content: center;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: #666;
+    }
+    
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    
+    .legend-dot.prebooked { background: #9b59b6; }
+    .legend-dot.walkin { background: #3498db; }
+    .legend-dot.review { background: #e67e22; }
+    .legend-dot.current { background: #27ae60; }
+    
+    .cancel-token-btn {
+      width: 100%;
+      padding: 15px;
+      margin-top: 20px;
+      background: linear-gradient(135deg, #e74c3c, #c0392b);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .cancel-token-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+    }
+    
+    .home-btn {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .home-btn:hover {
+      background: #2980b9;
+    }
+    
+    /* ========== MOBILE RESPONSIVE ========== */
+    @media screen and (max-width: 768px) {
+      .doctor-card-expanded {
+        padding: 15px;
+        margin: 10px 5px;
+      }
+      
+      .doctor-avatar {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+      }
+      
+      .doctor-main-info h3 {
+        font-size: 18px;
+      }
+      
+      .doctor-qualification {
+        font-size: 12px;
+      }
+      
+      .doctor-stats {
+        gap: 8px;
+      }
+      
+      .stat-box {
+        padding: 10px 5px;
+      }
+      
+      .stat-value {
+        font-size: 14px;
+      }
+      
+      .stat-label {
+        font-size: 10px;
+      }
+      
+      .your-token-number {
+        font-size: 50px;
+      }
+      
+      .token-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      
+      .token-stat-item .value {
+        font-size: 18px;
+      }
+      
+      .patient-form-container {
+        margin: 10px;
+        padding: 20px;
+      }
+    }
+    
+    @media screen and (max-width: 480px) {
+      .doctor-card-expanded {
+        padding: 12px;
+        margin: 8px 0;
+      }
+      
+      .doctor-header {
+        gap: 10px;
+      }
+      
+      .doctor-avatar {
+        width: 45px;
+        height: 45px;
+        font-size: 22px;
+      }
+      
+      .doctor-main-info h3 {
+        font-size: 16px;
+      }
+      
+      .doctor-qualification {
+        font-size: 11px;
+      }
+      
+      .doctor-stats {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 5px;
+      }
+      
+      .stat-box {
+        padding: 8px 4px;
+      }
+      
+      .stat-icon {
+        font-size: 16px;
+      }
+      
+      .stat-value {
+        font-size: 12px;
+      }
+      
+      .stat-label {
+        font-size: 9px;
+      }
+      
+      .select-doctor-btn {
+        padding: 10px;
+        font-size: 14px;
+      }
+      
+      .your-token-card {
+        padding: 20px;
+      }
+      
+      .your-token-number {
+        font-size: 40px;
+      }
+      
+      .token-type-badge {
+        font-size: 10px;
+        padding: 4px 10px;
+      }
+      
+      .token-stat-item {
+        padding: 10px;
+      }
+      
+      .token-stat-item .icon {
+        font-size: 20px;
+      }
+      
+      .token-stat-item .value {
+        font-size: 16px;
+      }
+      
+      .token-stat-item .label {
+        font-size: 10px;
+      }
+      
+      .queue-section {
+        padding: 15px;
+      }
+      
+      .queue-item {
+        padding: 10px;
+      }
+      
+      .queue-position {
+        width: 35px;
+        height: 35px;
+        font-size: 14px;
+      }
+      
+      .queue-name {
+        font-size: 13px;
+      }
+      
+      .queue-badge {
+        font-size: 8px;
+        padding: 2px 6px;
+      }
+      
+      .queue-status {
+        font-size: 11px;
+      }
+      
+      .patient-form-container {
+        margin: 5px;
+        padding: 15px;
+      }
+      
+      .pay-fees-btn, .generate-token-btn {
+        padding: 12px;
+        font-size: 16px;
+      }
+      
+      .cancel-token-btn {
+        padding: 12px;
+        font-size: 14px;
+      }
+    }
+  </style>
 </head>
 <body class="center">
 
 <h1 class="hospital-title">DORA Hospital</h1>
-<h2>Select Doctor</h2>
-<p id="dept-name" class="dept-subtitle"></p>
 
-<div class="doctors-list" id="doctors-container">
-  <!-- Doctors will be loaded here by JavaScript -->
+<!-- VIEW MODE: Doctor List -->
+<div id="viewMode" class="view-mode">
+  <h2>Select Doctor</h2>
+  <p id="dept-name" class="dept-subtitle"></p>
+  <div class="doctors-list" id="doctors-container">
+    <!-- Doctors will be loaded here by JavaScript -->
+  </div>
+</div>
+
+<!-- FORM MODE: Patient Details Form -->
+<div id="formMode" class="form-mode">
+  <button class="back-btn" onclick="goBackToList()">← Back to Doctors</button>
+  <h2>Book Appointment</h2>
+  
+  <div class="patient-form-container">
+    <div class="selected-doctor-info" id="selectedDoctorDisplay">
+      <!-- Selected doctor info will be shown here -->
+    </div>
+    
+    <form id="patientForm">
+      <div class="form-group">
+        <label for="patientName">Patient Name *</label>
+        <input type="text" id="patientName" placeholder="Enter Full Name" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="patientAge">Age *</label>
+        <input type="number" id="patientAge" placeholder="Enter Age" min="1" max="120" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="patientPhone">Phone Number *</label>
+        <input type="tel" id="patientPhone" placeholder="Enter Phone Number" pattern="[0-9]{10}" maxlength="10" required>
+        <small class="form-hint">Enter 10 digit mobile number</small>
+      </div>
+      
+      <div class="error-message" id="errorMsg"></div>
+      
+      <button type="button" class="pay-fees-btn" id="payFeesBtn" onclick="payFees()">
+        💳 Pay Consultation Fees: ₹<span id="feesAmount">300</span>
+      </button>
+      
+      <button type="button" class="generate-token-btn" id="generateTokenBtn" onclick="generateToken()" disabled>
+        🎫 Generate Token
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- TOKEN MODE: Token Display with Queue -->
+<div id="tokenMode" class="token-mode">
+  <div class="token-display-container">
+    
+    <!-- Your Token Card -->
+    <div class="your-token-card">
+      <div class="token-header">
+        <div class="your-token-number" id="displayTokenNumber">W-007</div>
+        <div class="token-type-badge">🚶 Walk-in Patient</div>
+      </div>
+      
+      <div class="token-stats-grid">
+        <div class="token-stat-item">
+          <div class="icon">⏰</div>
+          <div class="value" id="displayExpectedTime">11:45 AM</div>
+          <div class="label">Expected Time</div>
+        </div>
+        <div class="token-stat-item">
+          <div class="icon">⏳</div>
+          <div class="value" id="displayWaitTime">~25 mins</div>
+          <div class="label">Wait Time</div>
+        </div>
+        <div class="token-stat-item">
+          <div class="icon">👥</div>
+          <div class="value" id="displayPeopleAhead">4</div>
+          <div class="label">People Ahead</div>
+        </div>
+        <div class="token-stat-item">
+          <div class="icon">👨‍⚕️</div>
+          <div class="value" id="displayDoctorName">Dr. Smith</div>
+          <div class="label">Doctor</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Queue Visualization -->
+    <div class="queue-section">
+      <div class="queue-title">
+        <span>📋</span>
+        <span>Live Queue</span>
+      </div>
+      
+      <div class="queue-track" id="queueTrack">
+        <!-- Queue items will be generated here -->
+      </div>
+      
+      <div class="queue-legend">
+        <div class="legend-item">
+          <div class="legend-dot current"></div>
+          <span>Consulting</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot prebooked"></div>
+          <span>Pre-booked</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot walkin"></div>
+          <span>Walk-in</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot review"></div>
+          <span>Review</span>
+        </div>
+      </div>
+    </div>
+    
+    <button class="cancel-token-btn" onclick="cancelToken()">
+      ❌ Cancel Token
+    </button>
+    
+    <button class="home-btn" onclick="goHome()">
+      🏠 Back to Home
+    </button>
+  </div>
 </div>
 
 <script>
   // Get department from URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const department = urlParams.get('dept') || 'General Medicine';
+  var urlParams = new URLSearchParams(window.location.search);
+  var department = urlParams.get('dept') || 'General Medicine';
   
   document.getElementById('dept-name').textContent = department;
 
-  const container = document.getElementById('doctors-container');
+  var container = document.getElementById('doctors-container');
+  
+  // Store selected doctor info
+  var selectedDoctorData = null;
+  var feesPaid = false;
+  var currentToken = null;
+  var currentPatientName = null;
+  var refreshInterval = null;
+
+  // Show loading message
+  container.innerHTML = '<p>Loading doctors...</p>';
 
   // Fetch doctors from PHP API
-  fetch(`api/get_doctors.php?department=${encodeURIComponent(department)}`)
-    .then(response => response.json())
-    .then(data => {
-      if (data.success && data.data.length > 0) {
-        data.data.forEach(doctor => {
-          const doctorCard = document.createElement('div');
-          doctorCard.className = 'doctor-card';
-          doctorCard.onclick = function() {
-            selectDoctor(doctor.id, doctor.name, doctor.time_slot, department);
-          };
-          doctorCard.innerHTML = `
-            <div class="doctor-info">
-              <span class="doctor-icon">👨‍⚕️</span>
-              <div class="doctor-details">
-                <span class="doctor-name">${doctor.name}</span>
-                <span class="doctor-time">🕐 ${doctor.time_slot}</span>
-              </div>
-            </div>
-          `;
+  fetch('api/get_doctors.php?department=' + encodeURIComponent(department))
+    .then(function(response) {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(function(data) {
+      console.log('API Response:', data);
+      if (data.success && data.data && data.data.length > 0) {
+        container.innerHTML = '';
+        for (var i = 0; i < data.data.length; i++) {
+          var doctor = data.data[i];
+          // Use data from API, with fallbacks
+          var qualification = doctor.qualification || 'MBBS';
+          var fees = doctor.fees || 300;
+          var waitTime = doctor.wait_time || 0;
+          
+          var waitClass = waitTime <= 15 ? 'wait-time-low' : 
+                           waitTime <= 30 ? 'wait-time-medium' : 'wait-time-high';
+          
+          var waitDisplay = waitTime === 0 ? 'No wait' : '~' + waitTime + ' min';
+          
+          var doctorCard = document.createElement('div');
+          doctorCard.className = 'doctor-card-expanded';
+          doctorCard.innerHTML = 
+            '<div class="doctor-header">' +
+              '<div class="doctor-avatar">👨‍⚕️</div>' +
+              '<div class="doctor-main-info">' +
+                '<h3>' + doctor.name + '</h3>' +
+                '<div class="doctor-qualification">' + qualification + '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="doctor-stats">' +
+              '<div class="stat-box">' +
+                '<span class="stat-icon">💰</span>' +
+                '<span class="stat-value">₹' + fees + '</span>' +
+                '<span class="stat-label">Consultation Fee</span>' +
+              '</div>' +
+              '<div class="stat-box">' +
+                '<span class="stat-icon">⏱️</span>' +
+                '<span class="stat-value ' + waitClass + '">' + waitDisplay + '</span>' +
+                '<span class="stat-label">Est. Wait Time</span>' +
+              '</div>' +
+              '<div class="stat-box">' +
+                '<span class="stat-icon">🕐</span>' +
+                '<span class="stat-value">' + doctor.time_slot + '</span>' +
+                '<span class="stat-label">Available</span>' +
+              '</div>' +
+            '</div>' +
+            '<button class="select-doctor-btn" data-id="' + doctor.id + '" data-name="' + doctor.name + '" data-time="' + doctor.time_slot + '" data-fees="' + fees + '" data-wait="' + waitTime + '" data-qual="' + qualification + '">' +
+              'Select Doctor' +
+            '</button>';
+          
+          // Add click event to button
+          doctorCard.querySelector('.select-doctor-btn').addEventListener('click', function() {
+            selectDoctor(
+              parseInt(this.dataset.id),
+              this.dataset.name,
+              this.dataset.time,
+              department,
+              parseInt(this.dataset.fees),
+              parseInt(this.dataset.wait),
+              this.dataset.qual
+            );
+          });
+          
           container.appendChild(doctorCard);
-        });
+        }
       } else {
         container.innerHTML = '<p>No doctors available for this department.</p>';
       }
     })
-    .catch(error => {
+    .catch(function(error) {
       console.error('Error:', error);
-      container.innerHTML = '<p>Failed to load doctors. Please try again.</p>';
+      container.innerHTML = '<p>Failed to load doctors. Please try again. Error: ' + error.message + '</p>';
     });
 
-  function selectDoctor(id, name, time, dept) {
-    // Store selected doctor info and redirect
-    sessionStorage.setItem('selectedDoctorId', id);
-    sessionStorage.setItem('selectedDoctor', name);
-    sessionStorage.setItem('selectedTime', time);
-    sessionStorage.setItem('selectedDept', dept);
-    window.location.href = 'generate_token_page.html';
+  function selectDoctor(id, name, time, dept, fees, waitTime, qualification) {
+    selectedDoctorData = { id: id, name: name, time: time, dept: dept, fees: fees, waitTime: waitTime, qualification: qualification };
+    
+    // Update the selected doctor display
+    document.getElementById('selectedDoctorDisplay').innerHTML = 
+      '<h4>👨‍⚕️ ' + name + '</h4>' +
+      '<p>' + qualification + '</p>' +
+      '<p><strong>' + dept + '</strong> | 🕐 ' + time + '</p>' +
+      '<p style="color: #27ae60; font-weight: bold;">Est. Wait: ~' + waitTime + ' mins</p>';
+    
+    document.getElementById('feesAmount').textContent = fees;
+    
+    // Switch to form mode
+    document.getElementById('viewMode').style.display = 'none';
+    document.getElementById('formMode').style.display = 'block';
+    
+    // Reset form state
+    feesPaid = false;
+    document.getElementById('payFeesBtn').classList.remove('paid');
+    document.getElementById('payFeesBtn').disabled = false;
+    document.getElementById('payFeesBtn').innerHTML = '💳 Pay Consultation Fees: ₹' + fees;
+    document.getElementById('generateTokenBtn').disabled = true;
+    document.getElementById('generateTokenBtn').classList.remove('active');
+    
+    // Clear form
+    document.getElementById('patientName').value = '';
+    document.getElementById('patientAge').value = '';
+    document.getElementById('patientPhone').value = '';
+    document.getElementById('errorMsg').textContent = '';
+  }
+
+  function goBackToList() {
+    document.getElementById('viewMode').style.display = 'block';
+    document.getElementById('formMode').style.display = 'none';
+    selectedDoctorData = null;
+    feesPaid = false;
+  }
+
+  function payFees() {
+    const name = document.getElementById('patientName').value.trim();
+    const age = document.getElementById('patientAge').value;
+    const phone = document.getElementById('patientPhone').value.trim();
+    const errorMsg = document.getElementById('errorMsg');
+    
+    // Validation
+    if (!name || !age || !phone) {
+      errorMsg.textContent = 'Please fill all fields before paying';
+      return;
+    }
+    
+    if (phone.length !== 10 || !/^\d+$/.test(phone)) {
+      errorMsg.textContent = 'Please enter valid 10 digit phone number';
+      return;
+    }
+    
+    errorMsg.textContent = '';
+    
+    // Simulate payment
+    const payBtn = document.getElementById('payFeesBtn');
+    payBtn.innerHTML = '⏳ Processing...';
+    payBtn.disabled = true;
+    
+    setTimeout(() => {
+      feesPaid = true;
+      payBtn.innerHTML = '✅ Payment Successful';
+      payBtn.classList.add('paid');
+      
+      // Enable generate token button
+      document.getElementById('generateTokenBtn').disabled = false;
+      document.getElementById('generateTokenBtn').classList.add('active');
+    }, 1500);
+  }
+
+  function generateToken() {
+    if (!feesPaid) return;
+    
+    const name = document.getElementById('patientName').value.trim();
+    const age = document.getElementById('patientAge').value;
+    const phone = document.getElementById('patientPhone').value.trim();
+    
+    const generateBtn = document.getElementById('generateTokenBtn');
+    generateBtn.innerHTML = '⏳ Generating...';
+    generateBtn.disabled = true;
+
+    // Call PHP API to generate token
+    fetch('api/generate_token.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        doctor_id: selectedDoctorData.id,
+        department: selectedDoctorData.dept,
+        patient_name: name,
+        patient_age: age,
+        patient_phone: phone,
+        type: 'walkin'
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Store token info
+        sessionStorage.setItem('currentToken', data.data.token_number);
+        sessionStorage.setItem('tokenId', data.data.id || '');
+        
+        // Display token result
+        showTokenDisplay(data.data, name);
+      } else {
+        alert('Failed to generate token: ' + data.message);
+        generateBtn.disabled = false;
+        generateBtn.innerHTML = '🎫 Generate Token';
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      // For demo, show simulated token
+      const simulatedData = {
+        token_number: 'W-' + String(Math.floor(Math.random() * 100) + 1).padStart(3, '0'),
+        expected_time: calculateExpectedTime(selectedDoctorData.waitTime),
+        patients_ahead: 4
+      };
+      showTokenDisplay(simulatedData, name);
+    });
+  }
+
+  function calculateExpectedTime(waitMins) {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() + waitMins);
+    return now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  }
+
+  function showTokenDisplay(tokenData, patientName) {
+    // Update token display
+    document.getElementById('displayTokenNumber').textContent = tokenData.token_number;
+    document.getElementById('displayExpectedTime').textContent = tokenData.expected_time;
+    document.getElementById('displayWaitTime').textContent = '~' + selectedDoctorData.waitTime + ' mins';
+    document.getElementById('displayPeopleAhead').textContent = tokenData.patients_ahead;
+    document.getElementById('displayDoctorName').textContent = selectedDoctorData.name;
+    
+    // Generate queue visualization
+    generateQueueVisualization(tokenData.token_number, patientName);
+    
+    // Switch to token mode
+    document.getElementById('formMode').style.display = 'none';
+    document.getElementById('tokenMode').style.display = 'block';
+  }
+
+  function generateQueueVisualization(yourToken, yourName) {
+    // Store for auto-refresh
+    currentToken = yourToken;
+    currentPatientName = yourName;
+    
+    // Initial load
+    refreshQueue();
+    
+    // Start auto-refresh every 5 seconds
+    startAutoRefresh();
+  }
+  
+  function refreshQueue() {
+    if (!currentToken) return;
+    
+    var queueTrack = document.getElementById('queueTrack');
+    var doctorId = selectedDoctorData ? selectedDoctorData.id : 0;
+    
+    fetch('api/get_live_queue.php?doctor_id=' + doctorId + '&current_token=' + encodeURIComponent(currentToken))
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
+        if (data.success && data.queue.length > 0) {
+          // Update people ahead count
+          document.getElementById('displayPeopleAhead').textContent = data.people_ahead;
+          document.getElementById('displayWaitTime').textContent = '~' + (data.people_ahead * 10) + ' mins';
+          
+          // Render queue
+          renderQueue(data.queue);
+        } else {
+          // No queue, just show user as first
+          document.getElementById('displayPeopleAhead').textContent = '0';
+          document.getElementById('displayWaitTime').textContent = '~0 mins';
+          var queueData = [{ position: 1, patient_name: currentPatientName, token_type: 'you', status: 'waiting', token_number: currentToken, is_you: true }];
+          renderQueue(queueData);
+        }
+      })
+      .catch(function(error) {
+        console.error('Queue fetch error:', error);
+      });
+  }
+  
+  function startAutoRefresh() {
+    // Clear any existing interval
+    if (refreshInterval) {
+      clearInterval(refreshInterval);
+    }
+    // Refresh every 5 seconds
+    refreshInterval = setInterval(refreshQueue, 5000);
+  }
+  
+  function stopAutoRefresh() {
+    if (refreshInterval) {
+      clearInterval(refreshInterval);
+      refreshInterval = null;
+    }
+  }
+  
+  function renderQueue(queueData) {
+    var queueTrack = document.getElementById('queueTrack');
+    var html = '';
+    
+    for (var i = 0; i < queueData.length; i++) {
+      var item = queueData[i];
+      var isYou = item.is_you || (currentToken && item.token_number === currentToken);
+      var type = isYou ? 'you' : (item.status === 'consulting' ? 'current' : item.token_type);
+      var badge = 'Waiting';
+      var extraClass = '';
+      var displayName = item.patient_name;
+      
+      if (isYou) {
+        badge = 'YOU';
+        displayName = item.patient_name + ' (You)';
+        extraClass = ' you-highlight';
+      } else if (item.status === 'consulting') {
+        badge = 'Consulting Now';
+      } else if (item.token_type === 'prebooked') {
+        if (item.checkin_status === 'not_checked_in') {
+          badge = 'Pre-booked (Not Arrived)';
+          extraClass = ' not-arrived';
+        } else {
+          badge = 'Pre-booked';
+        }
+      } else if (item.token_type === 'review') {
+        badge = 'Review';
+      } else if (item.token_type === 'walkin') {
+        badge = 'Walk-in';
+      }
+      
+      html += '<div class="queue-item ' + type + extraClass + '">' +
+        '<div class="queue-position">' + item.position + '</div>' +
+        '<div class="queue-info">' +
+          '<div class="queue-name">' +
+            displayName +
+            ' <span class="queue-badge badge-' + type + '">' + badge + '</span>' +
+          '</div>' +
+          '<div class="queue-status">Token: ' + item.token_number + '</div>' +
+        '</div>' +
+      '</div>';
+    }
+    queueTrack.innerHTML = html;
+  }
+
+  function cancelToken() {
+    if (confirm('Are you sure you want to cancel your token?')) {
+      stopAutoRefresh();
+      var tokenNumber = sessionStorage.getItem('currentToken');
+      var tokenId = sessionStorage.getItem('tokenId');
+      
+      // Call API to cancel token
+      fetch('api/cancel_token.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          token: tokenNumber,
+          token_id: tokenId
+        })
+      })
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
+        if (data.success) {
+          alert('Your token has been cancelled successfully.');
+        } else {
+          alert('Token cancelled (locally). ' + (data.message || ''));
+        }
+        // Clear session and go home
+        sessionStorage.removeItem('currentToken');
+        sessionStorage.removeItem('tokenId');
+        window.location.href = 'index.html';
+      })
+      .catch(function(error) {
+        console.error('Error:', error);
+        alert('Your token has been cancelled.');
+        sessionStorage.removeItem('currentToken');
+        sessionStorage.removeItem('tokenId');
+        window.location.href = 'index.html';
+      });
+    }
+  }
+
+  function goHome() {
+    stopAutoRefresh();
+    window.location.href = 'index.html';
   }
 </script>
 

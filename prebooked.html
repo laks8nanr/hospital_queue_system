@@ -1,0 +1,1099 @@
+<!-- Prebooked Patient Verification -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>DORA Hospital - Prebooked Patient</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .verify-mode { display: block; }
+    .details-mode { display: none; }
+    .token-mode { display: none; }
+    
+    .verify-container {
+      max-width: 400px;
+      margin: 30px auto;
+      background: #fff;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+      border-top: 5px solid #9b59b6;
+    }
+    
+    .booking-input {
+      width: 100%;
+      padding: 20px;
+      font-size: 24px;
+      text-align: center;
+      border: 3px solid #ddd;
+      border-radius: 15px;
+      font-weight: bold;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      box-sizing: border-box;
+    }
+    
+    .booking-input:focus {
+      outline: none;
+      border-color: #9b59b6;
+    }
+    
+    .verify-btn {
+      width: 100%;
+      padding: 18px;
+      margin-top: 20px;
+      background: linear-gradient(135deg, #9b59b6, #8e44ad);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .verify-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(155, 89, 182, 0.4);
+    }
+    
+    .verify-btn:disabled {
+      background: #bdc3c7;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    /* Details Page Styles */
+    .details-container {
+      max-width: 500px;
+      margin: 20px auto;
+      background: #fff;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    }
+    
+    .patient-info-card {
+      background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-left: 5px solid #9b59b6;
+    }
+    
+    .patient-info-card h3 {
+      margin: 0 0 15px 0;
+      color: #8e44ad;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(155, 89, 182, 0.2);
+    }
+    
+    .info-row:last-child {
+      border-bottom: none;
+    }
+    
+    .info-label {
+      color: #666;
+      font-weight: 500;
+    }
+    
+    .info-value {
+      color: #2c3e50;
+      font-weight: bold;
+    }
+    
+    .doctor-info-card {
+      background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-left: 5px solid #3498db;
+    }
+    
+    .doctor-info-card h3 {
+      margin: 0 0 15px 0;
+      color: #2980b9;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .appointment-info-card {
+      background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-left: 5px solid #27ae60;
+    }
+    
+    .appointment-info-card h3 {
+      margin: 0 0 15px 0;
+      color: #27ae60;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .confirm-btn {
+      width: 100%;
+      padding: 18px;
+      background: linear-gradient(135deg, #9b59b6, #8e44ad);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 10px;
+    }
+    
+    .confirm-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(155, 89, 182, 0.4);
+    }
+    
+    .pay-btn {
+      width: 100%;
+      padding: 18px;
+      background: linear-gradient(135deg, #f39c12, #e67e22);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: none;
+    }
+    
+    .pay-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4);
+    }
+    
+    .pay-btn.show {
+      display: block;
+    }
+    
+    .pay-btn.paid {
+      background: linear-gradient(135deg, #27ae60, #2ecc71);
+    }
+    
+    .checkin-btn {
+      width: 100%;
+      padding: 18px;
+      background: #bdc3c7;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: not-allowed;
+      transition: all 0.3s;
+      display: none;
+      margin-top: 10px;
+    }
+    
+    .checkin-btn.active {
+      background: linear-gradient(135deg, #27ae60, #2ecc71);
+      cursor: pointer;
+      display: block;
+    }
+    
+    .checkin-btn.active:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+    }
+    
+    .back-btn {
+      background: none;
+      border: none;
+      color: #9b59b6;
+      cursor: pointer;
+      font-size: 14px;
+      margin-bottom: 15px;
+      padding: 0;
+    }
+    
+    .back-btn:hover {
+      text-decoration: underline;
+    }
+    
+    .cancel-booking-btn {
+      width: 100%;
+      padding: 12px;
+      margin-top: 15px;
+      background: transparent;
+      color: #e74c3c;
+      border: 2px solid #e74c3c;
+      border-radius: 10px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .cancel-booking-btn:hover {
+      background: #e74c3c;
+      color: white;
+    }
+    
+    /* Token Display Styles */
+    .token-display-container {
+      max-width: 500px;
+      margin: 20px auto;
+    }
+    
+    .prebooked-token-card {
+      background: linear-gradient(135deg, #8e44ad, #9b59b6);
+      border-radius: 20px;
+      padding: 25px;
+      color: white;
+      box-shadow: 0 8px 30px rgba(142, 68, 173, 0.4);
+      margin-bottom: 25px;
+    }
+    
+    .token-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .prebooked-token-number {
+      font-size: 70px;
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      line-height: 1;
+    }
+    
+    .token-type-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 12px;
+      margin-top: 10px;
+    }
+    
+    .token-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .token-stat-item {
+      background: rgba(255,255,255,0.15);
+      border-radius: 12px;
+      padding: 15px;
+      text-align: center;
+    }
+    
+    .token-stat-item .icon {
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+    
+    .token-stat-item .value {
+      font-size: 22px;
+      font-weight: bold;
+      color: #fff;
+    }
+    
+    .token-stat-item .label {
+      font-size: 12px;
+      color: rgba(255,255,255,0.8);
+    }
+    
+    /* Queue Styles */
+    .queue-section {
+      background: #fff;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .queue-title {
+      font-size: 18px;
+      color: #2c3e50;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .queue-track {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .queue-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px;
+      border-radius: 12px;
+      background: #f8f9fa;
+      border-left: 4px solid #bdc3c7;
+    }
+    
+    .queue-item.current {
+      background: linear-gradient(135deg, #d4edda, #c3e6cb);
+      border-left-color: #27ae60;
+      animation: pulse 2s infinite;
+    }
+    
+    .queue-item.prebooked {
+      border-left-color: #9b59b6;
+      background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+    }
+    
+    .queue-item.walkin {
+      border-left-color: #3498db;
+      background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    }
+    
+    .queue-item.review {
+      border-left-color: #e67e22;
+      background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+    }
+    
+    .queue-item.you {
+      border-left-color: #9b59b6;
+      background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+      box-shadow: 0 4px 15px rgba(155, 89, 182, 0.3);
+    }
+    
+    .queue-item.you-highlight {
+      border: 3px solid #9b59b6;
+      animation: youPulse 1.5s infinite;
+    }
+    
+    @keyframes youPulse {
+      0%, 100% { box-shadow: 0 4px 15px rgba(155, 89, 182, 0.3); }
+      50% { box-shadow: 0 4px 25px rgba(155, 89, 182, 0.6); }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    
+    .queue-position {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 16px;
+      margin-right: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .queue-item.current .queue-position { background: #27ae60; color: white; }
+    .queue-item.prebooked .queue-position { background: #9b59b6; color: white; }
+    .queue-item.walkin .queue-position { background: #3498db; color: white; }
+    .queue-item.review .queue-position { background: #e67e22; color: white; }
+    .queue-item.you .queue-position { background: #9b59b6; color: white; }
+    
+    .queue-item.not-arrived {
+      opacity: 0.6;
+      border-style: dashed;
+    }
+    
+    .queue-info { flex: 1; }
+    
+    .queue-name {
+      font-weight: bold;
+      color: #2c3e50;
+      font-size: 14px;
+    }
+    
+    .queue-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-left: 8px;
+    }
+    
+    .badge-prebooked { background: #9b59b6; color: white; }
+    .badge-walkin { background: #3498db; color: white; }
+    .badge-review { background: #e67e22; color: white; }
+    .badge-you { background: #9b59b6; color: white; }
+    .badge-current { background: #27ae60; color: white; }
+    
+    .queue-status {
+      font-size: 12px;
+      color: #7f8c8d;
+    }
+    
+    .queue-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+      justify-content: center;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: #666;
+    }
+    
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    
+    .legend-dot.prebooked { background: #9b59b6; }
+    .legend-dot.walkin { background: #3498db; }
+    .legend-dot.review { background: #e67e22; }
+    .legend-dot.current { background: #27ae60; }
+    
+    .cancel-token-btn {
+      width: 100%;
+      padding: 15px;
+      margin-top: 20px;
+      background: linear-gradient(135deg, #e74c3c, #c0392b);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .cancel-token-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+    }
+    
+    .home-btn {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .home-btn:hover {
+      background: #2980b9;
+    }
+    
+    .error-msg {
+      color: #e74c3c;
+      font-size: 14px;
+      margin-top: 10px;
+      text-align: center;
+    }
+    
+    /* Mobile Responsive */
+    @media screen and (max-width: 480px) {
+      .verify-container, .details-container {
+        margin: 10px;
+        padding: 20px;
+      }
+      
+      .booking-input {
+        font-size: 20px;
+        padding: 15px;
+      }
+      
+      .prebooked-token-number {
+        font-size: 50px;
+      }
+      
+      .token-stats-grid {
+        gap: 10px;
+      }
+      
+      .token-stat-item .value {
+        font-size: 18px;
+      }
+      
+      .queue-item {
+        padding: 10px;
+      }
+      
+      .queue-position {
+        width: 35px;
+        height: 35px;
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body class="center">
+
+<h1 class="hospital-title">DORA Hospital</h1>
+
+<!-- VERIFY MODE: Enter Booking ID -->
+<div id="verifyMode" class="verify-mode">
+  <h2>Prebooked Patient</h2>
+  
+  <div class="verify-container">
+    <p style="color: #666; margin-bottom: 20px;">Enter your Booking ID to check-in</p>
+    
+    <input type="text" id="bookingIdInput" class="booking-input" placeholder="PB001" maxlength="10">
+    
+    <div class="error-msg" id="verifyError"></div>
+    
+    <button class="verify-btn" id="verifyBtn" onclick="verifyBooking()">
+      ✓ Verify Booking
+    </button>
+    
+    <a href="index.html" style="display: block; margin-top: 20px; color: #9b59b6; text-decoration: none;">← Back to Home</a>
+  </div>
+</div>
+
+<!-- DETAILS MODE: Show Patient & Doctor Details -->
+<div id="detailsMode" class="details-mode">
+  <button class="back-btn" onclick="goBackToVerify()">← Back</button>
+  <h2>Booking Details</h2>
+  
+  <div class="details-container">
+    <!-- Patient Info -->
+    <div class="patient-info-card">
+      <h3>👤 Patient Information</h3>
+      <div class="info-row">
+        <span class="info-label">Name</span>
+        <span class="info-value" id="patientName">-</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Age</span>
+        <span class="info-value" id="patientAge">-</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Phone</span>
+        <span class="info-value" id="patientPhone">-</span>
+      </div>
+    </div>
+    
+    <!-- Doctor Info -->
+    <div class="doctor-info-card">
+      <h3>👨‍⚕️ Doctor Information</h3>
+      <div class="info-row">
+        <span class="info-label">Doctor</span>
+        <span class="info-value" id="doctorName">-</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Qualification</span>
+        <span class="info-value" id="doctorQualification">-</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Department</span>
+        <span class="info-value" id="departmentName">-</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Consultation Fee</span>
+        <span class="info-value" id="doctorFees">-</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Time Slot</span>
+        <span class="info-value" id="doctorTimeSlot">-</span>
+      </div>
+    </div>
+    
+    <!-- Appointment Info -->
+    <div class="appointment-info-card">
+      <h3>📅 Appointment Details</h3>
+      <div class="info-row">
+        <span class="info-label">Booking ID</span>
+        <span class="info-value" id="bookingId">-</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Date</span>
+        <span class="info-value" id="appointmentDate">-</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Time</span>
+        <span class="info-value" id="appointmentTime">-</span>
+      </div>
+    </div>
+    
+    <button class="confirm-btn" id="confirmBtn" onclick="confirmBooking()">
+      ✓ Confirm Details
+    </button>
+    
+    <button class="pay-btn" id="payBtn" onclick="payFees()">
+      💳 Pay Consultation Fee: ₹<span id="feeAmount">0</span>
+    </button>
+    
+    <button class="checkin-btn" id="checkinBtn" onclick="checkIn()">
+      🎫 Check-In & Get Token
+    </button>
+    
+    <button class="cancel-booking-btn" onclick="cancelBooking()">
+      ❌ Cancel Booking
+    </button>
+  </div>
+</div>
+
+<!-- TOKEN MODE: Show Token & Queue -->
+<div id="tokenMode" class="token-mode">
+  <div class="token-display-container">
+    
+    <!-- Token Card -->
+    <div class="prebooked-token-card">
+      <div class="token-header">
+        <div class="prebooked-token-number" id="displayTokenNumber">PB001</div>
+        <div class="token-type-badge">📅 Pre-booked Patient</div>
+        <div style="font-size: 14px; margin-top: 8px; opacity: 0.9;">Your Token Number</div>
+      </div>
+      
+      <div class="token-stats-grid">
+        <div class="token-stat-item">
+          <div class="icon">⏰</div>
+          <div class="value" id="displayExpectedTime">10:00 AM</div>
+          <div class="label">Expected Time</div>
+        </div>
+        <div class="token-stat-item">
+          <div class="icon">⏳</div>
+          <div class="value" id="displayWaitTime">~10 mins</div>
+          <div class="label">Wait Time</div>
+        </div>
+        <div class="token-stat-item">
+          <div class="icon">👥</div>
+          <div class="value" id="displayPeopleAhead">2</div>
+          <div class="label">People Ahead</div>
+        </div>
+        <div class="token-stat-item">
+          <div class="icon">👨‍⚕️</div>
+          <div class="value" id="displayDoctorName">Dr. Smith</div>
+          <div class="label">Doctor</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Queue Visualization -->
+    <div class="queue-section">
+      <div class="queue-title">
+        <span>📋</span>
+        <span>Live Queue</span>
+        <span id="refreshIndicator" style="margin-left: auto; font-size: 12px; color: #27ae60;">● Live</span>
+      </div>
+      
+      <div class="queue-track" id="queueTrack">
+        <!-- Queue items will be generated here -->
+      </div>
+      
+      <div class="queue-legend">
+        <div class="legend-item">
+          <div class="legend-dot current"></div>
+          <span>Consulting</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot prebooked"></div>
+          <span>Pre-booked</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot walkin"></div>
+          <span>Walk-in</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot review"></div>
+          <span>Review</span>
+        </div>
+      </div>
+    </div>
+    
+    <button class="cancel-token-btn" onclick="cancelToken()">
+      ❌ Cancel Token
+    </button>
+    
+    <button class="home-btn" onclick="goHome()">
+      🏠 Back to Home
+    </button>
+  </div>
+</div>
+
+<script>
+  var bookingData = null;
+  var confirmed = false;
+  var paid = false;
+  var currentToken = null;
+  var currentPatientName = null;
+  var refreshInterval = null;
+  
+  function verifyBooking() {
+    var bookingId = document.getElementById('bookingIdInput').value.trim().toUpperCase();
+    var errorDiv = document.getElementById('verifyError');
+    var verifyBtn = document.getElementById('verifyBtn');
+    
+    if (!bookingId) {
+      errorDiv.textContent = 'Please enter your Booking ID';
+      return;
+    }
+    
+    errorDiv.textContent = '';
+    verifyBtn.disabled = true;
+    verifyBtn.textContent = 'Verifying...';
+    
+    // Call API to verify booking
+    fetch('api/verify_booking.php?booking_id=' + encodeURIComponent(bookingId))
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
+        if (data.success) {
+          bookingData = data.data;
+          showBookingDetails();
+        } else {
+          errorDiv.textContent = data.message || 'Booking not found';
+          verifyBtn.disabled = false;
+          verifyBtn.textContent = '✓ Verify Booking';
+        }
+      })
+      .catch(function(error) {
+        console.error('Error:', error);
+        errorDiv.textContent = 'Failed to verify. Please try again.';
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = '✓ Verify Booking';
+      });
+  }
+  
+  function showBookingDetails() {
+    // Populate patient info
+    document.getElementById('patientName').textContent = bookingData.patient_name;
+    document.getElementById('patientAge').textContent = bookingData.patient_age + ' years';
+    document.getElementById('patientPhone').textContent = bookingData.patient_phone;
+    
+    // Populate doctor info
+    document.getElementById('doctorName').textContent = bookingData.doctor_name;
+    document.getElementById('doctorQualification').textContent = bookingData.doctor_qualification || 'MBBS';
+    document.getElementById('departmentName').textContent = bookingData.department_name;
+    document.getElementById('doctorFees').textContent = '₹' + bookingData.doctor_fees;
+    document.getElementById('doctorTimeSlot').textContent = bookingData.doctor_time_slot;
+    
+    // Populate appointment info
+    document.getElementById('bookingId').textContent = bookingData.booking_id;
+    document.getElementById('appointmentDate').textContent = bookingData.appointment_date;
+    document.getElementById('appointmentTime').textContent = formatTime(bookingData.appointment_time);
+    
+    // Set fee amount
+    document.getElementById('feeAmount').textContent = bookingData.doctor_fees;
+    
+    // Switch to details mode
+    document.getElementById('verifyMode').style.display = 'none';
+    document.getElementById('detailsMode').style.display = 'block';
+    
+    // Reset state
+    confirmed = false;
+    paid = false;
+    document.getElementById('confirmBtn').style.display = 'block';
+    document.getElementById('payBtn').classList.remove('show', 'paid');
+    document.getElementById('checkinBtn').classList.remove('active');
+  }
+  
+  function formatTime(timeStr) {
+    if (!timeStr) return '-';
+    var parts = timeStr.split(':');
+    var hours = parseInt(parts[0]);
+    var minutes = parts[1];
+    var ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    return hours + ':' + minutes + ' ' + ampm;
+  }
+  
+  function goBackToVerify() {
+    document.getElementById('detailsMode').style.display = 'none';
+    document.getElementById('verifyMode').style.display = 'block';
+    document.getElementById('verifyBtn').disabled = false;
+    document.getElementById('verifyBtn').textContent = '✓ Verify Booking';
+    bookingData = null;
+  }
+  
+  function confirmBooking() {
+    confirmed = true;
+    document.getElementById('confirmBtn').style.display = 'none';
+    document.getElementById('payBtn').classList.add('show');
+  }
+  
+  function payFees() {
+    var payBtn = document.getElementById('payBtn');
+    payBtn.textContent = '⏳ Processing...';
+    payBtn.disabled = true;
+    
+    setTimeout(function() {
+      paid = true;
+      payBtn.textContent = '✅ Payment Successful';
+      payBtn.classList.add('paid');
+      document.getElementById('checkinBtn').classList.add('active');
+      document.getElementById('checkinBtn').style.display = 'block';
+    }, 1500);
+  }
+  
+  function checkIn() {
+    if (!paid) return;
+    
+    var checkinBtn = document.getElementById('checkinBtn');
+    checkinBtn.textContent = '⏳ Checking in...';
+    checkinBtn.disabled = true;
+    
+    // Call API to check-in
+    fetch('api/checkin_prebooked.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ booking_id: bookingData.booking_id })
+    })
+    .then(function(response) { return response.json(); })
+    .then(function(data) {
+      if (data.success) {
+        // Store booking_id as token (PB001 format)
+        sessionStorage.setItem('currentToken', data.data.token_number);
+        sessionStorage.setItem('tokenId', data.data.token_id);
+        sessionStorage.setItem('bookingId', bookingData.booking_id);
+        sessionStorage.setItem('doctorId', bookingData.doctor_id);
+        sessionStorage.setItem('patientName', bookingData.patient_name);
+        showTokenDisplay(data.data);
+      } else {
+        alert('Check-in failed: ' + data.message);
+        checkinBtn.textContent = '🎫 Check-In & Get Token';
+        checkinBtn.disabled = false;
+      }
+    })
+    .catch(function(error) {
+      console.error('Error:', error);
+      // Demo mode - use booking_id as token (PB001 format)
+      var demoData = {
+        token_number: bookingData.booking_id,
+        expected_time: bookingData.appointment_time,
+        patients_ahead: 0,
+        wait_time: 0
+      };
+      sessionStorage.setItem('currentToken', bookingData.booking_id);
+      sessionStorage.setItem('doctorId', bookingData.doctor_id);
+      sessionStorage.setItem('patientName', bookingData.patient_name);
+      showTokenDisplay(demoData);
+    });
+  }
+  
+  function showTokenDisplay(tokenData) {
+    document.getElementById('displayTokenNumber').textContent = tokenData.token_number;
+    document.getElementById('displayExpectedTime').textContent = formatTime(tokenData.expected_time);
+    document.getElementById('displayWaitTime').textContent = '~' + (tokenData.wait_time || 10) + ' mins';
+    document.getElementById('displayPeopleAhead').textContent = tokenData.patients_ahead || 2;
+    document.getElementById('displayDoctorName').textContent = bookingData.doctor_name;
+    
+    // Generate queue
+    generateQueue(tokenData.token_number, bookingData.patient_name);
+    
+    // Switch to token mode
+    document.getElementById('detailsMode').style.display = 'none';
+    document.getElementById('tokenMode').style.display = 'block';
+  }
+  
+  function generateQueue(yourToken, yourName) {
+    // Store for auto-refresh
+    currentToken = yourToken;
+    currentPatientName = yourName;
+    
+    // Initial load
+    refreshQueue();
+    
+    // Start auto-refresh every 5 seconds
+    startAutoRefresh();
+  }
+  
+  function refreshQueue() {
+    if (!currentToken) return;
+    
+    var queueTrack = document.getElementById('queueTrack');
+    var refreshIndicator = document.getElementById('refreshIndicator');
+    // Get doctor_id from sessionStorage or bookingData
+    var doctorId = sessionStorage.getItem('doctorId') || (bookingData ? bookingData.doctor_id : 0);
+    
+    // Show refreshing indicator
+    if (refreshIndicator) {
+      refreshIndicator.textContent = '⟳ Updating...';
+      refreshIndicator.style.color = '#f39c12';
+    }
+    
+    // Add timestamp to prevent caching
+    var timestamp = new Date().getTime();
+    var url = 'api/get_live_queue.php?doctor_id=' + doctorId + '&current_token=' + encodeURIComponent(currentToken) + '&_t=' + timestamp;
+    
+    console.log('Refreshing queue:', url);
+    
+    fetch(url)
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
+        console.log('Queue data received:', data);
+        
+        // Show live indicator
+        if (refreshIndicator) {
+          refreshIndicator.textContent = '● Live';
+          refreshIndicator.style.color = '#27ae60';
+        }
+        
+        if (data.success && data.queue.length > 0) {
+          // Update people ahead count
+          document.getElementById('displayPeopleAhead').textContent = data.people_ahead;
+          document.getElementById('displayWaitTime').textContent = '~' + (data.people_ahead * 10) + ' mins';
+          
+          // Render queue
+          renderQueueItems(data.queue);
+        } else {
+          // No queue, just show user as first
+          document.getElementById('displayPeopleAhead').textContent = '0';
+          document.getElementById('displayWaitTime').textContent = '~0 mins';
+          var queueData = [{ position: 1, patient_name: currentPatientName, token_type: 'you', status: 'waiting', token_number: currentToken, is_you: true }];
+          renderQueueItems(queueData);
+        }
+      })
+      .catch(function(error) {
+        console.error('Queue fetch error:', error);
+      });
+  }
+  
+  function startAutoRefresh() {
+    // Clear any existing interval
+    if (refreshInterval) {
+      clearInterval(refreshInterval);
+    }
+    // Refresh every 5 seconds
+    refreshInterval = setInterval(refreshQueue, 5000);
+  }
+  
+  function stopAutoRefresh() {
+    if (refreshInterval) {
+      clearInterval(refreshInterval);
+      refreshInterval = null;
+    }
+  }
+  
+  function renderQueueItems(queueData) {
+    var queueTrack = document.getElementById('queueTrack');
+    var html = '';
+    
+    for (var i = 0; i < queueData.length; i++) {
+      var item = queueData[i];
+      // Check if this is the current patient (case-insensitive comparison)
+      var itemToken = (item.token_number || '').toUpperCase();
+      var myToken = (currentToken || '').toUpperCase();
+      var isYou = item.is_you === true || (myToken && itemToken === myToken);
+      var type = isYou ? 'you' : (item.status === 'consulting' ? 'current' : item.token_type);
+      var badge = 'Waiting';
+      var extraClass = '';
+      var displayName = item.patient_name;
+      
+      if (isYou) {
+        badge = 'YOU';
+        displayName = item.patient_name + ' (You)';
+        extraClass = ' you-highlight';
+      } else if (item.status === 'consulting') {
+        badge = 'Consulting Now';
+      } else if (item.token_type === 'prebooked') {
+        if (item.checkin_status === 'not_checked_in') {
+          badge = 'Pre-booked (Not Arrived)';
+          extraClass = ' not-arrived';
+        } else {
+          badge = 'Pre-booked';
+        }
+      } else if (item.token_type === 'review') {
+        badge = 'Review';
+      } else if (item.token_type === 'walkin') {
+        badge = 'Walk-in';
+      }
+      
+      html += '<div class="queue-item ' + type + extraClass + '">' +
+        '<div class="queue-position">' + item.position + '</div>' +
+        '<div class="queue-info">' +
+          '<div class="queue-name">' + displayName +
+            ' <span class="queue-badge badge-' + type + '">' + badge + '</span>' +
+          '</div>' +
+          '<div class="queue-status">Token: ' + item.token_number + '</div>' +
+        '</div>' +
+      '</div>';
+    }
+    queueTrack.innerHTML = html;
+  }
+  
+  function cancelBooking() {
+    if (confirm('Are you sure you want to cancel this booking?')) {
+      fetch('api/cancel_booking.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ booking_id: bookingData.booking_id })
+      })
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
+        alert('Booking cancelled successfully.');
+        window.location.href = 'index.html';
+      })
+      .catch(function(error) {
+        alert('Booking cancelled.');
+        window.location.href = 'index.html';
+      });
+    }
+  }
+  
+  function cancelToken() {
+    if (confirm('Are you sure you want to cancel your token?')) {
+      stopAutoRefresh();
+      var tokenNumber = sessionStorage.getItem('currentToken');
+      var bookingId = sessionStorage.getItem('bookingId') || tokenNumber;
+      
+      fetch('api/cancel_token.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: tokenNumber, booking_id: bookingId })
+      })
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
+        alert('Token cancelled successfully.');
+        sessionStorage.removeItem('currentToken');
+        sessionStorage.removeItem('tokenId');
+        window.location.href = 'index.html';
+      })
+      .catch(function(error) {
+        alert('Token cancelled.');
+        sessionStorage.removeItem('currentToken');
+        window.location.href = 'index.html';
+      });
+    }
+  }
+  
+  function goHome() {
+    stopAutoRefresh();
+    window.location.href = 'index.html';
+  }
+  
+  // Allow Enter key to verify
+  document.getElementById('bookingIdInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      verifyBooking();
+    }
+  });
+</script>
+
+</body>
+</html>

@@ -99,7 +99,7 @@ if ($current_result->num_rows > 0) {
 $current_stmt->close();
 
 // Insert new token
-$insert_sql = "INSERT INTO tokens (token_number, patient_name, patient_age, patient_phone, department_id, doctor_id, type, expected_time, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'waiting')";
+$insert_sql = "INSERT INTO tokens (token_number, patient_name, patient_age, patient_phone, department_id, doctor_id, token_type, expected_time, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'waiting', NOW())";
 $insert_stmt = $conn->prepare($insert_sql);
 
 if (!$insert_stmt) {
@@ -110,10 +110,12 @@ if (!$insert_stmt) {
 $insert_stmt->bind_param("ssississ", $token_number, $patient_name, $patient_age, $patient_phone, $department_id, $doctor_id, $type, $expected_time);
 
 if ($insert_stmt->execute()) {
+    $token_id = $conn->insert_id;
     echo json_encode([
         'success' => true,
         'message' => 'Token generated successfully',
         'data' => [
+            'id' => $token_id,
             'token_number' => $token_number,
             'patient_name' => $patient_name,
             'expected_time' => date('h:i A', strtotime($expected_time)),

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>API Test</title>
+</head>
+<body>
+  <h1>API Test</h1>
+  <h2>Testing get_doctors.php</h2>
+  <pre id="result">Loading...</pre>
+  
+  <script>
+    fetch('api/get_doctors.php?department=General Medicine')
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('result').textContent = data;
+        console.log('Raw response:', data);
+        try {
+          var json = JSON.parse(data);
+          console.log('Parsed JSON:', json);
+        } catch(e) {
+          console.log('Parse error:', e);
+        }
+      })
+      .catch(error => {
+        document.getElementById('result').textContent = 'Error: ' + error.message;
+      });
+  </script>
+</body>
+</html>

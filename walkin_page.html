@@ -13,7 +13,7 @@
 <h2>Select the Requirement</h2>
 
 <div class="button-container">
-  <!-- Consultation button -->
+  <!-- Consultation button - goes directly to department selection -->
   <div class="box-btn" onclick="selectRequirement('consultation')">
     <div class="box-content">
       <span class="box-icon">🩺</span>
@@ -41,7 +41,15 @@
 <script>
   function selectRequirement(type) {
     sessionStorage.setItem('selectedRequirement', type);
-    window.location.href = 'patient_details.html';
+    
+    if (type === 'consultation') {
+      // Go directly to department selection (form moved to doctor selection page)
+      window.location.href = 'walkin.html';
+    } else if (type === 'pharmacy') {
+      window.location.href = 'patient_details.html';
+    } else if (type === 'lab') {
+      window.location.href = 'patient_details.html';
+    }
   }
 </script>
 

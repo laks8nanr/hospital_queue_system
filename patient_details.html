@@ -1,4 +1,4 @@
-<!-- Patient Details Form -->
+<!-- Patient Details Form (for Pharmacy and Lab only) -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -11,6 +11,7 @@
 
 <h1 class="hospital-title">DORA Hospital</h1>
 <h2>Enter Patient Details</h2>
+<p class="dept-subtitle" id="requirementLabel"></p>
 
 <div class="login-container">
   <form id="patientForm" onsubmit="return submitPatientForm(event)">
@@ -38,7 +39,14 @@
 
 <script>
   // Get the selected requirement from session
-  const requirement = sessionStorage.getItem('selectedRequirement') || 'consultation';
+  const requirement = sessionStorage.getItem('selectedRequirement') || 'pharmacy';
+  
+  // Update label
+  const reqLabels = {
+    'pharmacy': '💊 Pharmacy Service',
+    'lab': '🔬 Lab Service'
+  };
+  document.getElementById('requirementLabel').textContent = reqLabels[requirement] || 'Service';
   
   function submitPatientForm(event) {
     event.preventDefault();
@@ -65,14 +73,13 @@
     sessionStorage.setItem('patientPhone', phone);
     
     // Redirect based on requirement
-    if (requirement === 'consultation') {
-      window.location.href = 'walkin.html';  // Go to department selection
-    } else if (requirement === 'pharmacy') {
+    if (requirement === 'pharmacy') {
       window.location.href = 'pharmacy_token.html';
     } else if (requirement === 'lab') {
       window.location.href = 'lab_token.html';
     } else {
-      window.location.href = 'walkin.html';
+      // Fallback - shouldn't reach here for consultation
+      window.location.href = 'index.html';
     }
     
     return false;

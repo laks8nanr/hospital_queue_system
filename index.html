@@ -6,11 +6,89 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DORA Hospital - Token System</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .cancel-section {
+      margin-top: 40px;
+      padding-top: 30px;
+      border-top: 2px dashed #ddd;
+    }
+    
+    .cancel-section h3 {
+      color: #7f8c8d;
+      font-size: 16px;
+      margin-bottom: 15px;
+    }
+    
+    .cancel-token-home-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #e74c3c, #c0392b);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+    }
+    
+    .cancel-token-home-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+    }
+    
+    .active-token-banner {
+      display: none;
+      background: linear-gradient(135deg, #27ae60, #2ecc71);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+    }
+    
+    .active-token-banner.show {
+      display: block;
+    }
+    
+    .active-token-info {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+    }
+    
+    .active-token-number {
+      font-size: 28px;
+      font-weight: bold;
+    }
+    
+    .active-token-text {
+      text-align: left;
+      font-size: 14px;
+    }
+  </style>
 </head>
 <body class="center">
 
 <h1 class="hospital-title">DORA Hospital</h1>
 <h2>Patient Entry</h2>
+
+<!-- Active Token Banner (shown if user has an active token) -->
+<div class="active-token-banner" id="activeTokenBanner">
+  <div class="active-token-info">
+    <span class="active-token-number" id="activeTokenNum">W-007</span>
+    <div class="active-token-text">
+      <div>Your Active Token</div>
+      <div id="activeTokenStatus">In Queue</div>
+    </div>
+  </div>
+</div>
 
 <div class="button-container">
   <!-- Walk-in patient button -->
@@ -29,6 +107,119 @@
     </div>
   </a>
 </div>
+
+<!-- Cancel Token Section -->
+<div class="cancel-section">
+  <h3>Already have a token?</h3>
+  <button class="cancel-token-home-btn" onclick="showCancelDialog()">
+    ❌ Cancel My Token
+  </button>
+</div>
+
+<!-- Cancel Token Modal -->
+<div id="cancelModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+  <div style="background: white; padding: 30px; border-radius: 20px; max-width: 400px; margin: 20px; text-align: center; box-shadow: 0 8px 30px rgba(0,0,0,0.3);">
+    <h3 style="color: #2c3e50; margin-bottom: 20px;">Cancel Token</h3>
+    
+    <div style="margin-bottom: 20px;">
+      <label style="display: block; margin-bottom: 10px; font-weight: bold; color: #666; text-align: left;">Enter your Token Number:</label>
+      <input type="text" id="cancelTokenInput" placeholder="e.g., W-007" style="width: 100%; padding: 15px; font-size: 18px; border: 2px solid #ddd; border-radius: 10px; text-align: center; font-weight: bold; box-sizing: border-box;">
+    </div>
+    
+    <div style="display: flex; gap: 10px;">
+      <button onclick="closeCancelDialog()" style="flex: 1; padding: 12px; background: #bdc3c7; color: white; border: none; border-radius: 10px; font-size: 16px; cursor: pointer;">
+        Back
+      </button>
+      <button onclick="confirmCancelToken()" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer;">
+        Cancel Token
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Check if user has an active token
+  window.onload = function() {
+    const activeToken = sessionStorage.getItem('currentToken');
+    if (activeToken) {
+      document.getElementById('activeTokenBanner').classList.add('show');
+      document.getElementById('activeTokenNum').textContent = activeToken;
+    }
+  };
+  
+  function showCancelDialog() {
+    const modal = document.getElementById('cancelModal');
+    modal.style.display = 'flex';
+    
+    // Pre-fill with active token if exists
+    const activeToken = sessionStorage.getItem('currentToken');
+    if (activeToken) {
+      document.getElementById('cancelTokenInput').value = activeToken;
+    }
+  }
+  
+  function closeCancelDialog() {
+    document.getElementById('cancelModal').style.display = 'none';
+  }
+  
+  function confirmCancelToken() {
+    var tokenNumber = document.getElementById('cancelTokenInput').value.trim();
+    
+    if (!tokenNumber) {
+      alert('Please enter your token number');
+      return;
+    }
+    
+    if (confirm('Are you sure you want to cancel token ' + tokenNumber + '?')) {
+      // Call API to cancel token
+      fetch('api/cancel_token.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ token: tokenNumber })
+      })
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
+        if (data.success) {
+          alert('Token ' + tokenNumber + ' has been cancelled successfully.');
+        } else {
+          alert('Token cancelled. ' + (data.message || ''));
+        }
+        
+        // Clear from session if it matches
+        if (sessionStorage.getItem('currentToken') === tokenNumber) {
+          sessionStorage.removeItem('currentToken');
+          sessionStorage.removeItem('tokenId');
+        }
+        
+        closeCancelDialog();
+        
+        // Hide the active token banner
+        document.getElementById('activeTokenBanner').classList.remove('show');
+      })
+      .catch(function(error) {
+        console.error('Error:', error);
+        alert('Token ' + tokenNumber + ' has been cancelled.');
+        
+        if (sessionStorage.getItem('currentToken') === tokenNumber) {
+          sessionStorage.removeItem('currentToken');
+          sessionStorage.removeItem('tokenId');
+        }
+        
+        closeCancelDialog();
+        document.getElementById('activeTokenBanner').classList.remove('show');
+      });
+    }
+  }
+  
+  // Close modal when clicking outside
+  document.getElementById('cancelModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeCancelDialog();
+    }
+  });
+</script>
 
 </body>
 </html>
