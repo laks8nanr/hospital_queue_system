@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Hospital Lab Queue - DORA Hospital</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Lab Queue Main Page Styles */
+    body.lab-body {
+      background: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff 100%);
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      min-height: 100vh;
+    }
+
+    .lab-wrapper {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Hospital Name Header */
+    .hospital-header {
+      text-align: center;
+      margin-bottom: 40px;
+      animation: slideDown 0.6s ease-out;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hospital-name {
+      font-size: 32px;
+      font-weight: 800;
+      color: #2c3e50;
+      letter-spacing: 2px;
+      margin: 0;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .hospital-subtitle {
+      font-size: 14px;
+      color: #7f8c8d;
+      margin-top: 8px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* Lab Tests Grid */
+    .lab-tests-section {
+      flex: 1;
+      margin-bottom: 20px;
+    }
+
+    .lab-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #2c3e50;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .lab-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    /* Lab Test Card */
+    .lab-card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+      border: 2px solid transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .lab-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+      border-color: currentColor;
+    }
+
+    .lab-icon {
+      font-size: 48px;
+      line-height: 1;
+    }
+
+    .lab-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: #2c3e50;
+      margin: 0;
+    }
+
+    /* Card Color Variants */
+    .card-mri {
+      background: linear-gradient(135deg, #e8f4f8, #d4e9f2);
+      color: #2980b9;
+    }
+
+    .card-ct {
+      background: linear-gradient(135deg, #f0e8f4, #e6d4f2);
+      color: #8e44ad;
+    }
+
+    .card-blood {
+      background: linear-gradient(135deg, #f4e8e8, #f2d4d4);
+      color: #e74c3c;
+    }
+
+    .card-xray {
+      background: linear-gradient(135deg, #f4f0e8, #f2e6d4);
+      color: #f39c12;
+    }
+
+    /* Footer */
+    .lab-footer {
+      text-align: center;
+      font-size: 12px;
+      color: #95a5a6;
+      padding-top: 20px;
+      border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .lab-wrapper {
+        padding: 16px;
+      }
+
+      .hospital-name {
+        font-size: 24px;
+      }
+
+      .hospital-subtitle {
+        font-size: 12px;
+      }
+
+      .lab-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 16px;
+      }
+
+      .lab-card {
+        padding: 20px;
+      }
+
+      .lab-icon {
+        font-size: 40px;
+      }
+
+      .lab-name {
+        font-size: 16px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hospital-name {
+        font-size: 20px;
+      }
+
+      .lab-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .lab-card {
+        padding: 16px;
+      }
+
+      .lab-icon {
+        font-size: 32px;
+      }
+
+      .lab-name {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body class="lab-body">
+  <div class="lab-wrapper">
+    <!-- Hospital Header -->
+    <div class="hospital-header">
+      <h1 class="hospital-name">DORA HOSPITAL</h1>
+      <div class="hospital-subtitle">Laboratory Queue Management</div>
+    </div>
+
+    <!-- Lab Tests Section -->
+    <div class="lab-tests-section">
+      <div class="lab-title">Select a Lab Test</div>
+      <div class="lab-grid">
+        <!-- MRI Card -->
+        <div class="lab-card card-mri" data-test="MRI" onclick="navigateToQueue('MRI')">
+          <div class="lab-icon">🧠</div>
+          <div class="lab-name">MRI</div>
+        </div>
+
+        <!-- CT Scan Card -->
+        <div class="lab-card card-ct" data-test="CT Scan" onclick="navigateToQueue('CT Scan')">
+          <div class="lab-icon">🔍</div>
+          <div class="lab-name">CT Scan</div>
+        </div>
+
+        <!-- Blood Test Card -->
+        <div class="lab-card card-blood" data-test="Blood Test" onclick="navigateToQueue('Blood Test')">
+          <div class="lab-icon">🩸</div>
+          <div class="lab-name">Blood Test</div>
+        </div>
+
+        <!-- X-Ray Card -->
+        <div class="lab-card card-xray" data-test="X-Ray" onclick="navigateToQueue('X-Ray')">
+          <div class="lab-icon">☢️</div>
+          <div class="lab-name">X-Ray</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="lab-footer">
+      <p>© 2026 DORA Hospital. All rights reserved.</p>
+    </div>
+  </div>
+
+  <script>
+    // Navigate to queue status page
+    function navigateToQueue(testName) {
+      // Store selected test in session storage
+      sessionStorage.setItem('selectedLabTest', testName);
+      // Navigate to queue status page
+      window.location.href = 'lab_queue_status.html';
+    }
+  </script>
+</body>
+</html>

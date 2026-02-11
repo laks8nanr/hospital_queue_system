@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Pharmacy - Preview Tokens</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Pharmacy Preview Tokens Styles */
+    body.pharmacy-body {
+      background: #f0f8ff;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    .pharmacy-wrapper {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .pharmacy-header {
+      background: linear-gradient(135deg, #2c3e50, #34495e);
+      color: white;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .header-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .logout-btn {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .logout-btn:hover {
+      background: #c0392b;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
+    }
+
+    /* Main Content */
+    .pharmacy-main {
+      flex: 1;
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .page-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #2c3e50;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    /* Tokens Container */
+    .tokens-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Token Row Card */
+    .token-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(0, 0, 0, 0.04);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    }
+
+    .token-row:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .token-number {
+      font-size: 18px;
+      font-weight: 700;
+      color: #2c3e50;
+      font-family: 'Courier New', monospace;
+    }
+
+    .token-status {
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Status Colors */
+    .status-pending {
+      background: #fde8d3;
+    }
+
+    .status-pending .token-status {
+      color: #d9691c;
+    }
+
+    .status-delivered {
+      background: #d5f4e6;
+    }
+
+    .status-delivered .token-status {
+      color: #27ae60;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #7f8c8d;
+      font-size: 15px;
+    }
+
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    /* Footer */
+    .pharmacy-footer {
+      background: #ecf0f1;
+      padding: 12px;
+      text-align: center;
+      font-size: 12px;
+      color: #7f8c8d;
+      margin-top: auto;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .pharmacy-header {
+        padding: 14px 16px;
+      }
+
+      .header-title {
+        font-size: 18px;
+      }
+
+      .logout-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+
+      .pharmacy-main {
+        padding: 16px;
+      }
+
+      .page-title {
+        font-size: 20px;
+        margin-bottom: 20px;
+      }
+
+      .token-row {
+        padding: 14px;
+      }
+
+      .token-number {
+        font-size: 16px;
+      }
+
+      .token-status {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body class="pharmacy-body">
+  <div class="pharmacy-wrapper">
+    <!-- Header -->
+    <div class="pharmacy-header">
+      <div class="header-title">Dora Hospital</div>
+      <button class="logout-btn" id="logoutBtn">Logout</button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="pharmacy-main">
+      <div class="page-title">Preview Tokens – Full Day</div>
+
+      <!-- Tokens List -->
+      <div class="tokens-list" id="tokensList">
+        <!-- Tokens will be injected here -->
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" id="emptyState" style="display: none;">
+        <div class="empty-icon">📋</div>
+        <div>No tokens found for today.</div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="pharmacy-footer">
+      <div>Pharmacy Token Management System</div>
+    </div>
+  </div>
+
+  <script>
+    // Mock pharmacy tokens data
+    const mockTokens = [
+      { id: 1, token_number: 'P001', status: 'pending' },
+      { id: 2, token_number: 'P002', status: 'delivered' },
+      { id: 3, token_number: 'P003', status: 'delivered' },
+      { id: 4, token_number: 'P004', status: 'pending' },
+      { id: 5, token_number: 'P005', status: 'pending' }
+    ];
+
+    // Initialize page
+    function init() {
+      loadTokens();
+      setupEventListeners();
+    }
+
+    // Load and display tokens
+    function loadTokens() {
+      const tokensList = document.getElementById('tokensList');
+      const emptyState = document.getElementById('emptyState');
+
+      tokensList.innerHTML = '';
+
+      if (!mockTokens || mockTokens.length === 0) {
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+
+      mockTokens.forEach(token => {
+        const statusClass = token.status === 'pending' ? 'status-pending' : 'status-delivered';
+        const statusText = token.status === 'pending' ? 'Pending' : 'Delivered';
+
+        const row = document.createElement('div');
+        row.className = `token-row ${statusClass}`;
+
+        const number = document.createElement('div');
+        number.className = 'token-number';
+        number.textContent = token.token_number;
+
+        const status = document.createElement('div');
+        status.className = 'token-status';
+        status.textContent = statusText;
+
+        row.appendChild(number);
+        row.appendChild(status);
+        tokensList.appendChild(row);
+      });
+    }
+
+    // Setup event listeners
+    function setupEventListeners() {
+      document.getElementById('logoutBtn').addEventListener('click', logout);
+    }
+
+    // Logout handler
+    function logout() {
+      const confirmLogout = confirm('Are you sure you want to logout?');
+      if (confirmLogout) {
+        // Clear session storage
+        sessionStorage.removeItem('pharmacyStaffData');
+        // Show logout message
+        alert('You have been logged out.');
+        // Redirect to login (mock - would be actual login page)
+        window.location.href = 'staff_login.html';
+      }
+    }
+
+    // Initialize on page load
+    window.addEventListener('load', init);
+  </script>
+</body>
+</html>

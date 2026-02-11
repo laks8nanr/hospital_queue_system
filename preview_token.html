@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Preview Tokens – Full Day</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Preview Tokens page styles - follow existing theme */
+    body.preview-body { background: #f0f8ff; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
+    .page-wrapper { max-width: 1100px; margin: 0 auto; padding: 18px; }
+    .page-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+    .page-title { font-size:20px; font-weight:700; color:#2c3e50; }
+    .legend { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .legend-item { display:flex; gap:8px; align-items:center; font-size:13px; color:#34495e; }
+    .legend-pill { width:16px; height:16px; border-radius:4px; box-shadow:0 1px 2px rgba(0,0,0,0.08); }
+
+    .tokens-container { background:white; border-radius:12px; padding:16px; box-shadow:0 6px 18px rgba(0,0,0,0.06); max-height:72vh; overflow:auto; }
+
+    /* Vertical sequential list */
+    .list { display:flex; flex-direction:column; gap:10px; }
+
+    .token-card { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px; border-radius:10px; cursor:pointer; transition:transform .12s ease, box-shadow .12s ease; border:1px solid rgba(0,0,0,0.04); }
+    .token-card:hover { transform:translateY(-4px); box-shadow:0 8px 20px rgba(0,0,0,0.08); }
+
+    .token-number { font-family: 'Courier New', monospace; font-size:18px; font-weight:700; color:#2c3e50; }
+    .token-status { font-size:13px; color:#2c3e50; opacity:0.9; }
+
+    /* Status colors */
+    .status-waiting { background: #e8f5ff; }
+    .status-inprogress { background: #fff9e6; }
+    .status-completed { background: #e9f8ee; }
+    .status-skipped { background: #fdecea; }
+    /* (On Break removed) */
+
+    /* Legend color samples */
+    .pill-waiting { background: #e8f5ff; }
+    .pill-inprogress { background: #fff9e6; }
+    .pill-completed { background: #e9f8ee; }
+    .pill-skipped { background: #fdecea; }
+
+    .meta { font-size:13px; color:#7f8c8d; margin-bottom:8px; }
+
+    @media (max-width:600px) {
+      .page-wrapper { padding:12px; }
+      .grid { gap:10px; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+      .token-number { font-size:18px; }
+    }
+  </style>
+</head>
+<body class="preview-body">
+  <div class="page-wrapper">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Preview Tokens – Full Day</div>
+        <div class="meta">Showing all tokens for today. Hover a tile for details.</div>
+      </div>
+      <div class="legend" id="legend">
+        <div class="legend-item"><span class="legend-pill pill-waiting"></span> Waiting</div>
+        <div class="legend-item"><span class="legend-pill pill-inprogress"></span> In progress</div>
+        <div class="legend-item"><span class="legend-pill pill-completed"></span> Completed</div>
+        <div class="legend-item"><span class="legend-pill pill-skipped"></span> Skipped</div>
+      </div>
+    </div>
+
+    <div class="tokens-container">
+      <div id="tokensGrid" class="list">
+        <!-- Tokens will be injected here -->
+      </div>
+      <div id="noTokens" style="display:none; text-align:center; padding:18px; color:#7f8c8d;">No tokens found for today.</div>
+    </div>
+  </div>
+
+  <script>
+    // Mock pharmacy tokens data
+    const mockTokens = [
+      { id: 1, token_number: 'P001', patient_name: '', status: 'consulting' },
+      { id: 2, token_number: 'P002', patient_name: '', status: 'waiting' },
+      { id: 3, token_number: 'P003', patient_name: '', status: 'skipped' }
+    ];
+
+    // Fetch tokens for the full day from mock data and render them
+    function fetchAndRender() {
+      const grid = document.getElementById('tokensGrid');
+      const noTokens = document.getElementById('noTokens');
+      grid.innerHTML = '';
+      noTokens.style.display = 'none';
+
+      const tokens = mockTokens;
+      if (tokens.length === 0) { noTokens.style.display = 'block'; return; }
+
+      // Ensure sequential order by id (ascending)
+      tokens.sort((a,b) => (parseInt(a.id) || 0) - (parseInt(b.id) || 0));
+      tokens.forEach(t => {
+        const s = normalizeStatus(t.status);
+        const card = document.createElement('div');
+        card.className = 'token-card ' + statusClass(s);
+        card.title = `${t.token_number} — ${displayStatus(s)}\nPatient: ${t.patient_name || '-'}\nTime: --:-- -- `;
+
+        const left = document.createElement('div');
+        left.style.display = 'flex';
+        left.style.flexDirection = 'column';
+        left.style.gap = '4px';
+
+        const num = document.createElement('div');
+        num.className = 'token-number';
+        num.textContent = t.token_number || '-';
+
+        const name = document.createElement('div');
+        name.style.fontSize = '13px';
+        name.style.color = '#7f8c8d';
+        name.textContent = t.patient_name || '-';
+
+        left.appendChild(num);
+        left.appendChild(name);
+
+        const stat = document.createElement('div');
+        stat.className = 'token-status';
+        stat.textContent = displayStatus(s);
+
+        card.appendChild(left);
+        card.appendChild(stat);
+        grid.appendChild(card);
+      });
+    }
+
+    // Normalize backend status to UI categories
+    function normalizeStatus(status) {
+      if (!status) return 'waiting';
+      status = status.toLowerCase();
+      if (status === 'waiting') return 'waiting';
+      if (status === 'consulting' || status === 'in_progress' || status === 'in progress') return 'inprogress';
+      if (status === 'completed' || status === 'done') return 'completed';
+      if (status === 'skipped' || status === 'cancelled' || status === 'canceled') return 'skipped';
+      if (status === 'break' || status === 'on_break' || status === 'on break') return 'break';
+      return status;
+    }
+
+    function statusClass(s) {
+      switch (s) {
+        case 'waiting': return 'status-waiting';
+        case 'inprogress': return 'status-inprogress';
+        case 'completed': return 'status-completed';
+        case 'skipped': return 'status-skipped';
+        case 'break': return 'status-break';
+        default: return 'status-waiting';
+      }
+    }
+
+    function displayStatus(s) {
+      switch (s) {
+        case 'waiting': return 'Waiting';
+        case 'inprogress': return 'In progress';
+        case 'completed': return 'Completed';
+        case 'skipped': return 'Skipped';
+        case 'break': return 'On Break';
+        default: return s;
+      }
+    }
+
+    // Initial load
+    fetchAndRender();
+
+    // Optional: refresh every 10 seconds to keep preview current
+    setInterval(fetchAndRender, 10000);
+  </script>
+</body>
+</html>
