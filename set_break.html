@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Set Break</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Set Break Page Styles */
+    body.break-body {
+      background: #f0f8ff;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .break-container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      max-width: 420px;
+      width: 100%;
+      padding: 32px 24px;
+      text-align: center;
+    }
+
+    .page-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: #2c3e50;
+      margin: 0 0 24px 0;
+      letter-spacing: -0.3px;
+    }
+
+    /* Current Time Display */
+    .time-display {
+      font-size: 48px;
+      font-weight: 700;
+      color: #2980b9;
+      font-family: 'Courier New', monospace;
+      margin-bottom: 28px;
+      letter-spacing: 2px;
+    }
+
+    /* Status Indicator */
+    .status-section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 32px;
+      padding: 12px;
+      background: #f9fafb;
+      border-radius: 10px;
+    }
+
+    .status-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #27ae60;
+      transition: background 0.3s ease;
+    }
+
+    .status-text {
+      font-size: 15px;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    /* Break Times Section */
+    .break-times {
+      background: #f9fafb;
+      border-radius: 10px;
+      padding: 18px;
+      margin-bottom: 28px;
+      text-align: left;
+    }
+
+    .time-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .time-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .time-label {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: #7f8c8d;
+      letter-spacing: 0.5px;
+    }
+
+    .time-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: #2c3e50;
+      font-family: 'Courier New', monospace;
+      min-width: 100px;
+      text-align: right;
+    }
+
+    .time-value.empty {
+      color: #bdc3c7;
+      font-weight: 400;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 140px;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-break {
+      background: linear-gradient(135deg, #17a2b8, #138496);
+      color: white;
+    }
+
+    .btn-break:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(23, 162, 184, 0.3);
+    }
+
+    .btn-break:disabled {
+      background: #d5e8ea;
+      color: #95a5a6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-over {
+      background: #ecf0f1;
+      color: #7f8c8d;
+    }
+
+    .btn-over:hover:not(:disabled) {
+      background: #27ae60;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(39, 174, 96, 0.3);
+    }
+
+    .btn-over:disabled {
+      background: #d5e8ea;
+      color: #95a5a6;
+      cursor: not-allowed;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .break-container {
+        padding: 24px 16px;
+      }
+
+      .page-title {
+        font-size: 22px;
+        margin-bottom: 20px;
+      }
+
+      .time-display {
+        font-size: 40px;
+        margin-bottom: 24px;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        min-width: auto;
+      }
+    }
+  </style>
+</head>
+<body class="break-body">
+  <div class="break-container">
+    <!-- Page Title -->
+    <div class="page-title">Set Break</div>
+
+    <!-- Current Time Display -->
+    <div class="time-display" id="currentTime">12:00 PM</div>
+
+    <!-- Status Indicator -->
+    <div class="status-section">
+      <div class="status-dot" id="statusDot"></div>
+      <div class="status-text" id="statusText">Available</div>
+    </div>
+
+    <!-- Break Times Section -->
+    <div class="break-times">
+      <div class="time-row">
+        <div class="time-label">Break Start Time</div>
+        <div class="time-value empty" id="breakStartTime">--:-- --</div>
+      </div>
+      <div class="time-row">
+        <div class="time-label">Break End Time</div>
+        <div class="time-value empty" id="breakEndTime">--:-- --</div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <button class="btn btn-break" id="breakBtn">Break</button>
+      <button class="btn btn-over" id="overBtn" disabled>Over</button>
+    </div>
+  </div>
+
+  <script>
+    // Break State
+    let breakState = {
+      status: 'available', // 'available' or 'on-break'
+      breakStartTime: null,
+      breakEndTime: null
+    };
+
+    // Update current time display every second
+    function updateCurrentTime() {
+      const now = new Date();
+      const time = now.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: undefined,
+        hour12: true
+      });
+      document.getElementById('currentTime').textContent = time;
+    }
+
+    // Format time for display
+    function formatTime(date) {
+      if (!date) return '--:-- --';
+      return date.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+    }
+
+    // Update UI based on break state
+    function updateUI() {
+      const breakBtn = document.getElementById('breakBtn');
+      const overBtn = document.getElementById('overBtn');
+      const statusDot = document.getElementById('statusDot');
+      const statusText = document.getElementById('statusText');
+      const breakStartTime = document.getElementById('breakStartTime');
+      const breakEndTime = document.getElementById('breakEndTime');
+
+      if (breakState.status === 'on-break') {
+        // On Break status
+        breakBtn.disabled = true;
+        overBtn.disabled = false;
+        statusDot.style.background = '#3498db'; // Blue
+        statusText.textContent = 'On Break';
+        breakStartTime.classList.remove('empty');
+        breakStartTime.textContent = formatTime(breakState.breakStartTime);
+      } else {
+        // Available status
+        breakBtn.disabled = false;
+        overBtn.disabled = true;
+        statusDot.style.background = '#27ae60'; // Green
+        statusText.textContent = 'Available';
+        breakEndTime.classList.remove('empty');
+        breakEndTime.textContent = formatTime(breakState.breakEndTime);
+      }
+    }
+
+    // Break button clicked
+    function onBreakClick() {
+      breakState.status = 'on-break';
+      breakState.breakStartTime = new Date();
+      updateUI();
+    }
+
+    // Over button clicked
+    function onOverClick() {
+      breakState.status = 'available';
+      breakState.breakEndTime = new Date();
+      updateUI();
+    }
+
+    // Setup event listeners
+    function init() {
+      document.getElementById('breakBtn').addEventListener('click', onBreakClick);
+      document.getElementById('overBtn').addEventListener('click', onOverClick);
+
+      // Update current time every second
+      updateCurrentTime();
+      setInterval(updateCurrentTime, 1000);
+
+      // Initial UI update
+      updateUI();
+    }
+
+    // Initialize on page load
+    window.addEventListener('load', init);
+  </script>
+</body>
+</html>

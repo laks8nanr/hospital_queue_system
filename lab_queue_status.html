@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Queue Status - DORA Hospital</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Lab Queue Status Page Styles */
+    body.queue-status-body {
+      background: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff 100%);
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      min-height: 100vh;
+    }
+
+    .queue-wrapper {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* Header with Back Button */
+    .queue-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 32px;
+      animation: slideDown 0.6s ease-out;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .back-btn {
+      background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+      color: white;
+      border: none;
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .back-btn:hover {
+      transform: translateX(-4px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .test-title {
+      font-size: 28px;
+      font-weight: 800;
+      color: #2c3e50;
+      margin: 0;
+      letter-spacing: 0.3px;
+    }
+
+    /* Queue Section */
+    .queue-section {
+      flex: 1;
+      margin-bottom: 20px;
+    }
+
+    .queue-subtitle {
+      font-size: 14px;
+      color: #7f8c8d;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Queue List */
+    .queue-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Patient Queue Item */
+    .queue-item {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      transition: all 0.3s ease;
+      border-left: 4px solid transparent;
+      animation: slideIn 0.5s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .queue-item:hover {
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .token-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .token-id {
+      font-size: 18px;
+      font-weight: 700;
+      color: #2c3e50;
+      font-family: 'Courier New', monospace;
+    }
+
+    .token-label {
+      font-size: 12px;
+      color: #7f8c8d;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Status Badge */
+    .status-badge {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: inline-block;
+    }
+
+    .status-inprogress {
+      background: #d5f4e6;
+      color: #27ae60;
+    }
+
+    .status-waiting {
+      background: #fff9e6;
+      color: #f39c12;
+    }
+
+    .status-cancelled {
+      background: #fadbd8;
+      color: #e74c3c;
+    }
+
+    /* Item Border Color by Status */
+    .queue-item.item-inprogress {
+      border-left-color: #27ae60;
+    }
+
+    .queue-item.item-waiting {
+      border-left-color: #f39c12;
+    }
+
+    .queue-item.item-cancelled {
+      border-left-color: #e74c3c;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #7f8c8d;
+    }
+
+    .empty-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .empty-text {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .empty-subtext {
+      font-size: 14px;
+      color: #95a5a6;
+    }
+
+    /* Footer */
+    .queue-footer {
+      text-align: center;
+      font-size: 12px;
+      color: #95a5a6;
+      padding-top: 20px;
+      border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .queue-wrapper {
+        padding: 16px;
+      }
+
+      .queue-header {
+        margin-bottom: 24px;
+      }
+
+      .test-title {
+        font-size: 22px;
+      }
+
+      .queue-item {
+        padding: 14px;
+      }
+
+      .token-id {
+        font-size: 16px;
+      }
+
+      .status-badge {
+        padding: 6px 12px;
+        font-size: 11px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .test-title {
+        font-size: 20px;
+      }
+
+      .queue-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .status-badge {
+        align-self: flex-start;
+      }
+    }
+  </style>
+</head>
+<body class="queue-status-body">
+  <div class="queue-wrapper">
+    <!-- Header with Back Button -->
+    <div class="queue-header">
+      <button class="back-btn" onclick="goBackToLabs()">←</button>
+      <h1 class="test-title" id="testTitle">Lab Test</h1>
+    </div>
+
+    <!-- Queue Section -->
+    <div class="queue-section">
+      <div class="queue-subtitle" id="queueSubtitle">Today's Queue</div>
+
+      <!-- Queue List -->
+      <div class="queue-list" id="queueList">
+        <!-- Queue items will be injected here -->
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" id="emptyState" style="display: none;">
+        <div class="empty-icon">📭</div>
+        <div class="empty-text">No Patients in Queue</div>
+        <div class="empty-subtext">All patients have been processed.</div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="queue-footer">
+      <p>© 2026 DORA Hospital. Laboratory Queue System.</p>
+    </div>
+  </div>
+
+  <script>
+    // Mock Queue Data
+    const mockQueueData = {
+      'MRI': [
+        { id: 'P001', status: 'inprogress' },
+        { id: 'P002', status: 'waiting' },
+        { id: 'P003', status: 'cancelled' }
+      ],
+      'CT Scan': [
+        { id: 'P001', status: 'inprogress' },
+        { id: 'P002', status: 'waiting' },
+        { id: 'P003', status: 'cancelled' }
+      ],
+      'Blood Test': [
+        { id: 'P001', status: 'inprogress' },
+        { id: 'P002', status: 'waiting' },
+        { id: 'P003', status: 'cancelled' }
+      ],
+      'X-Ray': [
+        { id: 'P001', status: 'inprogress' },
+        { id: 'P002', status: 'waiting' },
+        { id: 'P003', status: 'cancelled' }
+      ]
+    };
+
+    // Initialize page
+    function init() {
+      const selectedTest = sessionStorage.getItem('selectedLabTest') || 'Lab Test';
+      document.getElementById('testTitle').textContent = selectedTest;
+      loadQueueData(selectedTest);
+    }
+
+    // Load and display queue data
+    function loadQueueData(testName) {
+      const queueList = document.getElementById('queueList');
+      const emptyState = document.getElementById('emptyState');
+      const queue = mockQueueData[testName] || [];
+
+      queueList.innerHTML = '';
+
+      if (queue.length === 0) {
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+
+      queue.forEach((patient, index) => {
+        const statusText = getStatusText(patient.status);
+        const statusClass = getStatusClass(patient.status);
+        const itemClass = `queue-item item-${patient.status}`;
+
+        const item = document.createElement('div');
+        item.className = itemClass;
+        item.style.animationDelay = `${index * 100}ms`;
+
+        const tokenInfo = document.createElement('div');
+        tokenInfo.className = 'token-info';
+
+        const tokenId = document.createElement('div');
+        tokenId.className = 'token-id';
+        tokenId.textContent = patient.id;
+
+        const tokenLabel = document.createElement('div');
+        tokenLabel.className = 'token-label';
+        tokenLabel.textContent = 'Patient Token';
+
+        tokenInfo.appendChild(tokenId);
+        tokenInfo.appendChild(tokenLabel);
+
+        const statusBadge = document.createElement('div');
+        statusBadge.className = `status-badge ${statusClass}`;
+        statusBadge.textContent = statusText;
+
+        item.appendChild(tokenInfo);
+        item.appendChild(statusBadge);
+
+        queueList.appendChild(item);
+      });
+    }
+
+    // Get status display text
+    function getStatusText(status) {
+      switch (status) {
+        case 'inprogress':
+          return 'In Progress';
+        case 'waiting':
+          return 'Waiting';
+        case 'cancelled':
+          return 'Cancelled';
+        default:
+          return status;
+      }
+    }
+
+    // Get status badge class
+    function getStatusClass(status) {
+      switch (status) {
+        case 'inprogress':
+          return 'status-inprogress';
+        case 'waiting':
+          return 'status-waiting';
+        case 'cancelled':
+          return 'status-cancelled';
+        default:
+          return 'status-waiting';
+      }
+    }
+
+    // Go back to lab selection
+    function goBackToLabs() {
+      sessionStorage.removeItem('selectedLabTest');
+      window.location.href = 'lab_queue.html';
+    }
+
+    // Initialize on page load
+    window.addEventListener('load', init);
+  </script>
+</body>
+</html>

@@ -1,0 +1,600 @@
+<!-- Staff Dashboard Page -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DORA Hospital - Staff Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Staff Dashboard Styles */
+    body.dashboard-body {
+      padding: 0;
+      margin: 0;
+      background-color: #f0f8ff;
+    }
+
+    .dashboard-wrapper {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .dashboard-header {
+      background: linear-gradient(135deg, #2c3e50, #34495e);
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-logo {
+      font-size: 24px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .menu-icon {
+      font-size: 28px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .menu-icon:hover {
+      transform: scale(1.1);
+    }
+
+    .staff-info {
+      font-size: 12px;
+      text-align: right;
+    }
+
+    /* Dropdown Menu */
+    .dropdown-menu {
+      position: fixed;
+      top: 60px;
+      left: 0;
+      background: white;
+      border-radius: 0 8px 8px 0;
+      min-width: 200px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      display: none;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    .dropdown-menu.open {
+      display: block;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(-100%);
+      }
+      to {
+        transform: translateX(0);
+      }
+    }
+
+    .dropdown-menu a {
+      display: block;
+      padding: 15px 20px;
+      color: #2c3e50;
+      text-decoration: none;
+      border-bottom: 1px solid #ecf0f1;
+      transition: background 0.2s;
+    }
+
+    .dropdown-menu a:last-child {
+      border-bottom: none;
+    }
+
+    .dropdown-menu a:hover {
+      background: #ecf0f1;
+    }
+
+    .dropdown-menu a.logout {
+      color: #e74c3c;
+      font-weight: bold;
+    }
+
+    /* Main Content */
+    .dashboard-main {
+      flex: 1;
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* Current Token Card */
+    .current-token-card {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .token-label {
+      color: #7f8c8d;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    .token-number {
+      font-size: 56px;
+      font-weight: bold;
+      color: #2980b9;
+      margin: 15px 0;
+      font-family: 'Courier New', monospace;
+    }
+
+    .patient-name {
+      font-size: 16px;
+      color: #34495e;
+      margin-top: 10px;
+    }
+
+    /* Token Status Section */
+    .status-section {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .status-label {
+      font-size: 13px;
+      color: #7f8c8d;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+      display: block;
+      font-weight: 600;
+    }
+
+    .status-select {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #ecf0f1;
+      border-radius: 8px;
+      font-size: 14px;
+      background: white;
+      cursor: pointer;
+      transition: border-color 0.3s;
+      box-sizing: border-box;
+    }
+
+    .status-select:focus {
+      outline: none;
+      border-color: #3498db;
+      box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+    }
+
+    .status-select:disabled {
+      background: #ecf0f1;
+      cursor: not-allowed;
+    }
+
+    /* Buttons Section */
+    .actions-section {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 15px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .action-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #3498db, #2980b9);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(52, 152, 219, 0.3);
+    }
+
+    .btn-danger {
+      background: #ecf0f1;
+      color: #e74c3c;
+      border: 2px solid #e74c3c;
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      background: #e74c3c;
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    /* Queue Status */
+    .queue-status {
+      background: #e8f8f5;
+      border-left: 4px solid #1abc9c;
+      padding: 12px 15px;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #16a085;
+      margin-top: 15px;
+    }
+
+    .queue-status.empty {
+      background: #fef5e7;
+      border-left-color: #f39c12;
+      color: #d68910;
+    }
+
+    /* Loading & Error */
+    .message {
+      text-align: center;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    .message.success {
+      background: #d5f4e6;
+      color: #27ae60;
+    }
+
+    .message.error {
+      background: #fadbd8;
+      color: #c0392b;
+    }
+
+    .message.loading {
+      background: #d6eaf8;
+      color: #2980b9;
+    }
+
+    /* Footer */
+    .dashboard-footer {
+      background: #ecf0f1;
+      padding: 15px;
+      text-align: center;
+      font-size: 12px;
+      color: #7f8c8d;
+      margin-top: auto;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .dashboard-header {
+        padding: 12px 15px;
+      }
+
+      .header-logo {
+        font-size: 18px;
+      }
+
+      .dashboard-main {
+        padding: 15px;
+      }
+
+      .current-token-card {
+        padding: 20px;
+      }
+
+      .token-number {
+        font-size: 42px;
+      }
+
+      .actions-section {
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .token-number {
+        font-size: 36px;
+      }
+
+      .staff-info {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body class="dashboard-body">
+
+<div class="dashboard-wrapper">
+  <!-- Header -->
+  <div class="dashboard-header">
+    <div class="header-left">
+      <span class="menu-icon" id="menuToggle">☰</span>
+      <div class="header-logo">DORA Hospital</div>
+    </div>
+    <div class="staff-info">
+      <div id="staffName">Loading...</div>
+      <div id="staffDept" style="font-size: 11px; margin-top: 2px;">-</div>
+    </div>
+  </div>
+
+  <!-- Dropdown Menu -->
+  <div class="dropdown-menu" id="dropdownMenu">
+    <a href="#" id="previewTokenLink">📋 Preview Token</a>
+    <a href="#" id="setBreakLink">⏸️ Set Break</a>
+    <a href="#" id="logoutLink" class="logout">🚪 Log Out</a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="dashboard-main">
+    <div id="messageContainer"></div>
+
+    <!-- Current Token Card -->
+    <div class="current-token-card">
+      <div class="token-label">Current Token</div>
+      <div class="token-number" id="currentToken">--</div>
+      <div class="patient-name" id="patientName">No active token</div>
+    </div>
+
+    <!-- Token Status Section -->
+    <div class="status-section">
+      <label class="status-label" for="tokenStatus">Token Status</label>
+      <select id="tokenStatus" class="status-select" disabled>
+        <option value="">-- Select Status --</option>
+        <option value="In Process">🔵 In Process</option>
+        <option value="Waiting">⏳ Waiting</option>
+        <option value="Return">↩️ Return</option>
+        <option value="Skip">⏭️ Skip</option>
+      </select>
+      <div class="queue-status" id="queueStatus">No tokens in queue</div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="actions-section">
+      <button class="action-btn btn-primary" id="nextPatientBtn" disabled>Next Patient</button>
+      <button class="action-btn btn-danger" id="cancelTokenBtn" disabled>Cancel Token</button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="dashboard-footer">
+    <div>Last updated: <span id="lastUpdate">--</span></div>
+  </div>
+</div>
+
+<script>
+  // Dashboard State (UI-only)
+  let dashboardState = {
+    staffId: null,
+    doctorId: null,
+    currentTokenId: null,
+    currentToken: null,
+    queueTokens: [],
+    currentIndex: 0,
+    isProcessing: false
+  };
+
+  // Initialize Dashboard (UI only - no login/API required)
+  function initDashboard() {
+    const staffData = sessionStorage.getItem('staffData');
+    let staff = { staff_name: 'Staff A', department: 'General' };
+    if (staffData) {
+      try { staff = JSON.parse(staffData); } catch (e) {}
+    }
+
+    document.getElementById('staffName').textContent = staff.staff_name || 'Staff';
+    document.getElementById('staffDept').textContent = staff.department || '';
+
+    setupEventListeners();
+
+    // Sample queue for UI preview
+    dashboardState.queueTokens = [
+      { id: 1, token_number: 'A001', patient_name: 'John Doe', status: 'waiting' },
+      { id: 2, token_number: 'A002', patient_name: 'Jane Smith', status: 'waiting' },
+      { id: 3, token_number: 'A003', patient_name: 'Bob Brown', status: 'waiting' }
+    ];
+
+    dashboardState.currentIndex = 0;
+    updateCurrentToken();
+    updateQueueStatus();
+    updateLastUpdate();
+  }
+
+  function setupEventListeners() {
+    document.getElementById('menuToggle').addEventListener('click', toggleMenu);
+    document.getElementById('previewTokenLink').addEventListener('click', (e) => { e.preventDefault(); previewToken(); });
+    document.getElementById('setBreakLink').addEventListener('click', (e) => { e.preventDefault(); setBreak(); });
+    document.getElementById('logoutLink').addEventListener('click', (e) => { e.preventDefault(); logout(); });
+
+    document.getElementById('nextPatientBtn').addEventListener('click', nextPatient);
+    document.getElementById('cancelTokenBtn').addEventListener('click', cancelToken);
+    document.getElementById('tokenStatus').addEventListener('change', updateTokenStatus);
+  }
+
+  function toggleMenu() { document.getElementById('dropdownMenu').classList.toggle('open'); }
+  function closeMenu() { document.getElementById('dropdownMenu').classList.remove('open'); }
+
+  function loadQueue() { /* UI-only: no-op */ }
+
+  function updateCurrentToken() {
+    const tokens = dashboardState.queueTokens;
+    if (!tokens || tokens.length === 0) {
+      resetCurrentToken();
+      return;
+    }
+
+    let idx = dashboardState.currentIndex;
+    if (idx < 0) idx = 0;
+    if (idx >= tokens.length) idx = tokens.length - 1;
+
+    const current = tokens[idx];
+    dashboardState.currentTokenId = current.id;
+    dashboardState.currentToken = current.token_number;
+
+    document.getElementById('currentToken').textContent = current.token_number;
+    document.getElementById('patientName').textContent = current.patient_name || 'Patient';
+
+    const statusSelect = document.getElementById('tokenStatus');
+    const statusMapBack = { 'consulting': 'In Process', 'waiting': 'Waiting', 'completed': 'Skip' };
+    statusSelect.value = statusMapBack[current.status] || '';
+    statusSelect.disabled = false;
+
+    document.getElementById('nextPatientBtn').disabled = false;
+    document.getElementById('cancelTokenBtn').disabled = false;
+  }
+
+  function resetCurrentToken() {
+    dashboardState.currentTokenId = null;
+    dashboardState.currentToken = null;
+
+    document.getElementById('currentToken').textContent = '--';
+    document.getElementById('patientName').textContent = 'No active token';
+    document.getElementById('tokenStatus').value = '';
+    document.getElementById('tokenStatus').disabled = true;
+    document.getElementById('nextPatientBtn').disabled = true;
+    document.getElementById('cancelTokenBtn').disabled = true;
+  }
+
+  function updateQueueStatus() {
+    const queueStatus = document.getElementById('queueStatus');
+    const remaining = Math.max(0, (dashboardState.queueTokens.length - (dashboardState.currentIndex + 1)));
+
+    if (remaining <= 0) {
+      queueStatus.textContent = 'No more tokens in queue';
+      queueStatus.classList.add('empty');
+    } else {
+      queueStatus.textContent = `${remaining} token${remaining !== 1 ? 's' : ''} waiting`;
+      queueStatus.classList.remove('empty');
+    }
+  }
+
+  function updateTokenStatus() {
+    const status = document.getElementById('tokenStatus').value;
+    if (!status || dashboardState.currentIndex == null) return;
+
+    const uiToInternal = { 'In Process': 'consulting', 'Waiting': 'waiting', 'Return': 'waiting', 'Skip': 'completed' };
+    const internal = uiToInternal[status] || 'waiting';
+
+    // Update local state and UI only
+    const current = dashboardState.queueTokens[dashboardState.currentIndex];
+    if (current) {
+      current.status = internal;
+      showMessage(`Token status updated to: ${status}`, 'success');
+      updateQueueStatus();
+      updateCurrentToken();
+    }
+  }
+
+  function nextPatient() {
+    if (!dashboardState.queueTokens || dashboardState.queueTokens.length === 0) return;
+
+    // Mark current as completed locally
+    const current = dashboardState.queueTokens[dashboardState.currentIndex];
+    if (current) current.status = 'completed';
+
+    // Advance index
+    if (dashboardState.currentIndex < dashboardState.queueTokens.length - 1) {
+      dashboardState.currentIndex += 1;
+      showMessage('Moved to next patient', 'success');
+      updateCurrentToken();
+      updateQueueStatus();
+    } else {
+      // No more
+      dashboardState.queueTokens = [];
+      resetCurrentToken();
+      updateQueueStatus();
+      showMessage('No more patients', 'error');
+    }
+  }
+
+  function cancelToken() {
+    const current = dashboardState.queueTokens[dashboardState.currentIndex];
+    if (!current) { showMessage('No token to cancel', 'error'); return; }
+
+    const confirmCancel = confirm(`Cancel token ${current.token_number}?`);
+    if (!confirmCancel) return;
+
+    // Remove from queue locally
+    dashboardState.queueTokens.splice(dashboardState.currentIndex, 1);
+    if (dashboardState.currentIndex >= dashboardState.queueTokens.length) {
+      dashboardState.currentIndex = Math.max(0, dashboardState.queueTokens.length - 1);
+    }
+
+    showMessage(`Token ${current.token_number} cancelled`, 'success');
+    if (dashboardState.queueTokens.length === 0) {
+      resetCurrentToken();
+    } else {
+      updateCurrentToken();
+    }
+    updateQueueStatus();
+  }
+
+  function previewToken() { closeMenu(); showMessage('Preview Token - Feature coming soon', 'success'); }
+
+  function setBreak() { closeMenu(); const breakTime = prompt('Enter break duration (minutes):', '15'); if (breakTime) showMessage(`Break set for ${breakTime} minutes`, 'success'); }
+
+  function logout() { closeMenu(); const confirmLogout = confirm('Are you sure you want to logout?'); if (confirmLogout) showMessage('Logged out (UI-only)', 'success'); }
+
+  function showMessage(text, type) {
+    const container = document.getElementById('messageContainer');
+    const message = document.createElement('div');
+    message.className = `message ${type}`;
+    message.textContent = text;
+    container.innerHTML = '';
+    container.appendChild(message);
+
+    setTimeout(() => {
+      message.remove();
+    }, 4000);
+  }
+
+  function updateLastUpdate() {
+    const now = new Date();
+    const time = now.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    });
+    document.getElementById('lastUpdate').textContent = time;
+  }
+
+  // Close menu when clicking outside
+  document.addEventListener('click', (e) => {
+    const menu = document.getElementById('dropdownMenu');
+    const menuIcon = document.getElementById('menuToggle');
+    if (!menu.contains(e.target) && !menuIcon.contains(e.target)) {
+      closeMenu();
+    }
+  });
+
+  // Initialize on page load
+  window.addEventListener('load', initDashboard);
+</script>
+
+</body>
+</html>

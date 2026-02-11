@@ -18,7 +18,7 @@ if (empty($staff_id) || empty($password)) {
 }
 
 // Query to check staff credentials
-$sql = "SELECT id, staff_id, name, department FROM staff WHERE staff_id = ? AND password = ?";
+$sql = "SELECT id, staff_id, name, department, doctor_id FROM staff WHERE staff_id = ? AND password = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("ss", $staff_id, $password);
 $stmt->execute();
@@ -33,7 +33,8 @@ if ($result->num_rows > 0) {
             'id' => $staff['id'],
             'staff_id' => $staff['staff_id'],
             'name' => $staff['name'],
-            'department' => $staff['department']
+            'department' => $staff['department'],
+            'doctor_id' => $staff['doctor_id']
         ]
     ]);
 } else {
