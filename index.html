@@ -103,7 +103,15 @@
   <a href="prebooked.html" class="box-btn">
     <div class="box-content">
       <span class="box-icon">📅</span>
-      <span class="box-text">Prebooked</span>
+      <span class="box-text">Prebooked OPD</span>
+    </div>
+  </a>
+
+  <!-- Prebooked Lab button -->
+  <a href="lab_prebooked.html" class="box-btn" style="background: linear-gradient(135deg, #3498db, #2980b9);">
+    <div class="box-content">
+      <span class="box-icon">🔬</span>
+      <span class="box-text">Prebooked Lab</span>
     </div>
   </a>
 </div>
@@ -140,19 +148,30 @@
 <script>
   // Check if user has an active token
   window.onload = function() {
-    const activeToken = sessionStorage.getItem('currentToken');
+    // Check for OPD token
+    var activeToken = sessionStorage.getItem('currentToken');
     if (activeToken) {
       document.getElementById('activeTokenBanner').classList.add('show');
       document.getElementById('activeTokenNum').textContent = activeToken;
+      document.getElementById('activeTokenStatus').textContent = 'In Queue';
+      return;
+    }
+    
+    // Check for Lab token
+    var labToken = sessionStorage.getItem('labToken');
+    if (labToken) {
+      document.getElementById('activeTokenBanner').classList.add('show');
+      document.getElementById('activeTokenNum').textContent = labToken;
+      document.getElementById('activeTokenStatus').textContent = labToken.startsWith('LB') ? 'Lab Prebooked' : 'Lab Queue';
     }
   };
   
   function showCancelDialog() {
-    const modal = document.getElementById('cancelModal');
+    var modal = document.getElementById('cancelModal');
     modal.style.display = 'flex';
     
     // Pre-fill with active token if exists
-    const activeToken = sessionStorage.getItem('currentToken');
+    var activeToken = sessionStorage.getItem('currentToken') || sessionStorage.getItem('labToken');
     if (activeToken) {
       document.getElementById('cancelTokenInput').value = activeToken;
     }
@@ -187,10 +206,17 @@
           alert('Token cancelled. ' + (data.message || ''));
         }
         
-        // Clear from session if it matches
+        // Clear from session if it matches (OPD tokens)
         if (sessionStorage.getItem('currentToken') === tokenNumber) {
           sessionStorage.removeItem('currentToken');
           sessionStorage.removeItem('tokenId');
+        }
+        
+        // Clear lab tokens if it matches
+        if (sessionStorage.getItem('labToken') === tokenNumber) {
+          sessionStorage.removeItem('labToken');
+          sessionStorage.removeItem('labTest');
+          sessionStorage.removeItem('labTestType');
         }
         
         closeCancelDialog();
@@ -202,9 +228,17 @@
         console.error('Error:', error);
         alert('Token ' + tokenNumber + ' has been cancelled.');
         
+        // Clear from session if it matches
         if (sessionStorage.getItem('currentToken') === tokenNumber) {
           sessionStorage.removeItem('currentToken');
           sessionStorage.removeItem('tokenId');
+        }
+        
+        // Clear lab tokens if it matches
+        if (sessionStorage.getItem('labToken') === tokenNumber) {
+          sessionStorage.removeItem('labToken');
+          sessionStorage.removeItem('labTest');
+          sessionStorage.removeItem('labTestType');
         }
         
         closeCancelDialog();

@@ -16,6 +16,8 @@ $data = json_decode(file_get_contents('php://input'), true);
 $token_number = isset($data['token']) ? strtoupper(trim($data['token'])) : '';
 $token_id = isset($data['token_id']) ? intval($data['token_id']) : 0;
 $booking_id = isset($data['booking_id']) ? strtoupper(trim($data['booking_id'])) : $token_number;
+$cancellation_reason = isset($data['reason']) ? trim($data['reason']) : 'due to being late';
+$notify_patient = isset($data['notify']) ? (bool)$data['notify'] : true;
 
 if (empty($token_number) && $token_id == 0) {
     echo json_encode(['success' => false, 'message' => 'Token number or ID is required']);
@@ -64,9 +66,30 @@ try {
     
     $conn->commit();
     
+    // Log notification for cancelled token
+    if ($notify_patient) {
+        try {
+            // Check if notification_logs table exists
+            $tableCheck = $conn->query("SHOW TABLES LIKE 'notification_logs'");
+            if ($tableCheck->num_rows > 0) {
+                $notifyMsg = "Your token has been cancelled " . $cancellation_reason . ". Please contact reception.";
+                $logSql = "INSERT INTO notification_logs (token_number, booking_id, notification_type, message, delivery_status) VALUES (?, ?, 'cancelled', ?, 'pending')";
+                $logStmt = $conn->prepare($logSql);
+                $logStmt->bind_param("sss", $token_number, $booking_id, $notifyMsg);
+                $logStmt->execute();
+                $logStmt->close();
+            }
+        } catch (Exception $logError) {
+            // Don't fail cancellation if logging fails
+            error_log("Notification logging failed: " . $logError->getMessage());
+        }
+    }
+    
     echo json_encode([
         'success' => true,
-        'message' => 'Token cancelled successfully'
+        'message' => 'Token cancelled successfully',
+        'notified' => $notify_patient,
+        'reason' => $cancellation_reason
     ]);
     
 } catch (Exception $e) {

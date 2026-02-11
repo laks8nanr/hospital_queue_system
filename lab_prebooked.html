@@ -1,0 +1,605 @@
+<!-- Prebooked Lab Patient Verification -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>DORA Hospital - Prebooked Lab</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .verify-mode { display: block; }
+    .token-mode { display: none; }
+    
+    .verify-container {
+      max-width: 400px;
+      margin: 30px auto;
+      background: #fff;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+      border-top: 5px solid #3498db;
+    }
+    
+    .booking-input {
+      width: 100%;
+      padding: 20px;
+      font-size: 24px;
+      text-align: center;
+      border: 3px solid #ddd;
+      border-radius: 15px;
+      font-weight: bold;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      box-sizing: border-box;
+    }
+    
+    .booking-input:focus {
+      outline: none;
+      border-color: #3498db;
+    }
+    
+    .verify-btn {
+      width: 100%;
+      padding: 18px;
+      margin-top: 20px;
+      background: linear-gradient(135deg, #3498db, #2980b9);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .verify-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+    }
+    
+    .verify-btn:disabled {
+      background: #bdc3c7;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .error-msg {
+      color: #e74c3c;
+      font-size: 14px;
+      margin-top: 10px;
+      text-align: center;
+    }
+    
+    /* Token Display Styles */
+    .token-display-container {
+      max-width: 500px;
+      margin: 20px auto;
+    }
+    
+    .lab-token-card {
+      background: linear-gradient(135deg, #3498db, #2980b9);
+      border-radius: 20px;
+      padding: 25px;
+      color: white;
+      box-shadow: 0 8px 30px rgba(52, 152, 219, 0.4);
+      margin-bottom: 25px;
+    }
+    
+    .token-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .lab-token-number {
+      font-size: 60px;
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      line-height: 1;
+    }
+    
+    .token-type-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 12px;
+      margin-top: 10px;
+    }
+    
+    .test-info {
+      background: rgba(255,255,255,0.15);
+      border-radius: 12px;
+      padding: 15px;
+      margin-top: 15px;
+    }
+    
+    .test-info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .test-info-row:last-child {
+      border-bottom: none;
+    }
+    
+    .token-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .token-stat-item {
+      background: rgba(255,255,255,0.15);
+      border-radius: 12px;
+      padding: 15px;
+      text-align: center;
+    }
+    
+    .token-stat-item .icon {
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+    
+    .token-stat-item .value {
+      font-size: 22px;
+      font-weight: bold;
+      color: #fff;
+    }
+    
+    .token-stat-item .label {
+      font-size: 12px;
+      color: rgba(255,255,255,0.8);
+    }
+    
+    /* Queue Styles */
+    .queue-section {
+      background: #fff;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .queue-title {
+      font-size: 18px;
+      color: #2c3e50;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .queue-track {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .queue-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px;
+      border-radius: 12px;
+      background: #f8f9fa;
+      border-left: 4px solid #bdc3c7;
+    }
+    
+    .queue-item.current {
+      background: linear-gradient(135deg, #d4edda, #c3e6cb);
+      border-left-color: #27ae60;
+      animation: pulse 2s infinite;
+    }
+    
+    .queue-item.you {
+      border-left-color: #3498db;
+      background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+      box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    }
+    
+    .queue-item.you-highlight {
+      border: 3px solid #3498db;
+      animation: youPulse 1.5s infinite;
+    }
+    
+    @keyframes youPulse {
+      0%, 100% { box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3); }
+      50% { box-shadow: 0 4px 25px rgba(52, 152, 219, 0.6); }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    
+    .queue-position {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 16px;
+      margin-right: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .queue-item.current .queue-position { background: #27ae60; color: white; }
+    .queue-item.you .queue-position { background: #3498db; color: white; }
+    
+    .queue-info { flex: 1; }
+    
+    .queue-name {
+      font-weight: bold;
+      color: #2c3e50;
+      font-size: 14px;
+    }
+    
+    .queue-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-left: 8px;
+    }
+    
+    .badge-you { background: #3498db; color: white; }
+    .badge-current { background: #27ae60; color: white; }
+    
+    .queue-status {
+      font-size: 12px;
+      color: #7f8c8d;
+    }
+    
+    .cancel-token-btn {
+      width: 100%;
+      padding: 15px;
+      margin-top: 20px;
+      background: linear-gradient(135deg, #e74c3c, #c0392b);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .cancel-token-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+    }
+    
+    .home-btn {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      background: #95a5a6;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .home-btn:hover {
+      background: #7f8c8d;
+    }
+  </style>
+</head>
+<body class="center">
+
+<h1 class="hospital-title">DORA Hospital</h1>
+
+<!-- VERIFY MODE -->
+<div id="verifyMode" class="verify-mode">
+  <h2>Prebooked Lab Test</h2>
+  
+  <div class="verify-container">
+    <p style="color: #666; margin-bottom: 20px;">Enter your Lab Booking ID</p>
+    
+    <input type="text" id="bookingIdInput" class="booking-input" placeholder="LB001" maxlength="10">
+    
+    <div class="error-msg" id="verifyError"></div>
+    
+    <button class="verify-btn" id="verifyBtn" onclick="verifyLabBooking()">
+      ✓ Verify Booking
+    </button>
+    
+    <a href="index.html" style="display: block; margin-top: 20px; color: #3498db; text-decoration: none;">← Back to Home</a>
+  </div>
+</div>
+
+<!-- TOKEN MODE -->
+<div id="tokenMode" class="token-mode">
+  <div class="token-display-container">
+    
+    <!-- Token Card -->
+    <div class="lab-token-card">
+      <div class="token-header">
+        <div class="lab-token-number" id="displayTokenNumber">LB001</div>
+        <div class="token-type-badge">🔬 Lab Test - Pre-booked</div>
+      </div>
+      
+      <div class="test-info">
+        <div class="test-info-row">
+          <span>Test:</span>
+          <span id="displayTestName">MRI Scan</span>
+        </div>
+        <div class="test-info-row">
+          <span>Patient:</span>
+          <span id="displayPatientName">John Doe</span>
+        </div>
+        <div class="test-info-row">
+          <span>Scheduled:</span>
+          <span id="displayScheduledTime">10:00 AM</span>
+        </div>
+      </div>
+      
+      <div class="token-stats-grid">
+        <div class="token-stat-item">
+          <div class="icon">⏰</div>
+          <div class="value" id="displayExpectedTime">10:30 AM</div>
+          <div class="label">Expected Time</div>
+        </div>
+        <div class="token-stat-item">
+          <div class="icon">⏳</div>
+          <div class="value" id="displayWaitTime">~20 mins</div>
+          <div class="label">Wait Time</div>
+        </div>
+        <div class="token-stat-item">
+          <div class="icon">👥</div>
+          <div class="value" id="displayPeopleAhead">3</div>
+          <div class="label">People Ahead</div>
+        </div>
+        <div class="token-stat-item">
+          <div class="icon">📋</div>
+          <div class="value" id="displayQueuePosition">4</div>
+          <div class="label">Your Position</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Queue Visualization -->
+    <div class="queue-section">
+      <div class="queue-title">
+        <span>📋</span>
+        <span>Lab Queue</span>
+        <span id="refreshIndicator" style="margin-left: auto; font-size: 12px; color: #27ae60;">● Live</span>
+      </div>
+      
+      <div class="queue-track" id="queueTrack">
+        <!-- Queue items will be generated here -->
+      </div>
+    </div>
+    
+    <button class="cancel-token-btn" onclick="cancelLabToken()">
+      ❌ Cancel Booking
+    </button>
+    
+    <button class="home-btn" onclick="goHome()">
+      🏠 Back to Home
+    </button>
+  </div>
+</div>
+
+<script>
+  var bookingData = null;
+  var currentToken = null;
+  var refreshInterval = null;
+
+  function verifyLabBooking() {
+    var bookingId = document.getElementById('bookingIdInput').value.trim().toUpperCase();
+    var errorDiv = document.getElementById('verifyError');
+    var verifyBtn = document.getElementById('verifyBtn');
+    
+    if (!bookingId) {
+      errorDiv.textContent = 'Please enter your Lab Booking ID';
+      return;
+    }
+    
+    errorDiv.textContent = '';
+    verifyBtn.disabled = true;
+    verifyBtn.textContent = 'Verifying...';
+    
+    // Call API to verify lab booking
+    fetch('api/verify_lab_booking.php?booking_id=' + encodeURIComponent(bookingId))
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
+        if (data.success) {
+          bookingData = data.data;
+          currentToken = bookingId;
+          sessionStorage.setItem('labToken', bookingId);
+          sessionStorage.setItem('labTestType', bookingData.test_type);
+          showTokenDisplay();
+        } else {
+          errorDiv.textContent = data.message || 'Booking not found';
+          verifyBtn.disabled = false;
+          verifyBtn.textContent = '✓ Verify Booking';
+        }
+      })
+      .catch(function(error) {
+        console.error('Error:', error);
+        errorDiv.textContent = 'Failed to verify. Please try again.';
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = '✓ Verify Booking';
+      });
+  }
+  
+  function formatTime(timeStr) {
+    if (!timeStr) return '-';
+    var parts = timeStr.split(':');
+    var hours = parseInt(parts[0]);
+    var minutes = parts[1];
+    var ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    return hours + ':' + minutes + ' ' + ampm;
+  }
+  
+  function showTokenDisplay() {
+    document.getElementById('displayTokenNumber').textContent = bookingData.booking_id;
+    document.getElementById('displayTestName').textContent = bookingData.test_name;
+    document.getElementById('displayPatientName').textContent = bookingData.patient_name;
+    document.getElementById('displayScheduledTime').textContent = formatTime(bookingData.scheduled_time);
+    document.getElementById('displayExpectedTime').textContent = formatTime(bookingData.expected_time || bookingData.scheduled_time);
+    document.getElementById('displayWaitTime').textContent = '~' + (bookingData.wait_time || 20) + ' mins';
+    document.getElementById('displayPeopleAhead').textContent = bookingData.people_ahead || 0;
+    document.getElementById('displayQueuePosition').textContent = bookingData.position || 1;
+    
+    // Switch to token mode
+    document.getElementById('verifyMode').style.display = 'none';
+    document.getElementById('tokenMode').style.display = 'block';
+    
+    // Start queue refresh
+    refreshQueue();
+    startAutoRefresh();
+  }
+  
+  function refreshQueue() {
+    if (!currentToken) return;
+    
+    var refreshIndicator = document.getElementById('refreshIndicator');
+    if (refreshIndicator) {
+      refreshIndicator.textContent = '⟳ Updating...';
+      refreshIndicator.style.color = '#f39c12';
+    }
+    
+    var timestamp = new Date().getTime();
+    var testType = sessionStorage.getItem('labTestType') || bookingData.test_type;
+    var url = 'api/get_lab_queue.php?test_type=' + encodeURIComponent(testType) + '&current_token=' + encodeURIComponent(currentToken) + '&_t=' + timestamp;
+    
+    fetch(url)
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
+        if (refreshIndicator) {
+          refreshIndicator.textContent = '● Live';
+          refreshIndicator.style.color = '#27ae60';
+        }
+        
+        if (data.success && data.queue.length > 0) {
+          document.getElementById('displayPeopleAhead').textContent = data.people_ahead;
+          document.getElementById('displayWaitTime').textContent = '~' + (data.people_ahead * 15) + ' mins';
+          document.getElementById('displayQueuePosition').textContent = data.current_position;
+          
+          renderQueueItems(data.queue);
+        }
+      })
+      .catch(function(error) {
+        console.error('Queue fetch error:', error);
+      });
+  }
+  
+  function startAutoRefresh() {
+    if (refreshInterval) clearInterval(refreshInterval);
+    refreshInterval = setInterval(refreshQueue, 5000);
+  }
+  
+  function stopAutoRefresh() {
+    if (refreshInterval) {
+      clearInterval(refreshInterval);
+      refreshInterval = null;
+    }
+  }
+  
+  function renderQueueItems(queueData) {
+    var queueTrack = document.getElementById('queueTrack');
+    var html = '';
+    
+    for (var i = 0; i < queueData.length; i++) {
+      var item = queueData[i];
+      var itemToken = (item.token_number || '').toUpperCase();
+      var myToken = (currentToken || '').toUpperCase();
+      var isYou = item.is_you === true || (myToken && itemToken === myToken);
+      var type = isYou ? 'you' : (item.status === 'in_progress' ? 'current' : '');
+      var badge = 'Waiting';
+      var extraClass = '';
+      var displayName = item.patient_name;
+      
+      if (isYou) {
+        badge = 'YOU';
+        displayName = item.patient_name + ' (You)';
+        extraClass = ' you-highlight';
+      } else if (item.status === 'in_progress') {
+        badge = 'In Progress';
+      }
+      
+      html += '<div class="queue-item ' + type + extraClass + '">' +
+        '<div class="queue-position">' + item.position + '</div>' +
+        '<div class="queue-info">' +
+          '<div class="queue-name">' + displayName +
+            ' <span class="queue-badge badge-' + type + '">' + badge + '</span>' +
+          '</div>' +
+          '<div class="queue-status">Token: ' + item.token_number + ' • ' + item.test_name + '</div>' +
+        '</div>' +
+      '</div>';
+    }
+    queueTrack.innerHTML = html;
+  }
+  
+  function cancelLabToken() {
+    if (confirm('Are you sure you want to cancel this lab booking?')) {
+      stopAutoRefresh();
+      
+      fetch('api/cancel_lab_booking.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ booking_id: currentToken })
+      })
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
+        alert('Lab booking cancelled successfully.');
+        sessionStorage.removeItem('labToken');
+        sessionStorage.removeItem('labTestType');
+        window.location.href = 'index.html';
+      })
+      .catch(function(error) {
+        alert('Lab booking cancelled.');
+        sessionStorage.removeItem('labToken');
+        window.location.href = 'index.html';
+      });
+    }
+  }
+  
+  function goHome() {
+    stopAutoRefresh();
+    window.location.href = 'index.html';
+  }
+  
+  // Allow Enter key to verify
+  document.getElementById('bookingIdInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      verifyLabBooking();
+    }
+  });
+  
+  // Auto-uppercase input
+  document.getElementById('bookingIdInput').addEventListener('input', function(e) {
+    this.value = this.value.toUpperCase();
+  });
+  
+  // Check for existing session on page load
+  window.onload = function() {
+    var savedToken = sessionStorage.getItem('labToken');
+    if (savedToken && savedToken.startsWith('LB')) {
+      // Auto-fill and verify
+      document.getElementById('bookingIdInput').value = savedToken;
+      verifyLabBooking();
+    }
+  };
+  
+  // Cleanup on page unload
+  window.onbeforeunload = function() {
+    stopAutoRefresh();
+  };
+</script>
+
+</body>
+</html>

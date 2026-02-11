@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>Dora Hospital - Lab Tests</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        h1 { color: #2c3e50; margin-bottom: 10px; }
+        h2 { color: #555; margin-bottom: 40px; font-weight: 400; }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .test-button {
+            aspect-ratio: 1 / 1;
+            border: none;
+            border-radius: 25px;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .test-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        /* Test specific colors */
+        .mri { background-color: #3498db; }
+        .ct-scan { background-color: #2ecc71; }
+        .blood-test { background-color: #9b59b6; }
+        .x-ray { background-color: #f39c12; }
+
+        .icon { font-size: 3rem; margin-bottom: 10px; }
+
+        @media (max-width: 500px) {
+            .button-grid { grid-template-columns: 1fr; max-width: 200px; }
+            h1 { font-size: 1.5rem; }
+            h2 { font-size: 1rem; margin-bottom: 20px; }
+            .time-slots-grid { grid-template-columns: repeat(2, 1fr); }
+            .queue-stats { grid-template-columns: repeat(3, 1fr); gap: 5px; }
+            .queue-stat { padding: 8px; }
+            .queue-stat .stat-value { font-size: 1.1rem; }
+            .form-row { flex-direction: column; gap: 0; }
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            justify-content: flex-start;
+            align-items: flex-start;
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 100%;
+            margin: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            padding: 25px;
+            text-align: center;
+            color: white;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .modal-header.mri { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .modal-header.ct-scan { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+        .modal-header.blood-test { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        .modal-header.x-ray { background: linear-gradient(135deg, #f39c12, #e67e22); }
+
+        .modal-header .modal-icon { font-size: 3rem; }
+        .modal-header h3 { margin: 10px 0 0 0; font-size: 1.5rem; }
+
+        .modal-body { padding: 20px; }
+
+        .section-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 15px 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title:first-child { margin-top: 0; }
+
+        .requirements-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .requirements-list li {
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #555;
+        }
+
+        .requirements-list li .req-icon {
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .info-box {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .info-card {
+            flex: 1;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .info-card.time {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border: 2px solid #64b5f6;
+        }
+
+        .info-card.fee {
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            border: 2px solid #81c784;
+        }
+
+        .info-card .info-icon { font-size: 1.8rem; }
+        .info-card .info-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 5px 0;
+        }
+        .info-card .info-label {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        /* Patient Form Styles */
+        .patient-form {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .form-group input.error {
+            border-color: #e74c3c;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .modal-footer { padding: 0 20px 20px 20px; }
+
+        .pay-btn, .generate-token-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pay-btn.mri { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .pay-btn.ct-scan { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+        .pay-btn.blood-test { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        .pay-btn.x-ray { background: linear-gradient(135deg, #f39c12, #e67e22); }
+
+        .pay-btn:hover, .generate-token-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+
+        .pay-btn:disabled, .generate-token-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .pay-btn.success {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+
+        .generate-token-btn {
+            display: none;
+            margin-top: 10px;
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+        }
+
+        .generate-token-btn.show {
+            display: block;
+        }
+
+        .close-btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border: 2px solid #bdc3c7;
+            border-radius: 12px;
+            background: transparent;
+            font-size: 1rem;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            background: #f0f0f0;
+            border-color: #999;
+        }
+
+        /* Token Display */
+        .token-display {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            border-radius: 15px;
+            color: white;
+            margin-top: 15px;
+        }
+
+        .token-display.show {
+            display: block;
+        }
+
+        .token-number {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .token-info {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .home-btn {
+            width: 100%;
+            padding: 14px;
+            margin-top: 10px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .home-btn:hover {
+            background: #2980b9;
+        }
+
+        /* Prescription Upload Styles */
+        .upload-section {
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff3e0;
+            border: 2px dashed #f39c12;
+            border-radius: 12px;
+        }
+
+        .upload-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: #e67e22;
+            margin-bottom: 10px;
+        }
+
+        .upload-rules {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 12px;
+            padding: 10px;
+            background: #fef9e7;
+            border-radius: 8px;
+        }
+
+        .upload-rules ul {
+            margin: 5px 0 0 0;
+            padding-left: 18px;
+        }
+
+        .upload-rules li {
+            margin-bottom: 3px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            display: none;
+        }
+
+        .upload-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4);
+        }
+
+        .file-preview {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            background: #e8f5e9;
+            border-radius: 10px;
+            border: 2px solid #81c784;
+        }
+
+        .file-preview.show {
+            display: block;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-icon {
+            font-size: 2rem;
+        }
+
+        .file-details {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+
+        .file-size {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .remove-file {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .remove-file:hover {
+            background: #c0392b;
+        }
+
+        .upload-error {
+            color: #e74c3c;
+            font-size: 0.85rem;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .upload-error.show {
+            display: block;
+        }
+
+        /* Time Slot Selection */
+        .time-slots-container {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .date-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+        }
+
+        .date-selector::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .date-selector::-webkit-scrollbar-thumb {
+            background: #bdc3c7;
+            border-radius: 4px;
+        }
+
+        .date-btn {
+            min-width: 75px;
+            padding: 10px 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+
+        .date-btn:hover { border-color: #3498db; }
+        .date-btn.selected {
+            border-color: #3498db;
+            background: #e3f2fd;
+        }
+
+        .date-btn .day { font-size: 0.75rem; color: #666; }
+        .date-btn .date { font-size: 1rem; font-weight: bold; color: #2c3e50; }
+
+        .time-slots-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .time-slot {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .time-slot:hover:not(.unavailable) { border-color: #3498db; background: #f0f8ff; }
+        .time-slot.selected { border-color: #3498db; background: #e3f2fd; }
+        .time-slot.unavailable {
+            background: #f5f5f5;
+            color: #bbb;
+            cursor: not-allowed;
+            border-color: #eee;
+        }
+
+        .time-slot .slot-time { font-weight: bold; font-size: 0.85rem; }
+        .time-slot .slot-avail { font-size: 0.7rem; color: #27ae60; }
+        .time-slot.unavailable .slot-avail { color: #e74c3c; }
+
+        /* Required badge */
+        .upload-required {
+            background: #e74c3c;
+            color: white;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 5px;
+        }
+
+        /* Queue Display */
+        .queue-display {
+            display: none;
+            margin-top: 15px;
+        }
+
+        .queue-display.show { display: block; }
+
+        .queue-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .queue-stat {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .queue-stat .stat-value { font-size: 1.4rem; font-weight: bold; color: #2c3e50; }
+        .queue-stat .stat-label { font-size: 0.7rem; color: #666; }
+
+        .queue-list {
+            background: #fff;
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid #eee;
+        }
+
+        .queue-list-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .queue-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            background: #f8f9fa;
+            border-left: 3px solid #bdc3c7;
+        }
+
+        .queue-item.you {
+            background: #e3f2fd;
+            border-left-color: #3498db;
+            border: 2px solid #3498db;
+        }
+
+        .queue-item.current {
+            background: #d4edda;
+            border-left-color: #27ae60;
+        }
+
+        .queue-pos {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            background: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-right: 10px;
+        }
+
+        .queue-item.you .queue-pos { background: #3498db; color: white; }
+        .queue-item.current .queue-pos { background: #27ae60; color: white; }
+
+        .queue-item-info { flex: 1; }
+        .queue-item-name { font-weight: 600; font-size: 0.85rem; }
+        .queue-item-token { font-size: 0.75rem; color: #666; }
+
+        .queue-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.65rem;
+            font-weight: bold;
+        }
+
+        .queue-badge.you-badge { background: #3498db; color: white; }
+        .queue-badge.current-badge { background: #27ae60; color: white; }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <h1>DORA HOSPITAL</h1>
+    <h2>Select Available Lab Test</h2>
+
+    <div class="button-grid">
+        <button class="test-button mri" onclick="showTestDetails('mri')">
+            <span class="icon">🧲</span>
+            MRI
+        </button>
+        <button class="test-button ct-scan" onclick="showTestDetails('ct-scan')">
+            <span class="icon">🌀</span>
+            CT Scan
+        </button>
+        <button class="test-button blood-test" onclick="showTestDetails('blood-test')">
+            <span class="icon">🩸</span>
+            Blood Test
+        </button>
+        <button class="test-button x-ray" onclick="showTestDetails('x-ray')">
+            <span class="icon">🦴</span>
+            X-Ray
+        </button>
+    </div>
+
+    <a href="index.html" class="back-link">← Back to Home</a>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header" id="modalHeader">
+                <div class="modal-icon" id="modalIcon"></div>
+                <h3 id="modalTitle"></h3>
+            </div>
+            <div class="modal-body">
+                <!-- Requirements Section -->
+                <div class="section-title">📋 Requirements & Preparation</div>
+                <ul class="requirements-list" id="requirementsList"></ul>
+
+                <!-- Duration & Fee -->
+                <div class="info-box">
+                    <div class="info-card time">
+                        <div class="info-icon">⏱️</div>
+                        <div class="info-value" id="testDuration"></div>
+                        <div class="info-label">Test Duration</div>
+                    </div>
+                    <div class="info-card fee">
+                        <div class="info-icon">💰</div>
+                        <div class="info-value" id="testFee"></div>
+                        <div class="info-label">Test Fee</div>
+                    </div>
+                </div>
+
+                <!-- Time Slot Selection -->
+                <div class="section-title" id="slotSectionTitle">📅 Select Date & Time Slot</div>
+                <div class="time-slots-container" id="timeSlotsContainer">
+                    <div class="date-selector" id="dateSelector"></div>
+                    <div class="time-slots-grid" id="timeSlotsGrid"></div>
+                </div>
+
+                <!-- Patient Information Form -->
+                <div class="section-title">👤 Patient Information</div>
+                <div class="patient-form" id="patientForm">
+                    <div class="form-group">
+                        <label for="patientName">Full Name *</label>
+                        <input type="text" id="patientName" placeholder="Enter patient's full name" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="patientAge">Age *</label>
+                            <input type="number" id="patientAge" placeholder="Age" min="1" max="120" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="patientGender">Gender *</label>
+                            <select id="patientGender" style="width:100%; padding:12px 15px; border:2px solid #ddd; border-radius:10px; font-size:1rem;">
+                                <option value="">Select</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="patientPhone">Phone Number *</label>
+                        <input type="tel" id="patientPhone" placeholder="10-digit mobile number" maxlength="10">
+                    </div>
+
+                    <!-- Prescription Upload -->
+                    <div class="upload-section">
+                        <div class="upload-label">📄 Upload Prescription <span class="upload-required">REQUIRED</span></div>
+                        <div class="upload-rules">
+                            <strong>Upload Rules:</strong>
+                            <ul>
+                                <li>Accepted formats: JPG, PNG, PDF</li>
+                                <li>Maximum file size: 5 MB</li>
+                                <li>Prescription must be clearly visible</li>
+                                <li>Must be issued within last 6 months</li>
+                                <li>Doctor's signature & stamp required</li>
+                            </ul>
+                        </div>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="prescriptionFile" accept=".jpg,.jpeg,.png,.pdf" onchange="handleFileUpload(this)">
+                            <button type="button" class="upload-btn" onclick="document.getElementById('prescriptionFile').click()">
+                                📤 Choose File to Upload
+                            </button>
+                        </div>
+                        <div class="file-preview" id="filePreview">
+                            <div class="file-info">
+                                <span class="file-icon" id="fileIcon">📄</span>
+                                <div class="file-details">
+                                    <div class="file-name" id="fileName">prescription.pdf</div>
+                                    <div class="file-size" id="fileSize">2.5 MB</div>
+                                </div>
+                                <button type="button" class="remove-file" onclick="removeFile()">✕</button>
+                            </div>
+                        </div>
+                        <div class="upload-error" id="uploadError">Error message</div>
+                    </div>
+                </div>
+
+                <!-- Token Display (shown after token generation) -->
+                <div class="token-display" id="tokenDisplay">
+                    <div>🎫 Your Lab Token</div>
+                    <div class="token-number" id="generatedToken">L-001</div>
+                    <div class="token-info">
+                        <div id="tokenTestName">MRI Scan</div>
+                        <div id="tokenPatientName">Patient Name</div>
+                        <div id="tokenSlotTime">Slot: 10:00 AM</div>
+                    </div>
+                </div>
+
+                <!-- Queue Display -->
+                <div class="queue-display" id="queueDisplay">
+                    <div class="queue-stats">
+                        <div class="queue-stat">
+                            <div class="stat-value" id="queuePosition">4</div>
+                            <div class="stat-label">Your Position</div>
+                        </div>
+                        <div class="queue-stat">
+                            <div class="stat-value" id="peopleAhead">3</div>
+                            <div class="stat-label">People Ahead</div>
+                        </div>
+                        <div class="queue-stat">
+                            <div class="stat-value" id="waitTime">~30 min</div>
+                            <div class="stat-label">Est. Wait</div>
+                        </div>
+                    </div>
+                    <div class="queue-list">
+                        <div class="queue-list-title">📋 Current Queue <span id="liveIndicator" style="margin-left:auto; font-size:0.75rem; color:#27ae60;">● Live</span></div>
+                        <div id="queueItems"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="pay-btn" id="payBtn" onclick="processPayment()">
+                    💳 Proceed to Payment
+                </button>
+                <button class="generate-token-btn" id="generateTokenBtn" onclick="generateToken()">
+                    🎫 Generate Token
+                </button>
+                <button class="home-btn" id="homeBtn" style="display:none;" onclick="goHome()">
+                    🏠 Back to Home
+                </button>
+                <button class="close-btn" id="closeBtn" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const testData = {
+            'mri': {
+                name: 'MRI Scan',
+                icon: '🧲',
+                duration: '30-60 mins',
+                fee: 8000,
+                prefix: 'MRI',
+                slotDuration: 45,
+                dailyCapacity: 12,
+                advanceBookingDays: 21,
+                requirements: [
+                    { icon: '🔩', text: 'Remove ALL metal objects - jewelry, watches, hairpins, belts with metal buckles' },
+                    { icon: '💳', text: 'Remove credit cards, hearing aids, and any electronic devices' },
+                    { icon: '👔', text: 'Wear loose, comfortable clothing without metal zippers or buttons' },
+                    { icon: '🍽️', text: 'Fasting: 4 hours before scan (water allowed)' },
+                    { icon: '💊', text: 'Inform staff about any implants, pacemakers, or metal in body' },
+                    { icon: '🤰', text: 'Inform if pregnant or possibly pregnant' }
+                ]
+            },
+            'ct-scan': {
+                name: 'CT Scan',
+                icon: '🌀',
+                duration: '15-30 mins',
+                fee: 5000,
+                prefix: 'CT',
+                slotDuration: 30,
+                dailyCapacity: 16,
+                advanceBookingDays: 14,
+                requirements: [
+                    { icon: '🍽️', text: 'Fasting: 4-6 hours before scan if contrast dye is used' },
+                    { icon: '💧', text: 'Drink plenty of water after scan to flush out contrast dye' },
+                    { icon: '🔩', text: 'Remove metal objects from scanning area' },
+                    { icon: '👔', text: 'Wear comfortable, loose-fitting clothes' },
+                    { icon: '💊', text: 'Inform about allergies, especially to iodine or contrast dye' },
+                    { icon: '🩺', text: 'Inform about kidney problems or diabetes' }
+                ]
+            },
+            'blood-test': {
+                name: 'Blood Test',
+                icon: '🩸',
+                duration: '5-10 mins',
+                fee: 500,
+                prefix: 'BT',
+                slotDuration: 10,
+                dailyCapacity: 50,
+                advanceBookingDays: 7,
+                requirements: [
+                    { icon: '🍽️', text: 'Fasting: 8-12 hours before test (only water allowed)' },
+                    { icon: '💧', text: 'Stay well hydrated - drink water before the test' },
+                    { icon: '💊', text: 'Continue regular medications unless advised otherwise' },
+                    { icon: '🚫', text: 'Avoid alcohol for 24 hours before the test' },
+                    { icon: '😴', text: 'Get adequate sleep the night before' },
+                    { icon: '🏃', text: 'Avoid strenuous exercise before the test' }
+                ]
+            },
+            'x-ray': {
+                name: 'X-Ray',
+                icon: '🦴',
+                duration: '10-15 mins',
+                fee: 800,
+                prefix: 'XR',
+                slotDuration: 15,
+                dailyCapacity: 30,
+                advanceBookingDays: 7,
+                requirements: [
+                    { icon: '🔩', text: 'Remove metal objects - jewelry, watches, belts from X-ray area' },
+                    { icon: '👔', text: 'Wear comfortable clothing; hospital gown may be provided' },
+                    { icon: '🍽️', text: 'No fasting required for most X-rays' },
+                    { icon: '🤰', text: 'Inform if pregnant or possibly pregnant' },
+                    { icon: '🛡️', text: 'Lead apron will be provided to protect other body parts' },
+                    { icon: '📍', text: 'Stay still during the scan for clear images' }
+                ]
+            }
+        };
+
+        let currentTest = null;
+        let paymentDone = false;
+        let uploadedFile = null;
+        let selectedDate = null;
+        let selectedSlot = null;
+        let generatedTokenNumber = null;
+        let refreshInterval = null;
+
+        function formatTime(timeStr) {
+            if (!timeStr) return '-';
+            const parts = timeStr.split(':');
+            let hours = parseInt(parts[0]);
+            const minutes = parts[1];
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+            return hours + ':' + minutes + ' ' + ampm;
+        }
+
+        function formatDate(date) {
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return {
+                day: days[date.getDay()],
+                date: date.getDate(),
+                month: months[date.getMonth()],
+                full: date.toISOString().split('T')[0]
+            };
+        }
+
+        function getSlotAvailability(testType, dateStr) {
+            const test = testData[testType];
+            const slots = [];
+            const startHour = 9;
+            const endHour = 17;
+            const slotMinutes = test.slotDuration;
+            
+            for (let hour = startHour; hour < endHour; hour++) {
+                for (let min = 0; min < 60; min += slotMinutes) {
+                    if (hour === endHour - 1 && min + slotMinutes > 60) break;
+                    
+                    const timeStr = String(hour).padStart(2, '0') + ':' + String(min).padStart(2, '0');
+                    const seed = (dateStr + timeStr + testType).length;
+                    const booked = Math.floor(Math.random() * 3);
+                    const capacity = Math.ceil(test.dailyCapacity / 8);
+                    const available = Math.max(0, capacity - booked);
+                    
+                    const today = new Date();
+                    const slotDate = new Date(dateStr);
+                    let isPast = false;
+                    if (slotDate.toDateString() === today.toDateString()) {
+                        const now = today.getHours() * 60 + today.getMinutes();
+                        const slotTime = hour * 60 + min;
+                        isPast = slotTime <= now + 30;
+                    }
+                    
+                    slots.push({
+                        time: timeStr,
+                        displayTime: formatTime(timeStr),
+                        available: isPast ? 0 : available,
+                        booked: booked
+                    });
+                }
+            }
+            return slots;
+        }
+
+        function renderDateSelector(testType) {
+            const test = testData[testType];
+            const container = document.getElementById('dateSelector');
+            container.innerHTML = '';
+            
+            const today = new Date();
+            for (let i = 0; i <= test.advanceBookingDays; i++) {
+                const date = new Date(today);
+                date.setDate(today.getDate() + i);
+                const formatted = formatDate(date);
+                
+                const btn = document.createElement('div');
+                btn.className = 'date-btn' + (i === 0 ? ' selected' : '');
+                btn.dataset.date = formatted.full;
+                btn.innerHTML = `<div class="day">${formatted.day}</div><div class="date">${formatted.date} ${formatted.month}</div>`;
+                btn.onclick = () => selectDate(formatted.full, btn);
+                container.appendChild(btn);
+            }
+            
+            selectedDate = formatDate(today).full;
+            renderTimeSlots(testType, selectedDate);
+        }
+
+        function selectDate(dateStr, btn) {
+            document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedDate = dateStr;
+            selectedSlot = null;
+            renderTimeSlots(currentTest, dateStr);
+            updatePayButton();
+        }
+
+        function renderTimeSlots(testType, dateStr) {
+            const grid = document.getElementById('timeSlotsGrid');
+            const slots = getSlotAvailability(testType, dateStr);
+            
+            grid.innerHTML = slots.map(slot => {
+                const isUnavailable = slot.available === 0;
+                const isSelected = selectedSlot === slot.time;
+                return `
+                    <div class="time-slot ${isUnavailable ? 'unavailable' : ''} ${isSelected ? 'selected' : ''}"
+                         onclick="${isUnavailable ? '' : `selectSlot('${slot.time}', this)`}">
+                        <div class="slot-time">${slot.displayTime}</div>
+                        <div class="slot-avail">${isUnavailable ? 'Full' : slot.available + ' left'}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectSlot(time, el) {
+            document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedSlot = time;
+            updatePayButton();
+        }
+
+        function updatePayButton() {
+            const payBtn = document.getElementById('payBtn');
+            const test = testData[currentTest];
+            
+            if (!uploadedFile) {
+                payBtn.disabled = true;
+                payBtn.innerHTML = '💳 Upload Prescription First';
+            } else if (!selectedSlot) {
+                payBtn.disabled = true;
+                payBtn.innerHTML = '💳 Select Time Slot First';
+            } else {
+                payBtn.disabled = false;
+                payBtn.innerHTML = '💳 Proceed to Payment - ₹' + test.fee.toLocaleString();
+            }
+        }
+
+        function showTestDetails(testType) {
+            currentTest = testType;
+            paymentDone = false;
+            uploadedFile = null;
+            selectedSlot = null;
+            generatedTokenNumber = null;
+            const test = testData[testType];
+
+            // Update modal header
+            document.getElementById('modalHeader').className = 'modal-header ' + testType;
+            document.getElementById('modalIcon').textContent = test.icon;
+            document.getElementById('modalTitle').textContent = test.name;
+
+            // Update requirements list
+            const reqList = document.getElementById('requirementsList');
+            reqList.innerHTML = test.requirements.map(req => 
+                `<li><span class="req-icon">${req.icon}</span><span>${req.text}</span></li>`
+            ).join('');
+
+            // Update duration and fee
+            document.getElementById('testDuration').textContent = test.duration;
+            document.getElementById('testFee').textContent = '₹' + test.fee.toLocaleString();
+
+            // Render date/time slots
+            renderDateSelector(testType);
+
+            // Reset form
+            document.getElementById('patientName').value = '';
+            document.getElementById('patientAge').value = '';
+            document.getElementById('patientGender').value = '';
+            document.getElementById('patientPhone').value = '';
+
+            // Reset prescription upload
+            document.getElementById('prescriptionFile').value = '';
+            document.getElementById('filePreview').classList.remove('show');
+            document.getElementById('uploadError').classList.remove('show');
+
+            // Reset buttons and displays
+            const payBtn = document.getElementById('payBtn');
+            payBtn.className = 'pay-btn ' + testType;
+            payBtn.disabled = true;
+            payBtn.style.display = 'block';
+            payBtn.innerHTML = '💳 Upload Prescription First';
+
+            document.getElementById('generateTokenBtn').classList.remove('show');
+            document.getElementById('generateTokenBtn').style.display = 'none';
+            document.getElementById('tokenDisplay').classList.remove('show');
+            document.getElementById('queueDisplay').classList.remove('show');
+            document.getElementById('patientForm').style.display = 'block';
+            document.getElementById('timeSlotsContainer').style.display = 'block';
+            document.getElementById('slotSectionTitle').style.display = 'flex';
+            document.getElementById('homeBtn').style.display = 'none';
+            document.getElementById('closeBtn').style.display = 'block';
+
+            // Show modal
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        function validateForm() {
+            const name = document.getElementById('patientName').value.trim();
+            const age = document.getElementById('patientAge').value.trim();
+            const gender = document.getElementById('patientGender').value;
+            const phone = document.getElementById('patientPhone').value.trim();
+
+            let valid = true;
+
+            // Reset error states
+            document.querySelectorAll('.form-group input, .form-group select').forEach(el => {
+                el.classList.remove('error');
+            });
+
+            if (!name) {
+                document.getElementById('patientName').classList.add('error');
+                valid = false;
+            }
+            if (!age || age < 1 || age > 120) {
+                document.getElementById('patientAge').classList.add('error');
+                valid = false;
+            }
+            if (!gender) {
+                document.getElementById('patientGender').style.borderColor = '#e74c3c';
+                valid = false;
+            } else {
+                document.getElementById('patientGender').style.borderColor = '#ddd';
+            }
+            if (!phone || phone.length !== 10 || !/^\d+$/.test(phone)) {
+                document.getElementById('patientPhone').classList.add('error');
+                valid = false;
+            }
+
+            return valid;
+        }
+
+        function closeModal(event) {
+            if (!event || event.target === document.getElementById('modalOverlay')) {
+                if (paymentDone && !generatedTokenNumber) {
+                    if (!confirm('Payment done. Are you sure you want to close without generating token?')) return;
+                }
+                document.getElementById('modalOverlay').classList.remove('active');
+                paymentDone = false;
+                if (refreshInterval) clearInterval(refreshInterval);
+            }
+        }
+
+        function processPayment() {
+            if (!uploadedFile) {
+                alert('Please upload your prescription first.');
+                return;
+            }
+            if (!selectedSlot) {
+                alert('Please select a time slot.');
+                return;
+            }
+            if (!validateForm()) {
+                alert('Please fill in all patient details correctly.');
+                return;
+            }
+
+            const payBtn = document.getElementById('payBtn');
+            const test = testData[currentTest];
+
+            payBtn.disabled = true;
+            payBtn.innerHTML = '⏳ Processing Payment...';
+
+            // Simulate payment processing
+            setTimeout(() => {
+                payBtn.className = 'pay-btn success';
+                payBtn.innerHTML = '✅ Payment Successful!';
+                paymentDone = true;
+
+                // Show generate token button
+                setTimeout(() => {
+                    payBtn.style.display = 'none';
+                    document.getElementById('generateTokenBtn').classList.add('show');
+                    document.getElementById('generateTokenBtn').style.display = 'block';
+                }, 1000);
+            }, 2000);
+        }
+
+        function generateToken() {
+            if (!paymentDone) return;
+
+            const generateBtn = document.getElementById('generateTokenBtn');
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '⏳ Generating Token...';
+
+            const test = testData[currentTest];
+            const patientName = document.getElementById('patientName').value.trim();
+
+            // Generate token number (in real app, this would come from server)
+            const tokenNum = Math.floor(Math.random() * 99) + 1;
+            generatedTokenNumber = test.prefix + '-' + String(tokenNum).padStart(3, '0');
+
+            setTimeout(() => {
+                // Hide form and buttons
+                document.getElementById('patientForm').style.display = 'none';
+                document.getElementById('timeSlotsContainer').style.display = 'none';
+                document.getElementById('slotSectionTitle').style.display = 'none';
+                generateBtn.style.display = 'none';
+                document.getElementById('closeBtn').style.display = 'none';
+
+                // Show token display
+                document.getElementById('generatedToken').textContent = generatedTokenNumber;
+                document.getElementById('tokenTestName').textContent = test.name;
+                document.getElementById('tokenPatientName').textContent = patientName;
+                document.getElementById('tokenSlotTime').textContent = 'Slot: ' + formatTime(selectedSlot) + ' on ' + selectedDate;
+                document.getElementById('tokenDisplay').classList.add('show');
+
+                // Show queue
+                renderQueue();
+                document.getElementById('queueDisplay').classList.add('show');
+                document.getElementById('homeBtn').style.display = 'block';
+
+                // Store token in session
+                sessionStorage.setItem('labToken', generatedTokenNumber);
+                sessionStorage.setItem('labTest', test.name);
+                sessionStorage.setItem('labTestType', currentTest);
+
+                // Start queue refresh
+                startQueueRefresh();
+            }, 1500);
+        }
+
+        function renderQueue() {
+            const position = Math.floor(Math.random() * 5) + 1;
+            const peopleAhead = position - 1;
+            const test = testData[currentTest];
+            const waitTime = peopleAhead * Math.round(test.slotDuration * 0.7);
+
+            document.getElementById('queuePosition').textContent = position;
+            document.getElementById('peopleAhead').textContent = peopleAhead;
+            document.getElementById('waitTime').textContent = '~' + waitTime + ' min';
+
+            const queueItems = [];
+            for (let i = 1; i <= Math.min(5, position + 2); i++) {
+                const isYou = i === position;
+                const isCurrent = i === 1;
+                queueItems.push({
+                    position: i,
+                    name: isYou ? document.getElementById('patientName').value.trim() : 'Patient ' + i,
+                    token: isYou ? generatedTokenNumber : test.prefix + '-' + String(Math.floor(Math.random() * 99) + 1).padStart(3, '0'),
+                    isYou: isYou,
+                    isCurrent: isCurrent
+                });
+            }
+
+            const container = document.getElementById('queueItems');
+            container.innerHTML = queueItems.map(item => `
+                <div class="queue-item ${item.isYou ? 'you' : ''} ${item.isCurrent ? 'current' : ''}">
+                    <div class="queue-pos">${item.position}</div>
+                    <div class="queue-item-info">
+                        <div class="queue-item-name">${item.name}</div>
+                        <div class="queue-item-token">Token: ${item.token}</div>
+                    </div>
+                    ${item.isYou ? '<span class="queue-badge you-badge">YOU</span>' : ''}
+                    ${item.isCurrent ? '<span class="queue-badge current-badge">IN PROGRESS</span>' : ''}
+                </div>
+            `).join('');
+        }
+
+        function startQueueRefresh() {
+            if (refreshInterval) clearInterval(refreshInterval);
+            refreshInterval = setInterval(() => {
+                const indicator = document.getElementById('liveIndicator');
+                indicator.textContent = '⟳ Updating...';
+                indicator.style.color = '#f39c12';
+                
+                setTimeout(() => {
+                    indicator.textContent = '● Live';
+                    indicator.style.color = '#27ae60';
+                }, 500);
+            }, 5000);
+        }
+
+        function goHome() {
+            if (refreshInterval) clearInterval(refreshInterval);
+            window.location.href = 'index.html';
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !paymentDone) {
+                closeModal();
+            }
+        });
+
+        // Phone number validation - only digits
+        document.getElementById('patientPhone').addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '').slice(0, 10);
+        });
+
+        // Prescription file upload handling
+        function handleFileUpload(input) {
+            const file = input.files[0];
+            const errorDiv = document.getElementById('uploadError');
+            const previewDiv = document.getElementById('filePreview');
+            
+            errorDiv.classList.remove('show');
+            
+            if (!file) {
+                previewDiv.classList.remove('show');
+                uploadedFile = null;
+                updatePayButton();
+                return;
+            }
+
+            // Validate file type
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+            if (!allowedTypes.includes(file.type)) {
+                errorDiv.textContent = '❌ Invalid file type. Please upload JPG, PNG, or PDF only.';
+                errorDiv.classList.add('show');
+                input.value = '';
+                previewDiv.classList.remove('show');
+                uploadedFile = null;
+                updatePayButton();
+                return;
+            }
+
+            // Validate file size (5MB max)
+            const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+            if (file.size > maxSize) {
+                errorDiv.textContent = '❌ File too large. Maximum size is 5 MB.';
+                errorDiv.classList.add('show');
+                input.value = '';
+                previewDiv.classList.remove('show');
+                uploadedFile = null;
+                updatePayButton();
+                return;
+            }
+
+            // File is valid - show preview
+            uploadedFile = file;
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = formatFileSize(file.size);
+            
+            // Set appropriate icon
+            const fileIcon = document.getElementById('fileIcon');
+            if (file.type === 'application/pdf') {
+                fileIcon.textContent = '📕';
+            } else {
+                fileIcon.textContent = '🖼️';
+            }
+            
+            previewDiv.classList.add('show');
+            updatePayButton();
+        }
+
+        function removeFile() {
+            document.getElementById('prescriptionFile').value = '';
+            document.getElementById('filePreview').classList.remove('show');
+            document.getElementById('uploadError').classList.remove('show');
+            uploadedFile = null;
+            updatePayButton();
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Cleanup refresh interval on page unload
+        window.onbeforeunload = function() {
+            if (refreshInterval) clearInterval(refreshInterval);
+        };
+
+        // Check for existing lab token on page load (restore state after refresh)
+        window.onload = function() {
+            var existingToken = sessionStorage.getItem('labToken');
+            var existingTestType = sessionStorage.getItem('labTestType');
+            
+            // If user has a walk-in lab token (not prebooked LB prefix), show a notification
+            if (existingToken && !existingToken.startsWith('LB') && existingTestType) {
+                var confirmReturn = confirm('You have an active lab token: ' + existingToken + '\n\nWould you like to go to the home page to check your queue status?');
+                if (confirmReturn) {
+                    window.location.href = 'index.html';
+                }
+            }
+        };
+    </script>
+
+</body>
+</html>

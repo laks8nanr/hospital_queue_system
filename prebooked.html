@@ -9,6 +9,7 @@
   <meta http-equiv="Expires" content="0">
   <title>DORA Hospital - Prebooked Patient</title>
   <link rel="stylesheet" href="style.css">
+  <script src="notifications.js"></script>
   <style>
     .verify-mode { display: block; }
     .details-mode { display: none; }
@@ -909,6 +910,62 @@
     // Switch to token mode
     document.getElementById('detailsMode').style.display = 'none';
     document.getElementById('tokenMode').style.display = 'block';
+    
+    // Initialize notification system
+    initializeNotifications(tokenData.token_number, bookingData.booking_id);
+  }
+  
+  // Initialize notifications for cancellation alerts
+  function initializeNotifications(tokenNumber, bookingId) {
+    if (typeof HospitalNotifications !== 'undefined') {
+      HospitalNotifications.init({
+        token: tokenNumber,
+        bookingId: bookingId,
+        onCancelled: function(reason) {
+          // Stop queue refresh
+          stopAutoRefresh();
+          // Show cancellation modal
+          showCancellationModal(reason);
+        }
+      });
+      
+      // Show permission prompt after a short delay
+      setTimeout(function() {
+        HospitalNotifications.showPermissionPrompt();
+      }, 2000);
+    }
+  }
+  
+  // Show cancellation modal
+  function showCancellationModal(reason) {
+    var modal = document.createElement('div');
+    modal.id = 'cancellation-modal';
+    modal.innerHTML = 
+      '<div class="modal-overlay">' +
+        '<div class="modal-content cancellation-modal">' +
+          '<div class="modal-icon">🚫</div>' +
+          '<h2>Token Cancelled</h2>' +
+          '<p>Your token has been cancelled ' + (reason || 'due to being late') + '.</p>' +
+          '<p class="modal-note">Please visit the reception for assistance or to reschedule your appointment.</p>' +
+          '<button class="modal-btn" onclick="window.location.href=\'index.html\'">Back to Home</button>' +
+        '</div>' +
+      '</div>';
+    
+    // Add modal styles
+    var style = document.createElement('style');
+    style.textContent = 
+      '.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 10000; }' +
+      '.modal-content { background: white; padding: 30px; border-radius: 20px; text-align: center; max-width: 350px; margin: 20px; }' +
+      '.cancellation-modal { border-top: 5px solid #e74c3c; }' +
+      '.modal-icon { font-size: 60px; margin-bottom: 15px; }' +
+      '.modal-content h2 { color: #e74c3c; margin: 0 0 15px 0; }' +
+      '.modal-content p { color: #666; margin: 10px 0; }' +
+      '.modal-note { font-size: 13px; color: #888; }' +
+      '.modal-btn { background: linear-gradient(135deg, #3498db, #2980b9); color: white; border: none; padding: 15px 30px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; }' +
+      '.modal-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(52,152,219,0.4); }';
+    
+    document.head.appendChild(style);
+    document.body.appendChild(modal);
   }
   
   function generateQueue(yourToken, yourName) {
