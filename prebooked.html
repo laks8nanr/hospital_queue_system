@@ -642,6 +642,12 @@
       </div>
     </div>
     
+    <div id="activeTokenWarning" style="display:none; background:#fff3cd; border:1px solid #ffc107; color:#856404; padding:15px; border-radius:10px; margin:15px 0; text-align:center;">
+      <strong>⚠️ Active Token Found</strong>
+      <p id="activeTokenMessage" style="margin:8px 0 0 0; font-size:0.9rem;"></p>
+      <a href="token_status.html" style="color:#856404; text-decoration:underline; font-size:0.9rem;">Check Token Status</a>
+    </div>
+    
     <button class="confirm-btn" id="confirmBtn" onclick="confirmBooking()">
       ✓ Confirm Details
     </button>
@@ -745,6 +751,7 @@
   var currentToken = null;
   var currentPatientName = null;
   var refreshInterval = null;
+  var hasActiveToken = false;
   
   function verifyBooking() {
     var bookingId = document.getElementById('bookingIdInput').value.trim().toUpperCase();
@@ -809,9 +816,38 @@
     // Reset state
     confirmed = false;
     paid = false;
+    hasActiveToken = false;
+    document.getElementById('activeTokenWarning').style.display = 'none';
     document.getElementById('confirmBtn').style.display = 'block';
     document.getElementById('payBtn').classList.remove('show', 'paid');
     document.getElementById('checkinBtn').classList.remove('active');
+    
+    // Check for active token BEFORE showing confirm button
+    checkActiveTokenForBooking();
+  }
+  
+  function checkActiveTokenForBooking() {
+    fetch('api/check_active_token.php?phone=' + encodeURIComponent(bookingData.patient_phone))
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
+        var warningDiv = document.getElementById('activeTokenWarning');
+        var messageEl = document.getElementById('activeTokenMessage');
+        var confirmBtn = document.getElementById('confirmBtn');
+        
+        if (data.has_active_token) {
+          hasActiveToken = true;
+          messageEl.textContent = data.message;
+          warningDiv.style.display = 'block';
+          confirmBtn.style.display = 'none'; // Hide confirm button
+        } else {
+          hasActiveToken = false;
+          warningDiv.style.display = 'none';
+          confirmBtn.style.display = 'block';
+        }
+      })
+      .catch(function(error) {
+        console.error('Error checking active token:', error);
+      });
   }
   
   function formatTime(timeStr) {
@@ -839,6 +875,12 @@
   }
   
   function payFees() {
+    // Block if active token exists
+    if (hasActiveToken) {
+      alert('You already have an active token. Please complete or cancel it before checking in.');
+      return;
+    }
+    
     var payBtn = document.getElementById('payBtn');
     payBtn.textContent = '⏳ Processing...';
     payBtn.disabled = true;

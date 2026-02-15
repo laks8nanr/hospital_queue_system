@@ -1,9 +1,13 @@
 <?php
 // api/verify_lab_booking.php
+session_start();
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
 include '../db.php';
+
+// Get patient_id from session if logged in
+$patient_id = isset($_SESSION['patient_id']) ? intval($_SESSION['patient_id']) : null;
 
 // Get booking ID from query string
 $booking_id = isset($_GET['booking_id']) ? strtoupper(trim($_GET['booking_id'])) : '';
@@ -54,6 +58,45 @@ if ($result->num_rows === 0) {
 }
 
 $booking = $result->fetch_assoc();
+
+// CHECK: Only ONE active token allowed at a time per patient (OPD or Lab)
+// If logged in, check by patient_id first; otherwise check by phone
+if ($patient_id) {
+    $activeCheckQuery = "SELECT 'opd' as token_type, token_number, status as token_status FROM tokens 
+                         WHERE patient_id = ? AND DATE(created_at) = CURDATE() AND status IN ('waiting', 'consulting')
+                         UNION ALL
+                         SELECT 'lab' as token_type, token_number, token_status FROM lab_tokens 
+                         WHERE patient_id = ? AND scheduled_date = CURDATE() AND token_status IN ('waiting', 'in_progress')
+                         LIMIT 1";
+    $activeStmt = $conn->prepare($activeCheckQuery);
+    $activeStmt->bind_param("ii", $patient_id, $patient_id);
+} else {
+    $activeCheckQuery = "SELECT 'opd' as token_type, token_number, status as token_status FROM tokens 
+                         WHERE patient_phone = ? AND DATE(created_at) = CURDATE() AND status IN ('waiting', 'consulting')
+                         UNION ALL
+                         SELECT 'lab' as token_type, token_number, token_status FROM lab_tokens 
+                         WHERE patient_phone = ? AND scheduled_date = CURDATE() AND token_status IN ('waiting', 'in_progress')
+                         LIMIT 1";
+    $activeStmt = $conn->prepare($activeCheckQuery);
+    $activeStmt->bind_param("ss", $booking['patient_phone'], $booking['patient_phone']);
+}
+$activeStmt->execute();
+$activeResult = $activeStmt->get_result();
+
+if ($activeResult->num_rows > 0) {
+    $active = $activeResult->fetch_assoc();
+    $tokenType = $active['token_type'] === 'opd' ? 'OPD consultation' : 'Lab test';
+    $msg = $patient_id ? 'You already have an active ' . $tokenType . ' token (' . $active['token_number'] . ') from your account. Only one token per account is allowed.'
+                       : 'You already have an active ' . $tokenType . ' token (' . $active['token_number'] . '). You can only have one token at a time.';
+    echo json_encode([
+        'success' => false,
+        'message' => $msg . ' Please complete, cancel, or wait for it to expire before checking in.',
+        'existing_token' => $active['token_number']
+    ]);
+    $activeStmt->close();
+    exit;
+}
+$activeStmt->close();
 
 // Calculate queue position and wait time
 $queueQuery = "SELECT COUNT(*) as ahead FROM (

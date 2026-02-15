@@ -1,4 +1,5 @@
 <?php
+session_start();
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
@@ -9,6 +10,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 include '../db.php';
+
+// Get patient_id from session if logged in
+$patient_id = isset($_SESSION['patient_id']) ? intval($_SESSION['patient_id']) : null;
 
 // Get POST data
 $data = json_decode(file_get_contents('php://input'), true);
@@ -45,6 +49,45 @@ if ($result->num_rows === 0) {
 
 $booking = $result->fetch_assoc();
 $stmt->close();
+
+// CHECK: Only ONE active token allowed at a time per patient (OPD or Lab)
+// If logged in, check by patient_id first; otherwise check by phone
+if ($patient_id) {
+    $activeCheckQuery = "SELECT 'opd' as token_type, token_number, status as token_status FROM tokens 
+                         WHERE patient_id = ? AND DATE(created_at) = CURDATE() AND status IN ('waiting', 'consulting')
+                         UNION ALL
+                         SELECT 'lab' as token_type, token_number, token_status FROM lab_tokens 
+                         WHERE patient_id = ? AND scheduled_date = CURDATE() AND token_status IN ('waiting', 'in_progress')
+                         LIMIT 1";
+    $activeStmt = $conn->prepare($activeCheckQuery);
+    $activeStmt->bind_param("ii", $patient_id, $patient_id);
+} else {
+    $activeCheckQuery = "SELECT 'opd' as token_type, token_number, status as token_status FROM tokens 
+                         WHERE patient_phone = ? AND DATE(created_at) = CURDATE() AND status IN ('waiting', 'consulting')
+                         UNION ALL
+                         SELECT 'lab' as token_type, token_number, token_status FROM lab_tokens 
+                         WHERE patient_phone = ? AND scheduled_date = CURDATE() AND token_status IN ('waiting', 'in_progress')
+                         LIMIT 1";
+    $activeStmt = $conn->prepare($activeCheckQuery);
+    $activeStmt->bind_param("ss", $booking['patient_phone'], $booking['patient_phone']);
+}
+$activeStmt->execute();
+$activeResult = $activeStmt->get_result();
+
+if ($activeResult->num_rows > 0) {
+    $active = $activeResult->fetch_assoc();
+    $tokenType = $active['token_type'] === 'opd' ? 'OPD consultation' : 'Lab test';
+    $msg = $patient_id ? 'You already have an active ' . $tokenType . ' token (' . $active['token_number'] . ') from your account. Only one token per account is allowed.' 
+                       : 'You already have an active ' . $tokenType . ' token (' . $active['token_number'] . '). You can only have one token at a time.';
+    echo json_encode([
+        'success' => false,
+        'message' => $msg . ' Please complete, cancel, or wait for it to expire before checking in.',
+        'existing_token' => $active['token_number']
+    ]);
+    $activeStmt->close();
+    exit;
+}
+$activeStmt->close();
 
 // Use booking_id as token number (e.g., PB001)
 $token_number = $booking_id;
@@ -90,17 +133,18 @@ $aheadStmt->close();
 $expected_time = $appointment_time;
 
 // Insert token into tokens table
-$insertQuery = "INSERT INTO tokens (doctor_id, department_id, patient_name, patient_age, patient_phone, 
+$insertQuery = "INSERT INTO tokens (doctor_id, department_id, patient_name, patient_age, patient_phone, patient_id,
                 token_number, token_type, status, expected_time, booking_id, created_at) 
-                VALUES (?, ?, ?, ?, ?, ?, 'prebooked', 'waiting', ?, ?, NOW())";
+                VALUES (?, ?, ?, ?, ?, ?, ?, 'prebooked', 'waiting', ?, ?, NOW())";
 
 $insertStmt = $conn->prepare($insertQuery);
-$insertStmt->bind_param("iisiisss", 
+$insertStmt->bind_param("iisisiss", 
     $booking['doctor_id'],
     $booking['department_id'],
     $booking['patient_name'],
     $booking['patient_age'],
     $booking['patient_phone'],
+    $patient_id,
     $token_number,
     $expected_time,
     $booking_id

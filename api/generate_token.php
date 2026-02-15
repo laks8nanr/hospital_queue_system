@@ -1,4 +1,5 @@
 <?php
+session_start();
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
@@ -15,6 +16,61 @@ $patient_phone = $conn->real_escape_string($data['patient_phone'] ?? '');
 $department = $conn->real_escape_string($data['department'] ?? '');
 $doctor_id = intval($data['doctor_id'] ?? 0);
 $type = $conn->real_escape_string($data['type'] ?? 'walkin');
+
+// Get patient_id from session if logged in
+$patient_id = isset($_SESSION['patient_id']) ? intval($_SESSION['patient_id']) : null;
+
+// CHECK: Only ONE active token allowed at a time per patient (OPD or Lab)
+// If logged in, check by patient_id first; otherwise check by phone
+if ($patient_id) {
+    $active_sql = "SELECT 'opd' as token_type, token_number, status as token_status FROM tokens 
+                   WHERE patient_id = ? AND DATE(created_at) = CURDATE() AND status IN ('waiting', 'consulting')
+                   UNION ALL
+                   SELECT 'lab' as token_type, token_number, token_status FROM lab_tokens 
+                   WHERE patient_id = ? AND scheduled_date = CURDATE() AND token_status IN ('waiting', 'in_progress')
+                   LIMIT 1";
+    $active_stmt = $conn->prepare($active_sql);
+    $active_stmt->bind_param("ii", $patient_id, $patient_id);
+    $active_stmt->execute();
+    $active_result = $active_stmt->get_result();
+    
+    if ($active_result->num_rows > 0) {
+        $active = $active_result->fetch_assoc();
+        $tokenType = $active['token_type'] === 'opd' ? 'OPD consultation' : 'Lab test';
+        echo json_encode([
+            'success' => false, 
+            'message' => 'You already have an active ' . $tokenType . ' token (' . $active['token_number'] . ') from your account. Only one token per account is allowed. Please complete, cancel, or wait for it to expire.',
+            'existing_token' => $active['token_number']
+        ]);
+        $active_stmt->close();
+        exit;
+    }
+    $active_stmt->close();
+} else if (!empty($patient_phone)) {
+    $active_sql = "SELECT 'opd' as token_type, token_number, status as token_status FROM tokens 
+                   WHERE patient_phone = ? AND DATE(created_at) = CURDATE() AND status IN ('waiting', 'consulting')
+                   UNION ALL
+                   SELECT 'lab' as token_type, token_number, token_status FROM lab_tokens 
+                   WHERE patient_phone = ? AND scheduled_date = CURDATE() AND token_status IN ('waiting', 'in_progress')
+                   LIMIT 1";
+    $active_stmt = $conn->prepare($active_sql);
+    $active_stmt->bind_param("ss", $patient_phone, $patient_phone);
+    $active_stmt->execute();
+    $active_result = $active_stmt->get_result();
+    
+    if ($active_result->num_rows > 0) {
+        $active = $active_result->fetch_assoc();
+        $tokenType = $active['token_type'] === 'opd' ? 'OPD consultation' : 'Lab test';
+        echo json_encode([
+            'success' => false, 
+            'message' => 'You already have an active ' . $tokenType . ' token (' . $active['token_number'] . '). You can only have one token at a time. Please complete, cancel, or wait for it to expire.',
+            'existing_token' => $active['token_number']
+        ]);
+        $active_stmt->close();
+        exit;
+    }
+    $active_stmt->close();
+}
 
 // Initialize department_id
 $department_id = 0;
@@ -99,7 +155,7 @@ if ($current_result->num_rows > 0) {
 $current_stmt->close();
 
 // Insert new token
-$insert_sql = "INSERT INTO tokens (token_number, patient_name, patient_age, patient_phone, department_id, doctor_id, token_type, expected_time, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'waiting', NOW())";
+$insert_sql = "INSERT INTO tokens (token_number, patient_name, patient_age, patient_phone, patient_id, department_id, doctor_id, token_type, expected_time, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'waiting', NOW())";
 $insert_stmt = $conn->prepare($insert_sql);
 
 if (!$insert_stmt) {
@@ -107,7 +163,7 @@ if (!$insert_stmt) {
     exit;
 }
 
-$insert_stmt->bind_param("ssississ", $token_number, $patient_name, $patient_age, $patient_phone, $department_id, $doctor_id, $type, $expected_time);
+$insert_stmt->bind_param("ssissiiss", $token_number, $patient_name, $patient_age, $patient_phone, $patient_id, $department_id, $doctor_id, $type, $expected_time);
 
 if ($insert_stmt->execute()) {
     $token_id = $conn->insert_id;

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Account - HealthCare Hospital</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 450px;
+            padding: 2.5rem;
+        }
+
+        .login-header { text-align: center; margin-bottom: 2rem; }
+        .login-header h1 { color: #667eea; font-size: 2rem; margin-bottom: 0.5rem; }
+        .login-header p { color: #666; font-size: 1rem; }
+        .icon { font-size: 3rem; margin-bottom: 1rem; }
+
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { 
+            display: block; 
+            color: #333; 
+            font-weight: 600; 
+            margin-bottom: 0.4rem; 
+            font-size: 0.95rem; 
+        }
+
+        .form-group input { 
+            width: 100%; 
+            padding: 0.8rem; 
+            border: 2px solid #e0e0e0; 
+            border-radius: 8px; 
+            font-size: 1rem; 
+            transition: border-color 0.3s; 
+        }
+
+        .form-group input:focus { 
+            outline: none; 
+            border-color: #667eea; 
+        }
+
+        .login-btn {
+            width: 100%; 
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; 
+            border: none; 
+            border-radius: 8px;
+            font-size: 1.1rem; 
+            font-weight: bold; 
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            margin-top: 1rem;
+        }
+
+        .login-btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); 
+        }
+
+        .error-message {
+            padding: 0.8rem; 
+            border-radius: 8px; 
+            margin-bottom: 1rem; 
+            display: none; 
+            font-size: 0.9rem;
+            background: #ffe6e6; 
+            color: #d63031;
+        }
+
+        .register-link { 
+            text-align: center; 
+            margin-top: 1.5rem; 
+            color: #666; 
+        }
+
+        .register-link a { 
+            color: #667eea; 
+            text-decoration: none; 
+            font-weight: 600; 
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="login-container">
+
+    <div class="login-header">
+        <div class="icon">🏥</div>
+        <h1>Create Account</h1>
+        <p>Enter your details to register as a patient</p>
+    </div>
+
+    <div id="errorMessage" class="error-message"></div>
+
+    <!-- FORM START -->
+    <form id="registerForm" action="register.php" method="POST">
+
+        <div class="form-group">
+            <label for="fullName">Full Name</label>
+            <input type="text" id="fullName" name="name"
+                   placeholder="Enter your full name" required>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email"
+                   placeholder="example@mail.com" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password"
+                   placeholder="Create a password" required>
+        </div>
+
+        <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <input type="password" id="confirmPassword"
+                   placeholder="Repeat your password" required>
+        </div>
+
+        <button type="submit" class="login-btn">Register</button>
+
+    </form>
+    <!-- FORM END -->
+
+    <div class="register-link">
+        Already have an account? <a href="patient_login.html">Login here</a>
+    </div>
+
+</div>
+
+<script>
+document.getElementById('registerForm').addEventListener('submit', function(e) {
+
+    const pass = document.getElementById('password').value;
+    const confirmPass = document.getElementById('confirmPassword').value;
+    const errorDiv = document.getElementById('errorMessage');
+
+    errorDiv.style.display = 'none';
+
+    if (pass !== confirmPass) {
+        e.preventDefault();
+        errorDiv.textContent = "Passwords do not match!";
+        errorDiv.style.display = 'block';
+    }
+
+});
+</script>
+
+</body>
+</html>

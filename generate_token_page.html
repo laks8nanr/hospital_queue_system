@@ -91,6 +91,27 @@
     </div>
   `;
 
+  // CHECK FOR ACTIVE TOKEN ON PAGE LOAD
+  if (patientPhone) {
+    fetch('api/check_active_token.php?phone=' + encodeURIComponent(patientPhone))
+      .then(response => response.json())
+      .then(data => {
+        if (data.has_active_token) {
+          const generateBtn = document.getElementById('generateBtn');
+          generateBtn.disabled = true;
+          generateBtn.style.background = '#ccc';
+          generateBtn.innerHTML = '⚠️ Cannot Generate Token';
+          
+          // Show warning message
+          const warningDiv = document.createElement('div');
+          warningDiv.style.cssText = 'background: #fff3cd; border: 1px solid #ffc107; color: #856404; padding: 15px; border-radius: 8px; margin: 15px 0; text-align: center;';
+          warningDiv.innerHTML = '<strong>⚠️ Active Token Found</strong><br>' + data.message + '<br><br><a href="token_status.html" style="color: #856404; text-decoration: underline;">Check Your Token Status</a>';
+          document.getElementById('summary').after(warningDiv);
+        }
+      })
+      .catch(error => console.error('Error checking active token:', error));
+  }
+
   function generateToken() {
     const generateBtn = document.getElementById('generateBtn');
     generateBtn.disabled = true;

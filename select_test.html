@@ -758,6 +758,10 @@
                     <div class="form-group">
                         <label for="patientPhone">Phone Number *</label>
                         <input type="tel" id="patientPhone" placeholder="10-digit mobile number" maxlength="10">
+                        <div id="activeTokenWarning" style="display:none; background:#fff3cd; border:1px solid #ffc107; color:#856404; padding:12px; border-radius:8px; margin-top:10px; font-size:0.9rem;">
+                            <strong>⚠️ Active Token Found</strong>
+                            <p id="activeTokenMessage" style="margin:5px 0 0 0;"></p>
+                        </div>
                     </div>
 
                     <!-- Prescription Upload -->
@@ -1056,6 +1060,9 @@
         }
 
         function showTestDetails(testType) {
+            // Note: Server-side validation allows multiple lab tests 
+            // as long as they don't have time conflicts or same test twice
+
             currentTest = testType;
             paymentDone = false;
             uploadedFile = null;
@@ -1160,6 +1167,12 @@
         }
 
         function processPayment() {
+            // Block if active token exists
+            if (hasActiveToken) {
+                alert('You already have an active token. Please complete or cancel it before booking a new one.');
+                return;
+            }
+            
             if (!uploadedFile) {
                 alert('Please upload your prescription first.');
                 return;
@@ -1191,7 +1204,7 @@
                     document.getElementById('generateTokenBtn').classList.add('show');
                     document.getElementById('generateTokenBtn').style.display = 'block';
                 }, 1000);
-            }, 2000);
+            }, 1500);
         }
 
         function generateToken() {
@@ -1203,39 +1216,97 @@
 
             const test = testData[currentTest];
             const patientName = document.getElementById('patientName').value.trim();
+            const patientAge = document.getElementById('patientAge').value;
+            const patientGender = document.getElementById('patientGender').value;
+            const patientPhone = document.getElementById('patientPhone').value.trim();
 
-            // Generate token number (in real app, this would come from server)
-            const tokenNum = Math.floor(Math.random() * 99) + 1;
-            generatedTokenNumber = test.prefix + '-' + String(tokenNum).padStart(3, '0');
+            // Call server API to generate token
+            fetch('api/generate_lab_token.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    test_code: test.prefix,
+                    patient_name: patientName,
+                    patient_age: parseInt(patientAge),
+                    patient_gender: patientGender,
+                    patient_phone: patientPhone,
+                    scheduled_time: selectedSlot,
+                    payment_amount: test.fee
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    generatedTokenNumber = data.data.token_number;
+                    
+                    // Hide form and buttons
+                    document.getElementById('patientForm').style.display = 'none';
+                    document.getElementById('timeSlotsContainer').style.display = 'none';
+                    document.getElementById('slotSectionTitle').style.display = 'none';
+                    generateBtn.style.display = 'none';
+                    document.getElementById('closeBtn').style.display = 'none';
 
-            setTimeout(() => {
-                // Hide form and buttons
-                document.getElementById('patientForm').style.display = 'none';
-                document.getElementById('timeSlotsContainer').style.display = 'none';
-                document.getElementById('slotSectionTitle').style.display = 'none';
-                generateBtn.style.display = 'none';
-                document.getElementById('closeBtn').style.display = 'none';
+                    // Show token display
+                    document.getElementById('generatedToken').textContent = generatedTokenNumber;
+                    document.getElementById('tokenTestName').textContent = test.name;
+                    document.getElementById('tokenPatientName').textContent = patientName;
+                    document.getElementById('tokenSlotTime').textContent = 'Slot: ' + formatTime(selectedSlot) + ' on ' + selectedDate;
+                    document.getElementById('tokenDisplay').classList.add('show');
 
-                // Show token display
-                document.getElementById('generatedToken').textContent = generatedTokenNumber;
-                document.getElementById('tokenTestName').textContent = test.name;
-                document.getElementById('tokenPatientName').textContent = patientName;
-                document.getElementById('tokenSlotTime').textContent = 'Slot: ' + formatTime(selectedSlot) + ' on ' + selectedDate;
-                document.getElementById('tokenDisplay').classList.add('show');
+                    // Show queue with server data
+                    renderQueueFromServer(data.data);
+                    document.getElementById('queueDisplay').classList.add('show');
+                    document.getElementById('homeBtn').style.display = 'block';
 
-                // Show queue
-                renderQueue();
-                document.getElementById('queueDisplay').classList.add('show');
-                document.getElementById('homeBtn').style.display = 'block';
+                    // Store token in session
+                    sessionStorage.setItem('labToken', generatedTokenNumber);
+                    sessionStorage.setItem('labTest', test.name);
+                    sessionStorage.setItem('labTestType', currentTest);
 
-                // Store token in session
-                sessionStorage.setItem('labToken', generatedTokenNumber);
-                sessionStorage.setItem('labTest', test.name);
-                sessionStorage.setItem('labTestType', currentTest);
+                    // Start queue refresh
+                    startQueueRefresh();
+                } else {
+                    // Show error
+                    alert(data.message);
+                    generateBtn.disabled = false;
+                    generateBtn.innerHTML = '🎫 Generate Token';
+                    
+                    // If there's an existing token, store it
+                    if (data.existing_token) {
+                        sessionStorage.setItem('labToken', data.existing_token);
+                        if (confirm('You already have token ' + data.existing_token + '. Go to home page to check status?')) {
+                            window.location.href = 'index.html';
+                        }
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to generate token. Please try again.');
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '🎫 Generate Token';
+            });
+        }
 
-                // Start queue refresh
-                startQueueRefresh();
-            }, 1500);
+        function renderQueueFromServer(data) {
+            document.getElementById('queuePosition').textContent = data.queue_position;
+            document.getElementById('peopleAhead').textContent = data.people_ahead;
+            document.getElementById('waitTime').textContent = '~' + data.wait_time + ' min';
+
+            // Simple queue display
+            const container = document.getElementById('queueItems');
+            container.innerHTML = `
+                <div class="queue-item you">
+                    <div class="queue-pos">${data.queue_position}</div>
+                    <div class="queue-item-info">
+                        <div class="queue-item-name">${data.patient_name}</div>
+                        <div class="queue-item-token">Token: ${data.token_number}</div>
+                    </div>
+                    <span class="queue-badge you-badge">YOU</span>
+                </div>
+            `;
         }
 
         function renderQueue() {
@@ -1301,10 +1372,52 @@
             }
         });
 
-        // Phone number validation - only digits
+        // Track if patient has an active token
+        var hasActiveToken = false;
+
+        // Phone number validation - only digits + check for active token
         document.getElementById('patientPhone').addEventListener('input', function(e) {
             this.value = this.value.replace(/\D/g, '').slice(0, 10);
+            
+            // Check for active token when phone is complete (10 digits)
+            if (this.value.length === 10) {
+                checkActiveTokenForPhone(this.value);
+            } else {
+                // Hide warning if phone is incomplete
+                document.getElementById('activeTokenWarning').style.display = 'none';
+                hasActiveToken = false;
+                updatePayButton();
+            }
         });
+
+        function checkActiveTokenForPhone(phone) {
+            fetch('api/check_active_token.php?phone=' + encodeURIComponent(phone))
+                .then(response => response.json())
+                .then(data => {
+                    const warningDiv = document.getElementById('activeTokenWarning');
+                    const messageEl = document.getElementById('activeTokenMessage');
+                    
+                    if (data.has_active_token) {
+                        hasActiveToken = true;
+                        messageEl.innerHTML = data.message + '<br><a href="token_status.html" style="color:#856404;">Check Token Status</a>';
+                        warningDiv.style.display = 'block';
+                        
+                        // Disable pay button
+                        const payBtn = document.getElementById('payBtn');
+                        payBtn.disabled = true;
+                        payBtn.innerHTML = '⚠️ Cannot Proceed - Active Token Exists';
+                        payBtn.style.background = '#ccc';
+                    } else {
+                        hasActiveToken = false;
+                        warningDiv.style.display = 'none';
+                        updatePayButton();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking active token:', error);
+                    hasActiveToken = false;
+                });
+        }
 
         // Prescription file upload handling
         function handleFileUpload(input) {

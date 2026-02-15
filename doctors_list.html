@@ -686,6 +686,11 @@
         <label for="patientPhone">Phone Number *</label>
         <input type="tel" id="patientPhone" placeholder="Enter Phone Number" pattern="[0-9]{10}" maxlength="10" required>
         <small class="form-hint">Enter 10 digit mobile number</small>
+        <div id="activeTokenWarning" style="display:none; background:#fff3cd; border:1px solid #ffc107; color:#856404; padding:12px; border-radius:8px; margin-top:10px; font-size:0.9rem;">
+          <strong>⚠️ Active Token Found</strong>
+          <p id="activeTokenMessage" style="margin:5px 0 0 0;"></p>
+          <a href="token_status.html" style="color:#856404; text-decoration:underline;">Check Token Status</a>
+        </div>
       </div>
       
       <div class="error-message" id="errorMsg"></div>
@@ -792,6 +797,59 @@
   var currentToken = null;
   var currentPatientName = null;
   var refreshInterval = null;
+  var hasActiveToken = false;
+  var phoneListenerAdded = false;
+
+  function setupPhoneListener() {
+    if (phoneListenerAdded) return;
+    var phoneInput = document.getElementById('patientPhone');
+    if (phoneInput) {
+      phoneListenerAdded = true;
+      phoneInput.addEventListener('input', function(e) {
+        this.value = this.value.replace(/\D/g, '').slice(0, 10);
+        
+        // Check for active token when phone is complete (10 digits)
+        if (this.value.length === 10) {
+          checkActiveTokenForPhone(this.value);
+        } else {
+          // Hide warning if phone is incomplete
+          var warningDiv = document.getElementById('activeTokenWarning');
+          if (warningDiv) warningDiv.style.display = 'none';
+          hasActiveToken = false;
+        }
+      });
+    }
+  }
+
+  function checkActiveTokenForPhone(phone) {
+    fetch('api/check_active_token.php?phone=' + encodeURIComponent(phone))
+      .then(response => response.json())
+      .then(data => {
+        var warningDiv = document.getElementById('activeTokenWarning');
+        var messageEl = document.getElementById('activeTokenMessage');
+        var payBtn = document.getElementById('payFeesBtn');
+        
+        if (data.has_active_token) {
+          hasActiveToken = true;
+          if (messageEl) messageEl.innerHTML = data.message;
+          if (warningDiv) warningDiv.style.display = 'block';
+          
+          // Disable pay button
+          if (payBtn) {
+            payBtn.disabled = true;
+            payBtn.innerHTML = '⚠️ Cannot Proceed - Active Token Exists';
+            payBtn.style.background = '#ccc';
+          }
+        } else {
+          hasActiveToken = false;
+          if (warningDiv) warningDiv.style.display = 'none';
+        }
+      })
+      .catch(function(error) {
+        console.error('Error checking active token:', error);
+        hasActiveToken = false;
+      });
+  }
 
   // Show loading message
   container.innerHTML = '<p>Loading doctors...</p>';
@@ -893,17 +951,23 @@
     
     // Reset form state
     feesPaid = false;
+    hasActiveToken = false;
     document.getElementById('payFeesBtn').classList.remove('paid');
     document.getElementById('payFeesBtn').disabled = false;
     document.getElementById('payFeesBtn').innerHTML = '💳 Pay Consultation Fees: ₹' + fees;
+    document.getElementById('payFeesBtn').style.background = '';
     document.getElementById('generateTokenBtn').disabled = true;
     document.getElementById('generateTokenBtn').classList.remove('active');
+    document.getElementById('activeTokenWarning').style.display = 'none';
     
     // Clear form
     document.getElementById('patientName').value = '';
     document.getElementById('patientAge').value = '';
     document.getElementById('patientPhone').value = '';
     document.getElementById('errorMsg').textContent = '';
+    
+    // Setup phone listener
+    setupPhoneListener();
   }
 
   function goBackToList() {
@@ -911,9 +975,16 @@
     document.getElementById('formMode').style.display = 'none';
     selectedDoctorData = null;
     feesPaid = false;
+    hasActiveToken = false;
   }
 
   function payFees() {
+    // Block if active token exists
+    if (hasActiveToken) {
+      alert('You already have an active token. Please complete or cancel it before booking a new appointment.');
+      return;
+    }
+    
     const name = document.getElementById('patientName').value.trim();
     const age = document.getElementById('patientAge').value;
     const phone = document.getElementById('patientPhone').value.trim();
