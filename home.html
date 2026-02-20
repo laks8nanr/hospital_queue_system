@@ -351,6 +351,11 @@
             <h3>Patient Portal</h3>
             <p>Access your medical records and tokens</p>
         </div>
+        <div class="access-card" onclick="accessPharmacy()">
+            <div class="access-card-icon">💊</div>
+            <h3>Pharmacy</h3>
+            <p>Login to get your pharmacy token</p>
+        </div>
         <div class="access-card" onclick="location.href='staff_login.html'">
             <div class="access-card-icon">👨‍⚕️</div>
             <h3>Staff Login</h3>
@@ -476,6 +481,20 @@
                 document.querySelector('.dropdown').classList.remove('active');
             }
         });
+
+        // Access Pharmacy - requires login
+        function accessPharmacy() {
+            // Check if patient is logged in
+            const patientData = sessionStorage.getItem('patientData');
+            if (patientData) {
+                // Already logged in, go to pharmacy
+                window.location.href = 'pharmacy_token.html';
+            } else {
+                // Not logged in, redirect to patient login with pharmacy redirect
+                sessionStorage.setItem('afterLoginRedirect', 'pharmacy_token.html');
+                window.location.href = 'patient_login.html';
+            }
+        }
     </script>
 </body>
 </html>

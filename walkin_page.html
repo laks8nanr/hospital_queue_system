@@ -21,14 +21,6 @@
     </div>
   </div>
 
-  <!-- Pharmacy button -->
-  <div class="box-btn pharmacy" onclick="selectRequirement('pharmacy')">
-    <div class="box-content">
-      <span class="box-icon">💊</span>
-      <span class="box-text">Pharmacy</span>
-    </div>
-  </div>
-
   <!-- Lab button -->
   <div class="box-btn lab" onclick="selectRequirement('lab')">
     <div class="box-content">
@@ -45,8 +37,6 @@
     if (type === 'consultation') {
       // Go directly to department selection (form moved to doctor selection page)
       window.location.href = 'walkin.html';
-    } else if (type === 'pharmacy') {
-      window.location.href = 'patient_details.html';
     } else if (type === 'lab') {
       // Go to lab test selection page
       window.location.href = 'select_test.html';

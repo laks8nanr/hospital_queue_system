@@ -177,6 +177,55 @@ if (params.get("success")) {
     errorDiv.style.display = 'block';
 }
 
+// Handle form submission with AJAX for pharmacy redirect support
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const errorDiv = document.getElementById('errorMessage');
+    const loginBtn = document.querySelector('.login-btn');
+    const loginInput = document.getElementById('patientId').value.trim();
+    const password = document.getElementById('password').value;
+
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Logging in...';
+    errorDiv.style.display = 'none';
+
+    try {
+        const response = await fetch('api/patient_login.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ login_input: loginInput, password: password })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Store patient data in session storage
+            sessionStorage.setItem('patientData', JSON.stringify(data.data));
+
+            // Check if there's a redirect after login
+            const redirect = sessionStorage.getItem('afterLoginRedirect');
+            if (redirect) {
+                sessionStorage.removeItem('afterLoginRedirect');
+                window.location.href = redirect;
+            } else {
+                window.location.href = 'patient_dashboard.php';
+            }
+        } else {
+            errorDiv.textContent = data.message || 'Login failed';
+            errorDiv.style.display = 'block';
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Login';
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        errorDiv.textContent = 'Network error. Please try again.';
+        errorDiv.style.display = 'block';
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Login';
+    }
+});
+
 </script>
 
 </body>
