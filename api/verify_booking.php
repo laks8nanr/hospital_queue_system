@@ -29,6 +29,9 @@ $query = "SELECT
     d.qualification as doctor_qualification,
     d.fees as doctor_fees,
     d.time_slot as doctor_time_slot,
+    d.floor_block,
+    d.wing,
+    d.room_number,
     dept.id as department_id,
     dept.name as department_name
 FROM prebooked_appointments pb

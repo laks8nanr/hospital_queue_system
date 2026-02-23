@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS pharmacies (
     block VARCHAR(20) NOT NULL,
     floor VARCHAR(20) NOT NULL,
     wing VARCHAR(50) NOT NULL,
+    cash_counter VARCHAR(20) DEFAULT 'Counter A' COMMENT 'Cash payment counter number',
+    online_counter VARCHAR(20) DEFAULT 'Counter 1' COMMENT 'Online payment collect counter',
     description VARCHAR(255),
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -61,10 +63,10 @@ CREATE TABLE IF NOT EXISTS pharmacy_tokens (
 -- SAMPLE DATA - PHARMACIES
 -- Two pharmacies at different locations
 -- ============================================
-INSERT INTO pharmacies (id, name, block, floor, wing, description, is_active) VALUES
-(1, 'Main Pharmacy', 'A', '1', 'East', 'Main hospital pharmacy - General medications', TRUE),
-(2, 'Emergency Pharmacy', 'B', 'Ground', 'West', 'Emergency and critical care pharmacy', TRUE)
-ON DUPLICATE KEY UPDATE name = VALUES(name), block = VALUES(block), floor = VALUES(floor), wing = VALUES(wing);
+INSERT INTO pharmacies (id, name, block, floor, wing, cash_counter, online_counter, description, is_active) VALUES
+(1, 'Main Pharmacy', 'A', '1', 'East', 'Counter A', 'Counter 1', 'Main hospital pharmacy - General medications', TRUE),
+(2, 'Emergency Pharmacy', 'B', 'Ground', 'West', 'Counter B', 'Counter 2', 'Emergency and critical care pharmacy', TRUE)
+ON DUPLICATE KEY UPDATE name = VALUES(name), block = VALUES(block), floor = VALUES(floor), wing = VALUES(wing), cash_counter = VALUES(cash_counter), online_counter = VALUES(online_counter);
 
 -- ============================================
 -- SAMPLE DATA - PHARMACY STAFF

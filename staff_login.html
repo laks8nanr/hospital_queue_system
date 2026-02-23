@@ -16,12 +16,12 @@
   <form id="staffLoginForm" onsubmit="return handleStaffLogin(event)">
     <div class="form-group">
       <label for="staffId">Staff ID</label>
-      <input type="text" id="staffId" name="staffId" placeholder="Enter Staff ID" required>
+      <input type="text" id="staffId" name="staffId" placeholder="e.g., s1, s2, s3" required>
     </div>
     
     <div class="form-group">
       <label for="password">Password</label>
-      <input type="password" id="password" name="password" placeholder="Enter Password" required>
+      <input type="password" id="password" name="password" placeholder="e.g., p1, p2, p3" required>
     </div>
     
     <div class="error-message" id="errorMsg"></div>
@@ -61,7 +61,17 @@
         sessionStorage.setItem('staffId', data.data.staff_id);
         sessionStorage.setItem('staffName', data.data.name);
         sessionStorage.setItem('staffDepartment', data.data.department);
+        sessionStorage.setItem('doctorId', data.data.doctor_id);
         sessionStorage.setItem('userType', 'staff');
+        
+        // Store complete staff data as JSON
+        sessionStorage.setItem('staffData', JSON.stringify({
+          id: data.data.id,
+          staff_id: data.data.staff_id,
+          staff_name: data.data.name,
+          department: data.data.department,
+          doctor_id: data.data.doctor_id
+        }));
         
         // Redirect to staff dashboard
         window.location.href = 'staff_dashboard.html';

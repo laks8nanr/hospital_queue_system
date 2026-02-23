@@ -878,6 +878,10 @@
           
           var waitDisplay = waitTime === 0 ? 'No wait' : '~' + waitTime + ' min';
           
+          // Build location string
+          var locationParts = [doctor.floor_block, doctor.wing, doctor.room_number].filter(function(p) { return p; });
+          var locationStr = locationParts.length > 0 ? locationParts.join(' → ') : '-';
+          
           var doctorCard = document.createElement('div');
           doctorCard.className = 'doctor-card-expanded';
           doctorCard.innerHTML = 
@@ -905,7 +909,10 @@
                 '<span class="stat-label">Available</span>' +
               '</div>' +
             '</div>' +
-            '<button class="select-doctor-btn" data-id="' + doctor.id + '" data-name="' + doctor.name + '" data-time="' + doctor.time_slot + '" data-fees="' + fees + '" data-wait="' + waitTime + '" data-qual="' + qualification + '">' +
+            '<div style="background:#e3f2fd; border-radius:8px; padding:10px; margin-top:10px; text-align:center; font-size:14px;">' +
+              '<span style="color:#1976d2;">📍 Location: ' + locationStr + '</span>' +
+            '</div>' +
+            '<button class="select-doctor-btn" data-id="' + doctor.id + '" data-name="' + doctor.name + '" data-time="' + doctor.time_slot + '" data-fees="' + fees + '" data-wait="' + waitTime + '" data-qual="' + qualification + '" data-location="' + locationStr + '">' +
               'Select Doctor' +
             '</button>';
           
@@ -918,7 +925,8 @@
               department,
               parseInt(this.dataset.fees),
               parseInt(this.dataset.wait),
-              this.dataset.qual
+              this.dataset.qual,
+              this.dataset.location
             );
           });
           
@@ -933,14 +941,15 @@
       container.innerHTML = '<p>Failed to load doctors. Please try again. Error: ' + error.message + '</p>';
     });
 
-  function selectDoctor(id, name, time, dept, fees, waitTime, qualification) {
-    selectedDoctorData = { id: id, name: name, time: time, dept: dept, fees: fees, waitTime: waitTime, qualification: qualification };
+  function selectDoctor(id, name, time, dept, fees, waitTime, qualification, location) {
+    selectedDoctorData = { id: id, name: name, time: time, dept: dept, fees: fees, waitTime: waitTime, qualification: qualification, location: location };
     
     // Update the selected doctor display
     document.getElementById('selectedDoctorDisplay').innerHTML = 
       '<h4>👨‍⚕️ ' + name + '</h4>' +
       '<p>' + qualification + '</p>' +
       '<p><strong>' + dept + '</strong> | 🕐 ' + time + '</p>' +
+      '<p style="color: #1976d2;">📍 ' + location + '</p>' +
       '<p style="color: #27ae60; font-weight: bold;">Est. Wait: ~' + waitTime + ' mins</p>';
     
     document.getElementById('feesAmount').textContent = fees;

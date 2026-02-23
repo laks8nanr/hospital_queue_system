@@ -37,7 +37,10 @@ $query = "SELECT
     lt.test_id,
     lt.test_code,
     lt.test_name,
-    lt.duration_minutes
+    lt.duration_minutes,
+    lt.floor_block,
+    lt.wing,
+    lt.room_number
 FROM prebooked_lab_appointments pla
 JOIN lab_tests lt ON pla.test_id = lt.test_id
 WHERE pla.booking_code = ?

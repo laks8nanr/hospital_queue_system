@@ -230,15 +230,27 @@
       <button class="btn btn-break" id="breakBtn">Break</button>
       <button class="btn btn-over" id="overBtn" disabled>Over</button>
     </div>
+
+    <!-- Back Button -->
+    <div style="margin-top: 20px;">
+      <button class="btn" id="backBtn" style="background: #ecf0f1; color: #2c3e50; width: 100%;">← Back to Dashboard</button>
+    </div>
   </div>
 
   <script>
     // Break State
     let breakState = {
+      doctorId: null,
       status: 'available', // 'available' or 'on-break'
       breakStartTime: null,
       breakEndTime: null
     };
+
+    // Get doctor_id from URL
+    function getDoctorId() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('doctor_id') || sessionStorage.getItem('doctorId');
+    }
 
     // Update current time display every second
     function updateCurrentTime() {
@@ -255,11 +267,37 @@
     // Format time for display
     function formatTime(date) {
       if (!date) return '--:-- --';
+      if (typeof date === 'string') {
+        date = new Date(date);
+      }
       return date.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
         hour12: true
       });
+    }
+
+    // Load break status from API
+    async function loadBreakStatus() {
+      if (!breakState.doctorId) return;
+      
+      try {
+        const response = await fetch(`api/manage_break.php?doctor_id=${breakState.doctorId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          if (data.data.is_on_break) {
+            breakState.status = 'on-break';
+            breakState.breakStartTime = data.data.break_start ? new Date(data.data.break_start) : null;
+          } else {
+            breakState.status = 'available';
+            breakState.breakEndTime = data.data.break_end ? new Date(data.data.break_end) : null;
+          }
+          updateUI();
+        }
+      } catch (error) {
+        console.error('Error loading break status:', error);
+      }
     }
 
     // Update UI based on break state
@@ -268,8 +306,8 @@
       const overBtn = document.getElementById('overBtn');
       const statusDot = document.getElementById('statusDot');
       const statusText = document.getElementById('statusText');
-      const breakStartTime = document.getElementById('breakStartTime');
-      const breakEndTime = document.getElementById('breakEndTime');
+      const breakStartTimeEl = document.getElementById('breakStartTime');
+      const breakEndTimeEl = document.getElementById('breakEndTime');
 
       if (breakState.status === 'on-break') {
         // On Break status
@@ -277,42 +315,119 @@
         overBtn.disabled = false;
         statusDot.style.background = '#3498db'; // Blue
         statusText.textContent = 'On Break';
-        breakStartTime.classList.remove('empty');
-        breakStartTime.textContent = formatTime(breakState.breakStartTime);
+        breakStartTimeEl.classList.remove('empty');
+        breakStartTimeEl.textContent = formatTime(breakState.breakStartTime);
+        breakEndTimeEl.classList.add('empty');
+        breakEndTimeEl.textContent = '--:-- --';
       } else {
         // Available status
         breakBtn.disabled = false;
         overBtn.disabled = true;
         statusDot.style.background = '#27ae60'; // Green
         statusText.textContent = 'Available';
-        breakEndTime.classList.remove('empty');
-        breakEndTime.textContent = formatTime(breakState.breakEndTime);
+        if (breakState.breakEndTime) {
+          breakEndTimeEl.classList.remove('empty');
+          breakEndTimeEl.textContent = formatTime(breakState.breakEndTime);
+        }
       }
     }
 
-    // Break button clicked
-    function onBreakClick() {
-      breakState.status = 'on-break';
-      breakState.breakStartTime = new Date();
-      updateUI();
+    // Break button clicked - Start break via API
+    async function onBreakClick() {
+      if (!breakState.doctorId) {
+        alert('Doctor ID not found');
+        return;
+      }
+      
+      try {
+        const response = await fetch('api/manage_break.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            doctor_id: breakState.doctorId,
+            action: 'start_break'
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          breakState.status = 'on-break';
+          breakState.breakStartTime = new Date();
+          updateUI();
+        } else {
+          alert(data.message || 'Failed to start break');
+        }
+      } catch (error) {
+        console.error('Error starting break:', error);
+        alert('Error starting break');
+      }
     }
 
-    // Over button clicked
-    function onOverClick() {
-      breakState.status = 'available';
-      breakState.breakEndTime = new Date();
-      updateUI();
+    // Over button clicked - End break via API
+    async function onOverClick() {
+      if (!breakState.doctorId) {
+        alert('Doctor ID not found');
+        return;
+      }
+      
+      try {
+        const response = await fetch('api/manage_break.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            doctor_id: breakState.doctorId,
+            action: 'end_break'
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          breakState.status = 'available';
+          breakState.breakEndTime = new Date();
+          updateUI();
+        } else {
+          alert(data.message || 'Failed to end break');
+        }
+      } catch (error) {
+        console.error('Error ending break:', error);
+        alert('Error ending break');
+      }
+    }
+
+    // Go back to dashboard
+    function goBack() {
+      window.location.href = 'staff_dashboard.html';
     }
 
     // Setup event listeners
     function init() {
+      breakState.doctorId = getDoctorId();
+      
+      // Redirect to login if no doctor ID found
+      if (!breakState.doctorId) {
+        alert('Please login first to access this page.');
+        window.location.href = 'staff_login.html';
+        return;
+      }
+      
       document.getElementById('breakBtn').addEventListener('click', onBreakClick);
       document.getElementById('overBtn').addEventListener('click', onOverClick);
+      
+      // Add back button if not exists
+      const backBtn = document.getElementById('backBtn');
+      if (backBtn) {
+        backBtn.addEventListener('click', goBack);
+      }
 
       // Update current time every second
       updateCurrentTime();
       setInterval(updateCurrentTime, 1000);
 
+      // Load break status from API
+      loadBreakStatus();
+      
       // Initial UI update
       updateUI();
     }

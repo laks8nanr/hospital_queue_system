@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DORA Hospital - Check Token Status</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .status-container {
+      max-width: 500px;
+      margin: 30px auto;
+      padding: 30px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .search-section {
+      margin-bottom: 30px;
+    }
+
+    .search-label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 15px;
+      font-size: 18px;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      text-align: center;
+      font-weight: bold;
+      text-transform: uppercase;
+      box-sizing: border-box;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: #3498db;
+    }
+
+    .search-btn {
+      width: 100%;
+      padding: 15px;
+      margin-top: 15px;
+      background: linear-gradient(135deg, #3498db, #2980b9);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .search-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+    }
+
+    .search-btn:disabled {
+      background: #bdc3c7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .result-section {
+      display: none;
+    }
+
+    .token-info-card {
+      background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+      border-radius: 15px;
+      padding: 25px;
+      border-left: 5px solid #3498db;
+      margin-bottom: 20px;
+    }
+
+    .token-number-display {
+      font-size: 36px;
+      font-weight: bold;
+      color: #2c3e50;
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 14px;
+      text-transform: uppercase;
+    }
+
+    .status-waiting { background: #fff3cd; color: #856404; }
+    .status-consulting { background: #d4edda; color: #155724; }
+    .status-completed { background: #cce5ff; color: #004085; }
+    .status-cancelled { background: #f8d7da; color: #721c24; }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .info-label {
+      color: #666;
+    }
+
+    .info-value {
+      font-weight: bold;
+      color: #2c3e50;
+    }
+
+    .queue-position-card {
+      background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .queue-position-card h3 {
+      margin: 0 0 10px 0;
+      color: #27ae60;
+    }
+
+    .position-number {
+      font-size: 48px;
+      font-weight: bold;
+      color: #27ae60;
+    }
+
+    .position-label {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .error-message {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+      display: none;
+    }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      color: #3498db;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .cancelled-notice {
+      background: linear-gradient(135deg, #fdecea, #f8d7da);
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 20px;
+      border-left: 5px solid #e74c3c;
+    }
+
+    .cancelled-notice h3 {
+      color: #c0392b;
+      margin: 0 0 10px 0;
+    }
+
+    .cancelled-notice p {
+      color: #721c24;
+      margin: 0;
+    }
+  </style>
+</head>
+<body class="center">
+  <h1 class="hospital-title">DORA Hospital</h1>
+  <h2>Check Token Status</h2>
+
+  <div class="status-container">
+    <!-- Search Section -->
+    <div class="search-section" id="searchSection">
+      <label class="search-label">Enter your Token or Booking ID:</label>
+      <input type="text" id="tokenInput" class="search-input" placeholder="e.g., W-007 or PB-XXXXX" maxlength="20">
+      <button class="search-btn" id="searchBtn" onclick="checkStatus()">
+        🔍 Check Status
+      </button>
+    </div>
+
+    <!-- Error Message -->
+    <div class="error-message" id="errorMessage"></div>
+
+    <!-- Result Section -->
+    <div class="result-section" id="resultSection">
+      <!-- Token Info Card -->
+      <div class="token-info-card" id="tokenInfoCard">
+        <div class="token-number-display" id="tokenNumberDisplay">W-007</div>
+        <div style="text-align: center; margin-bottom: 15px;">
+          <span class="status-badge" id="statusBadge">WAITING</span>
+        </div>
+        <div id="tokenDetails">
+          <!-- Dynamic details -->
+        </div>
+      </div>
+
+      <!-- Queue Position (shown only for waiting/consulting) -->
+      <div class="queue-position-card" id="queuePositionCard" style="display: none;">
+        <h3>🎯 Your Position</h3>
+        <div class="position-number" id="positionNumber">3</div>
+        <div class="position-label" id="positionLabel">people ahead of you</div>
+      </div>
+
+      <!-- Cancelled Notice -->
+      <div class="cancelled-notice" id="cancelledNotice" style="display: none;">
+        <h3>❌ Token Cancelled</h3>
+        <p id="cancelReason">Your token has been cancelled. Please contact reception for assistance.</p>
+      </div>
+
+      <button class="search-btn" onclick="resetSearch()" style="background: #95a5a6;">
+        Check Another Token
+      </button>
+    </div>
+
+    <a href="index.html" class="back-link">← Back to Home</a>
+  </div>
+
+  <script>
+    // Auto-check if token is in URL or session
+    window.onload = function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tokenParam = urlParams.get('token') || urlParams.get('booking_id');
+      
+      if (tokenParam) {
+        document.getElementById('tokenInput').value = tokenParam;
+        checkStatus();
+      } else {
+        // Check sessionStorage for active token
+        const activeToken = sessionStorage.getItem('currentToken') || sessionStorage.getItem('labToken');
+        if (activeToken) {
+          document.getElementById('tokenInput').value = activeToken;
+        }
+      }
+    };
+
+    async function checkStatus() {
+      const tokenInput = document.getElementById('tokenInput').value.trim().toUpperCase();
+      const searchBtn = document.getElementById('searchBtn');
+      const errorMessage = document.getElementById('errorMessage');
+      const resultSection = document.getElementById('resultSection');
+      const searchSection = document.getElementById('searchSection');
+
+      if (!tokenInput) {
+        showError('Please enter a token number or booking ID');
+        return;
+      }
+
+      searchBtn.disabled = true;
+      searchBtn.textContent = 'Checking...';
+      errorMessage.style.display = 'none';
+
+      try {
+        // First check OPD token
+        const response = await fetch(`api/check_token_status.php?token=${encodeURIComponent(tokenInput)}&booking_id=${encodeURIComponent(tokenInput)}`);
+        const data = await response.json();
+
+        if (data.success && data.status !== 'not_found') {
+          displayResult(data);
+        } else {
+          // Check lab token
+          const labResponse = await fetch(`api/get_lab_queue.php?test_type=CBC&current_token=${encodeURIComponent(tokenInput)}`);
+          const labData = await labResponse.json();
+          
+          // Search in lab queue
+          if (labData.success && labData.queue) {
+            const found = labData.queue.find(t => t.token_number.toUpperCase() === tokenInput);
+            if (found) {
+              displayLabResult(found, labData);
+            } else {
+              showError('Token not found. Please check the token number and try again.');
+            }
+          } else {
+            showError('Token not found. Please check the token number and try again.');
+          }
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showError('Unable to check token status. Please try again.');
+      } finally {
+        searchBtn.disabled = false;
+        searchBtn.textContent = '🔍 Check Status';
+      }
+    }
+
+    function displayResult(data) {
+      const resultSection = document.getElementById('resultSection');
+      const searchSection = document.getElementById('searchSection');
+      const tokenNumberDisplay = document.getElementById('tokenNumberDisplay');
+      const statusBadge = document.getElementById('statusBadge');
+      const tokenDetails = document.getElementById('tokenDetails');
+      const queuePositionCard = document.getElementById('queuePositionCard');
+      const cancelledNotice = document.getElementById('cancelledNotice');
+
+      // Hide search, show results
+      searchSection.style.display = 'none';
+      resultSection.style.display = 'block';
+
+      // Set token number
+      tokenNumberDisplay.textContent = data.token_number || data.booking_id;
+
+      // Set status badge
+      const status = data.status.toLowerCase();
+      statusBadge.textContent = status.toUpperCase();
+      statusBadge.className = 'status-badge status-' + status;
+
+      // Build details
+      let detailsHTML = '';
+      if (data.doctor_name) {
+        detailsHTML += `<div class="info-row"><span class="info-label">Doctor</span><span class="info-value">${data.doctor_name}</span></div>`;
+      }
+      if (data.department_name) {
+        detailsHTML += `<div class="info-row"><span class="info-label">Department</span><span class="info-value">${data.department_name}</span></div>`;
+      }
+      if (data.location) {
+        const loc = data.location;
+        const locationParts = [loc.floor_block, loc.wing, loc.room_number].filter(p => p);
+        if (locationParts.length > 0) {
+          detailsHTML += `<div class="info-row"><span class="info-label">Location</span><span class="info-value">📍 ${locationParts.join(' → ')}</span></div>`;
+        }
+      }
+      tokenDetails.innerHTML = detailsHTML || '<div class="info-row"><span class="info-label">Type</span><span class="info-value">OPD Consultation</span></div>';
+
+      // Show/hide position card and cancelled notice
+      queuePositionCard.style.display = 'none';
+      cancelledNotice.style.display = 'none';
+
+      if (status === 'cancelled') {
+        cancelledNotice.style.display = 'block';
+        document.getElementById('cancelReason').textContent = data.reason 
+          ? `Your token was cancelled ${data.reason}. Please contact reception.`
+          : 'Your token has been cancelled. Please contact reception for assistance.';
+      } else if (status === 'waiting' || status === 'consulting') {
+        // Try to get queue position
+        fetchQueuePosition(data.token_number);
+      }
+    }
+
+    function displayLabResult(token, queueData) {
+      const resultSection = document.getElementById('resultSection');
+      const searchSection = document.getElementById('searchSection');
+      const tokenNumberDisplay = document.getElementById('tokenNumberDisplay');
+      const statusBadge = document.getElementById('statusBadge');
+      const tokenDetails = document.getElementById('tokenDetails');
+      const queuePositionCard = document.getElementById('queuePositionCard');
+      const cancelledNotice = document.getElementById('cancelledNotice');
+
+      searchSection.style.display = 'none';
+      resultSection.style.display = 'block';
+
+      tokenNumberDisplay.textContent = token.token_number;
+
+      const status = token.status.toLowerCase();
+      statusBadge.textContent = status === 'in_progress' ? 'IN PROGRESS' : status.toUpperCase();
+      statusBadge.className = 'status-badge status-' + (status === 'in_progress' ? 'consulting' : status);
+
+      tokenDetails.innerHTML = `
+        <div class="info-row"><span class="info-label">Test</span><span class="info-value">${token.test_name || queueData.test_name}</span></div>
+        <div class="info-row"><span class="info-label">Patient</span><span class="info-value">${token.patient_name}</span></div>
+        <div class="info-row"><span class="info-label">Type</span><span class="info-value">Lab Test</span></div>
+      `;
+
+      cancelledNotice.style.display = 'none';
+      
+      if (status === 'waiting') {
+        queuePositionCard.style.display = 'block';
+        document.getElementById('positionNumber').textContent = token.position || queueData.current_position || '?';
+        document.getElementById('positionLabel').textContent = 'in queue';
+      } else {
+        queuePositionCard.style.display = 'none';
+      }
+    }
+
+    async function fetchQueuePosition(tokenNumber) {
+      try {
+        const response = await fetch(`api/get_live_queue.php?token=${encodeURIComponent(tokenNumber)}`);
+        const data = await response.json();
+        
+        if (data.success && data.position !== undefined) {
+          const queuePositionCard = document.getElementById('queuePositionCard');
+          queuePositionCard.style.display = 'block';
+          document.getElementById('positionNumber').textContent = data.position;
+          document.getElementById('positionLabel').textContent = data.position === 1 ? 'You are next!' : 'people ahead of you';
+        }
+      } catch (error) {
+        console.log('Could not fetch queue position');
+      }
+    }
+
+    function showError(message) {
+      const errorMessage = document.getElementById('errorMessage');
+      errorMessage.textContent = message;
+      errorMessage.style.display = 'block';
+    }
+
+    function resetSearch() {
+      document.getElementById('searchSection').style.display = 'block';
+      document.getElementById('resultSection').style.display = 'none';
+      document.getElementById('errorMessage').style.display = 'none';
+      document.getElementById('tokenInput').value = '';
+      document.getElementById('tokenInput').focus();
+    }
+
+    // Allow Enter key to search
+    document.getElementById('tokenInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        checkStatus();
+      }
+    });
+  </script>
+</body>
+</html>

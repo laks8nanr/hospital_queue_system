@@ -1031,6 +1031,14 @@
               <div class="location-label">Wing</div>
               <div class="location-value" id="resultWing">East</div>
             </div>
+            <div class="location-item" id="cashCounterRow" style="display: none; grid-column: 1 / -1; background: linear-gradient(135deg, #fff3e0, #ffe0b2); border: 2px solid #ff9800; margin-top: 10px;">
+              <div class="location-label" style="color: #e65100;">💵 Cash Payment & Collect Counter</div>
+              <div class="location-value" id="resultCashCounter" style="color: #e65100; font-size: 24px;">Counter A</div>
+            </div>
+            <div class="location-item" id="onlineCounterRow" style="display: none; grid-column: 1 / -1; background: linear-gradient(135deg, #e3f2fd, #bbdefb); border: 2px solid #2196f3; margin-top: 10px;">
+              <div class="location-label" style="color: #1565c0;">💳 Collect Medicine Counter</div>
+              <div class="location-value" id="resultOnlineCounter" style="color: #1565c0; font-size: 24px;">Counter 1</div>
+            </div>
           </div>
         </div>
 
@@ -1368,6 +1376,17 @@
       document.getElementById('resultBlock').textContent = selectedPharmacy.block;
       document.getElementById('resultFloor').textContent = selectedPharmacy.floor;
       document.getElementById('resultWing').textContent = selectedPharmacy.wing;
+      
+      // Show cash counter only for cash payment
+      if (selectedPaymentMethod === 'cash') {
+        document.getElementById('resultCashCounter').textContent = tokenData.pharmacy?.cash_counter || selectedPharmacy.cash_counter || 'Counter A';
+        document.getElementById('cashCounterRow').style.display = 'block';
+        document.getElementById('onlineCounterRow').style.display = 'none';
+      } else {
+        document.getElementById('resultOnlineCounter').textContent = tokenData.pharmacy?.online_counter || selectedPharmacy.online_counter || 'Counter 1';
+        document.getElementById('onlineCounterRow').style.display = 'block';
+        document.getElementById('cashCounterRow').style.display = 'none';
+      }
 
       goToStep(5);
       document.getElementById('homeLink').style.display = 'none';

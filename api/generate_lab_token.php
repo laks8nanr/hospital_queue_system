@@ -41,7 +41,7 @@ if (!in_array($patient_gender, ['male', 'female', 'other'])) {
 }
 
 // Get test details
-$testQuery = "SELECT test_id, test_name, fee, slot_duration FROM lab_tests WHERE test_code = ? AND status = 'active'";
+$testQuery = "SELECT test_id, test_name, fee, slot_duration, floor_block, wing, room_number FROM lab_tests WHERE test_code = ? AND status = 'active'";
 $testStmt = $conn->prepare($testQuery);
 $testStmt->bind_param("s", $test_code);
 $testStmt->execute();
@@ -178,7 +178,12 @@ if ($insertStmt->execute()) {
             'queue_position' => $queue_position,
             'people_ahead' => $queue_position - 1,
             'wait_time' => $wait_time,
-            'scheduled_time' => $scheduled_time
+            'scheduled_time' => $scheduled_time,
+            'location' => [
+                'floor_block' => $test['floor_block'] ?? '',
+                'wing' => $test['wing'] ?? '',
+                'room_number' => $test['room_number'] ?? ''
+            ]
         ]
     ]);
 } else {

@@ -805,6 +805,7 @@
                         <div id="tokenTestName">MRI Scan</div>
                         <div id="tokenPatientName">Patient Name</div>
                         <div id="tokenSlotTime">Slot: 10:00 AM</div>
+                        <div id="tokenLocation" style="display:none; margin-top:8px; padding:8px; background:#e3f2fd; border-radius:8px; font-size:0.9rem;">📍 Location: <span id="locationText"></span></div>
                     </div>
                 </div>
 
@@ -1253,6 +1254,17 @@
                     document.getElementById('tokenTestName').textContent = test.name;
                     document.getElementById('tokenPatientName').textContent = patientName;
                     document.getElementById('tokenSlotTime').textContent = 'Slot: ' + formatTime(selectedSlot) + ' on ' + selectedDate;
+                    
+                    // Display location if available
+                    if (data.data.location) {
+                        const loc = data.data.location;
+                        const locationParts = [loc.floor_block, loc.wing, loc.room_number].filter(p => p);
+                        if (locationParts.length > 0) {
+                            document.getElementById('locationText').textContent = locationParts.join(' → ');
+                            document.getElementById('tokenLocation').style.display = 'block';
+                        }
+                    }
+                    
                     document.getElementById('tokenDisplay').classList.add('show');
 
                     // Show queue with server data

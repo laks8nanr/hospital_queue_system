@@ -27,7 +27,8 @@ if (empty($booking_id)) {
 }
 
 // Verify booking exists and is valid
-$checkQuery = "SELECT pb.*, d.name as doctor_name, d.time_slot as doctor_time_slot
+$checkQuery = "SELECT pb.*, d.name as doctor_name, d.time_slot as doctor_time_slot,
+               d.floor_block, d.wing, d.room_number
                FROM prebooked_appointments pb
                JOIN doctors d ON pb.doctor_id = d.id
                WHERE pb.booking_id = ?
@@ -138,7 +139,7 @@ $insertQuery = "INSERT INTO tokens (doctor_id, department_id, patient_name, pati
                 VALUES (?, ?, ?, ?, ?, ?, ?, 'prebooked', 'waiting', ?, ?, NOW())";
 
 $insertStmt = $conn->prepare($insertQuery);
-$insertStmt->bind_param("iisisiss", 
+$insertStmt->bind_param("iisisssss", 
     $booking['doctor_id'],
     $booking['department_id'],
     $booking['patient_name'],
@@ -178,7 +179,12 @@ echo json_encode([
         'patients_ahead' => $patients_ahead,
         'wait_time' => $wait_time,
         'patient_name' => $booking['patient_name'],
-        'doctor_name' => $booking['doctor_name']
+        'doctor_name' => $booking['doctor_name'],
+        'location' => [
+            'floor_block' => $booking['floor_block'] ?? '',
+            'wing' => $booking['wing'] ?? '',
+            'room_number' => $booking['room_number'] ?? ''
+        ]
     ]
 ]);
 

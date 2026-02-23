@@ -89,9 +89,16 @@ if (!empty($department)) {
     $dept_stmt->close();
 }
 
+// Initialize doctor location
+$doctor_location = [
+    'floor_block' => '',
+    'wing' => '',
+    'room_number' => ''
+];
+
 // If department_id still 0 and we have doctor_id, get from doctor
 if ($department_id == 0 && $doctor_id > 0) {
-    $doc_sql = "SELECT department_id FROM doctors WHERE id = ?";
+    $doc_sql = "SELECT department_id, floor_block, wing, room_number FROM doctors WHERE id = ?";
     $doc_stmt = $conn->prepare($doc_sql);
     $doc_stmt->bind_param("i", $doctor_id);
     $doc_stmt->execute();
@@ -99,8 +106,27 @@ if ($department_id == 0 && $doctor_id > 0) {
     if ($doc_result->num_rows > 0) {
         $doc_row = $doc_result->fetch_assoc();
         $department_id = $doc_row['department_id'];
+        $doctor_location['floor_block'] = $doc_row['floor_block'] ?? '';
+        $doctor_location['wing'] = $doc_row['wing'] ?? '';
+        $doctor_location['room_number'] = $doc_row['room_number'] ?? '';
     }
     $doc_stmt->close();
+}
+
+// If we have doctor_id but haven't fetched location yet, get it
+if ($doctor_id > 0 && empty($doctor_location['floor_block'])) {
+    $loc_sql = "SELECT floor_block, wing, room_number FROM doctors WHERE id = ?";
+    $loc_stmt = $conn->prepare($loc_sql);
+    $loc_stmt->bind_param("i", $doctor_id);
+    $loc_stmt->execute();
+    $loc_result = $loc_stmt->get_result();
+    if ($loc_result->num_rows > 0) {
+        $loc_row = $loc_result->fetch_assoc();
+        $doctor_location['floor_block'] = $loc_row['floor_block'] ?? '';
+        $doctor_location['wing'] = $loc_row['wing'] ?? '';
+        $doctor_location['room_number'] = $loc_row['room_number'] ?? '';
+    }
+    $loc_stmt->close();
 }
 
 // Check if we have valid department
@@ -178,6 +204,11 @@ if ($insert_stmt->execute()) {
             'patients_ahead' => $patients_ahead,
             'current_token' => $current_token,
             'department' => $department,
+            'location' => [
+                'floor_block' => $doctor_location['floor_block'],
+                'wing' => $doctor_location['wing'],
+                'room_number' => $doctor_location['room_number']
+            ],
             'created_at' => date('Y-m-d H:i:s')
         ]
     ]);

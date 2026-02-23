@@ -699,6 +699,11 @@
           <div class="value" id="displayDoctorName">Dr. Smith</div>
           <div class="label">Doctor</div>
         </div>
+        <div class="token-stat-item" id="locationItem" style="display:none; grid-column: 1 / -1;">
+          <div class="icon">📍</div>
+          <div class="value" id="displayLocation">-</div>
+          <div class="label">Location</div>
+        </div>
       </div>
     </div>
     
@@ -945,6 +950,16 @@
     document.getElementById('displayWaitTime').textContent = '~' + (tokenData.wait_time || 10) + ' mins';
     document.getElementById('displayPeopleAhead').textContent = tokenData.patients_ahead || 2;
     document.getElementById('displayDoctorName').textContent = bookingData.doctor_name;
+    
+    // Display location if available
+    if (tokenData.location) {
+      var loc = tokenData.location;
+      var locationParts = [loc.floor_block, loc.wing, loc.room_number].filter(function(p) { return p; });
+      if (locationParts.length > 0) {
+        document.getElementById('displayLocation').textContent = locationParts.join(' → ');
+        document.getElementById('locationItem').style.display = 'block';
+      }
+    }
     
     // Generate queue
     generateQueue(tokenData.token_number, bookingData.patient_name);

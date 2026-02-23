@@ -17,8 +17,12 @@ if (empty($staff_id) || empty($password)) {
     exit;
 }
 
-// Query to check staff credentials
-$sql = "SELECT id, staff_id, name, department, doctor_id FROM staff WHERE staff_id = ? AND password = ?";
+// Query to check staff credentials - join with departments to get department name
+// Supports both old schema (staff_id, department, doctor_id) and new schema (id as staff_id, email, dept_id, doc_id)
+$sql = "SELECT s.id, s.name, s.email, s.role, s.dept_id, s.doc_id, d.name as department_name 
+        FROM staff s 
+        LEFT JOIN departments d ON s.dept_id = d.id
+        WHERE s.id = ? AND s.password = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("ss", $staff_id, $password);
 $stmt->execute();
@@ -31,10 +35,13 @@ if ($result->num_rows > 0) {
         'message' => 'Login successful',
         'data' => [
             'id' => $staff['id'],
-            'staff_id' => $staff['staff_id'],
+            'staff_id' => $staff['id'],
             'name' => $staff['name'],
-            'department' => $staff['department'],
-            'doctor_id' => $staff['doctor_id']
+            'email' => $staff['email'],
+            'role' => $staff['role'],
+            'department' => $staff['department_name'],
+            'department_id' => $staff['dept_id'],
+            'doctor_id' => $staff['doc_id']
         ]
     ]);
 } else {

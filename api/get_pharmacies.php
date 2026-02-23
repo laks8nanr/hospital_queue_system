@@ -6,9 +6,9 @@ header('Access-Control-Allow-Methods: GET');
 include '../db.php';
 
 // Get all active pharmacies with location info
-$sql = "SELECT id, name, block, floor, wing, description, is_active 
+$sql = "SELECT id, name, block, floor, wing, description, is_active, cash_counter, online_counter 
         FROM pharmacies 
-        WHERE is_active = TRUE 
+        WHERE is_active = 1 
         ORDER BY id";
 
 $result = $conn->query($sql);
@@ -23,6 +23,8 @@ if ($result && $result->num_rows > 0) {
             'floor' => $row['floor'],
             'wing' => $row['wing'],
             'description' => $row['description'],
+            'cash_counter' => $row['cash_counter'] ?? 'Counter A',
+            'online_counter' => $row['online_counter'] ?? 'Counter 1',
             'location' => "Block: {$row['block']}, Floor: {$row['floor']}, Wing: {$row['wing']}"
         ];
     }

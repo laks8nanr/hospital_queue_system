@@ -27,7 +27,8 @@ try {
     
     // First check tokens table
     if (!empty($token_number)) {
-        $sql = "SELECT t.*, d.name as doctor_name, dept.name as department_name 
+        $sql = "SELECT t.*, d.name as doctor_name, dept.name as department_name,
+                d.floor_block, d.wing, d.room_number
                 FROM tokens t 
                 LEFT JOIN doctors d ON t.doctor_id = d.id 
                 LEFT JOIN departments dept ON t.department_id = dept.id 
@@ -107,7 +108,12 @@ try {
             'token_number' => $tokenData ? $tokenData['token_number'] : $token_number,
             'booking_id' => $tokenData && isset($tokenData['booking_id']) ? $tokenData['booking_id'] : $booking_id,
             'doctor_name' => $tokenData && isset($tokenData['doctor_name']) ? $tokenData['doctor_name'] : null,
-            'department_name' => $tokenData && isset($tokenData['department_name']) ? $tokenData['department_name'] : null
+            'department_name' => $tokenData && isset($tokenData['department_name']) ? $tokenData['department_name'] : null,
+            'location' => [
+                'floor_block' => $tokenData && isset($tokenData['floor_block']) ? $tokenData['floor_block'] : '',
+                'wing' => $tokenData && isset($tokenData['wing']) ? $tokenData['wing'] : '',
+                'room_number' => $tokenData && isset($tokenData['room_number']) ? $tokenData['room_number'] : ''
+            ]
         ];
         
         echo json_encode($response);

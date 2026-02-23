@@ -18,7 +18,7 @@ if ($token_id == 0 || empty($status)) {
 }
 
 // Valid statuses
-$valid_statuses = ['waiting', 'consulting', 'completed'];
+$valid_statuses = ['waiting', 'consulting', 'completed', 'cancelled'];
 if (!in_array($status, $valid_statuses)) {
     echo json_encode(['success' => false, 'message' => 'Invalid status']);
     exit;

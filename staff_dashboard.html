@@ -170,25 +170,27 @@
 
     .status-select {
       width: 100%;
-      padding: 12px 15px;
-      border: 2px solid #ecf0f1;
-      border-radius: 8px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
       font-size: 14px;
       background: white;
       cursor: pointer;
-      transition: border-color 0.3s;
       box-sizing: border-box;
+      -webkit-appearance: menulist;
+      -moz-appearance: menulist;
+      appearance: menulist;
     }
 
     .status-select:focus {
-      outline: none;
+      outline: 1px solid #3498db;
       border-color: #3498db;
-      box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
     }
 
     .status-select:disabled {
-      background: #ecf0f1;
+      background: #f5f5f5;
       cursor: not-allowed;
+      color: #999;
     }
 
     /* Buttons Section */
@@ -214,6 +216,7 @@
     .action-btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
+      pointer-events: none;
     }
 
     .btn-primary {
@@ -253,6 +256,132 @@
       background: #fef5e7;
       border-left-color: #f39c12;
       color: #d68910;
+    }
+
+    /* Queue List Section */
+    .queue-list-section {
+      background: white;
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      margin-top: 20px;
+    }
+
+    .queue-list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ecf0f1;
+    }
+
+    .queue-list-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #2c3e50;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .queue-count {
+      background: #3498db;
+      color: white;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .queue-list {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .queue-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      margin-bottom: 6px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .queue-item:hover {
+      background: #ecf0f1;
+    }
+
+    .queue-item.current {
+      background: #e8f5ff;
+      border-left: 3px solid #3498db;
+    }
+
+    .queue-item-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .queue-item-token {
+      font-weight: 700;
+      font-family: 'Courier New', monospace;
+      color: #2c3e50;
+    }
+
+    .queue-item-name {
+      font-size: 13px;
+      color: #7f8c8d;
+    }
+
+    .queue-item-type {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    .type-prebooked {
+      background: #d5f4e6;
+      color: #27ae60;
+    }
+
+    .type-walkin {
+      background: #fef5e7;
+      color: #f39c12;
+    }
+
+    .type-notarrived {
+      background: #fadbd8;
+      color: #e74c3c;
+    }
+
+    .queue-item.not-arrived {
+      opacity: 0.7;
+      background: #fef9f9;
+    }
+
+    .expected-arrivals-section {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px dashed #ddd;
+    }
+
+    .expected-header {
+      font-size: 12px;
+      color: #95a5a6;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .queue-empty {
+      text-align: center;
+      padding: 20px;
+      color: #95a5a6;
+      font-size: 13px;
     }
 
     /* Loading & Error */
@@ -365,10 +494,10 @@
       <label class="status-label" for="tokenStatus">Token Status</label>
       <select id="tokenStatus" class="status-select" disabled>
         <option value="">-- Select Status --</option>
-        <option value="In Process">🔵 In Process</option>
-        <option value="Waiting">⏳ Waiting</option>
-        <option value="Return">↩️ Return</option>
-        <option value="Skip">⏭️ Skip</option>
+        <option value="In Process">In Process</option>
+        <option value="Waiting">Waiting</option>
+        <option value="Completed">Completed</option>
+        <option value="Cancelled">Cancelled</option>
       </select>
       <div class="queue-status" id="queueStatus">No tokens in queue</div>
     </div>
@@ -377,6 +506,17 @@
     <div class="actions-section">
       <button class="action-btn btn-primary" id="nextPatientBtn" disabled>Next Patient</button>
       <button class="action-btn btn-danger" id="cancelTokenBtn" disabled>Cancel Token</button>
+    </div>
+
+    <!-- Queue List Section -->
+    <div class="queue-list-section" id="queueListSection">
+      <div class="queue-list-header">
+        <span class="queue-list-title">Waiting Queue</span>
+        <span class="queue-count" id="queueCount">0</span>
+      </div>
+      <div class="queue-list" id="queueList">
+        <!-- Queue items will be rendered here -->
+      </div>
     </div>
   </div>
 
@@ -387,62 +527,151 @@
 </div>
 
 <script>
-  // Dashboard State (UI-only)
+  // Dashboard State
   let dashboardState = {
     staffId: null,
     doctorId: null,
     currentTokenId: null,
     currentToken: null,
     queueTokens: [],
+    expectedArrivals: [],
     currentIndex: 0,
-    isProcessing: false
+    isProcessing: false,
+    refreshInterval: null,
+    isOnBreak: false
   };
 
-  // Initialize Dashboard (UI only - no login/API required)
+  // Initialize Dashboard
   function initDashboard() {
+    // Check if logged in - but don't block entirely
     const staffData = sessionStorage.getItem('staffData');
-    let staff = { staff_name: 'Staff A', department: 'General' };
+    let staff = null;
+    
     if (staffData) {
-      try { staff = JSON.parse(staffData); } catch (e) {}
+      try {
+        staff = JSON.parse(staffData);
+      } catch (e) {
+        console.error('Error parsing staff data:', e);
+      }
     }
+    
+    // If no valid staff data, try to get from individual session items
+    if (!staff) {
+      const staffId = sessionStorage.getItem('staffId');
+      const staffName = sessionStorage.getItem('staffName');
+      const doctorId = sessionStorage.getItem('doctorId');
+      const department = sessionStorage.getItem('staffDepartment');
+      
+      if (staffId) {
+        staff = {
+          staff_id: staffId,
+          staff_name: staffName || 'Staff',
+          doctor_id: doctorId,
+          department: department || ''
+        };
+      }
+    }
+    
+    // If still no staff data, redirect to login
+    if (!staff) {
+      window.location.href = 'staff_login.html';
+      return;
+    }
+
+    dashboardState.staffId = staff.staff_id;
+    dashboardState.doctorId = staff.doctor_id;
 
     document.getElementById('staffName').textContent = staff.staff_name || 'Staff';
     document.getElementById('staffDept').textContent = staff.department || '';
 
     setupEventListeners();
-
-    // Sample queue for UI preview
-    dashboardState.queueTokens = [
-      { id: 1, token_number: 'A001', patient_name: 'John Doe', status: 'waiting' },
-      { id: 2, token_number: 'A002', patient_name: 'Jane Smith', status: 'waiting' },
-      { id: 3, token_number: 'A003', patient_name: 'Bob Brown', status: 'waiting' }
-    ];
-
-    dashboardState.currentIndex = 0;
-    updateCurrentToken();
-    updateQueueStatus();
-    updateLastUpdate();
+    loadQueue();
+    
+    // Auto-refresh every 5 seconds
+    dashboardState.refreshInterval = setInterval(loadQueue, 5000);
   }
 
   function setupEventListeners() {
+    console.log('Setting up event listeners...');
+    
     document.getElementById('menuToggle').addEventListener('click', toggleMenu);
     document.getElementById('previewTokenLink').addEventListener('click', (e) => { e.preventDefault(); previewToken(); });
     document.getElementById('setBreakLink').addEventListener('click', (e) => { e.preventDefault(); setBreak(); });
     document.getElementById('logoutLink').addEventListener('click', (e) => { e.preventDefault(); logout(); });
 
-    document.getElementById('nextPatientBtn').addEventListener('click', nextPatient);
-    document.getElementById('cancelTokenBtn').addEventListener('click', cancelToken);
+    const nextBtn = document.getElementById('nextPatientBtn');
+    const cancelBtn = document.getElementById('cancelTokenBtn');
+    
+    console.log('Next button found:', nextBtn);
+    console.log('Cancel button found:', cancelBtn);
+    
+    if (nextBtn) {
+      nextBtn.onclick = function() {
+        console.log('Next Patient clicked!');
+        nextPatient();
+      };
+    }
+    
+    if (cancelBtn) {
+      cancelBtn.onclick = function() {
+        console.log('Cancel Token clicked!');
+        cancelToken();
+      };
+    }
+    
     document.getElementById('tokenStatus').addEventListener('change', updateTokenStatus);
+    
+    console.log('Event listeners setup complete');
   }
 
   function toggleMenu() { document.getElementById('dropdownMenu').classList.toggle('open'); }
   function closeMenu() { document.getElementById('dropdownMenu').classList.remove('open'); }
 
-  function loadQueue() { /* UI-only: no-op */ }
+  // Load queue from API
+  async function loadQueue() {
+    if (dashboardState.isProcessing) return;
+    
+    try {
+      const doctorId = dashboardState.doctorId || '';
+      console.log('Loading queue for doctor:', doctorId);
+      
+      const response = await fetch(`api/get_queue_for_doctor.php?doctor_id=${doctorId}`);
+      const data = await response.json();
+      
+      console.log('Queue data:', data);
+      
+      if (data.success) {
+        // Main queue - only checked-in patients
+        dashboardState.queueTokens = data.data || [];
+        // Expected arrivals - prebooked not yet checked in
+        dashboardState.expectedArrivals = data.expected_arrivals || [];
+        
+        // Find current consulting token or first waiting
+        const consultingIdx = dashboardState.queueTokens.findIndex(t => t.status === 'consulting');
+        if (consultingIdx >= 0) {
+          dashboardState.currentIndex = consultingIdx;
+        } else if (dashboardState.queueTokens.length > 0) {
+          dashboardState.currentIndex = 0;
+        } else {
+          dashboardState.currentIndex = -1;
+        }
+        
+        updateCurrentToken();
+        updateQueueStatus();
+        updateLastUpdate();
+      } else {
+        console.error('API error:', data.message);
+        showMessage('Error loading queue: ' + (data.message || 'Unknown error'), 'error');
+      }
+    } catch (error) {
+      console.error('Error loading queue:', error);
+      showMessage('Error connecting to server', 'error');
+    }
+  }
 
   function updateCurrentToken() {
     const tokens = dashboardState.queueTokens;
-    if (!tokens || tokens.length === 0) {
+    if (!tokens || tokens.length === 0 || dashboardState.currentIndex < 0) {
       resetCurrentToken();
       return;
     }
@@ -450,6 +679,7 @@
     let idx = dashboardState.currentIndex;
     if (idx < 0) idx = 0;
     if (idx >= tokens.length) idx = tokens.length - 1;
+    dashboardState.currentIndex = idx;
 
     const current = tokens[idx];
     dashboardState.currentTokenId = current.id;
@@ -459,17 +689,26 @@
     document.getElementById('patientName').textContent = current.patient_name || 'Patient';
 
     const statusSelect = document.getElementById('tokenStatus');
-    const statusMapBack = { 'consulting': 'In Process', 'waiting': 'Waiting', 'completed': 'Skip' };
-    statusSelect.value = statusMapBack[current.status] || '';
+    const statusMapBack = { 
+      'consulting': 'In Process', 
+      'waiting': 'Waiting', 
+      'completed': 'Completed',
+      'cancelled': 'Cancelled'
+    };
+    statusSelect.value = statusMapBack[current.status] || 'Waiting';
+    
+    // Enable all controls for checked-in patients
     statusSelect.disabled = false;
-
     document.getElementById('nextPatientBtn').disabled = false;
     document.getElementById('cancelTokenBtn').disabled = false;
+    
+    console.log('Current token set:', current.token_number, 'ID:', current.id);
   }
-
+  
   function resetCurrentToken() {
     dashboardState.currentTokenId = null;
     dashboardState.currentToken = null;
+    dashboardState.currentIndex = -1;
 
     document.getElementById('currentToken').textContent = '--';
     document.getElementById('patientName').textContent = 'No active token';
@@ -477,87 +716,272 @@
     document.getElementById('tokenStatus').disabled = true;
     document.getElementById('nextPatientBtn').disabled = true;
     document.getElementById('cancelTokenBtn').disabled = true;
+    
+    console.log('Token reset - no active token');
   }
 
   function updateQueueStatus() {
     const queueStatus = document.getElementById('queueStatus');
-    const remaining = Math.max(0, (dashboardState.queueTokens.length - (dashboardState.currentIndex + 1)));
+    const total = dashboardState.queueTokens.length;
+    const remaining = Math.max(0, total - (dashboardState.currentIndex + 1));
 
-    if (remaining <= 0) {
-      queueStatus.textContent = 'No more tokens in queue';
+    if (total === 0) {
+      queueStatus.textContent = 'No tokens in queue';
       queueStatus.classList.add('empty');
+    } else if (remaining <= 0) {
+      queueStatus.textContent = 'Last patient in queue';
+      queueStatus.classList.remove('empty');
     } else {
-      queueStatus.textContent = `${remaining} token${remaining !== 1 ? 's' : ''} waiting`;
+      queueStatus.textContent = `${remaining} more token${remaining !== 1 ? 's' : ''} waiting`;
       queueStatus.classList.remove('empty');
     }
+
+    // Update queue list
+    renderQueueList();
   }
 
-  function updateTokenStatus() {
-    const status = document.getElementById('tokenStatus').value;
-    if (!status || dashboardState.currentIndex == null) return;
+  // Render the queue list
+  function renderQueueList() {
+    const queueList = document.getElementById('queueList');
+    const queueCount = document.getElementById('queueCount');
+    const tokens = dashboardState.queueTokens;
 
-    const uiToInternal = { 'In Process': 'consulting', 'Waiting': 'waiting', 'Return': 'waiting', 'Skip': 'completed' };
-    const internal = uiToInternal[status] || 'waiting';
+    queueCount.textContent = tokens.length;
 
-    // Update local state and UI only
-    const current = dashboardState.queueTokens[dashboardState.currentIndex];
-    if (current) {
-      current.status = internal;
-      showMessage(`Token status updated to: ${status}`, 'success');
-      updateQueueStatus();
-      updateCurrentToken();
-    }
-  }
-
-  function nextPatient() {
-    if (!dashboardState.queueTokens || dashboardState.queueTokens.length === 0) return;
-
-    // Mark current as completed locally
-    const current = dashboardState.queueTokens[dashboardState.currentIndex];
-    if (current) current.status = 'completed';
-
-    // Advance index
-    if (dashboardState.currentIndex < dashboardState.queueTokens.length - 1) {
-      dashboardState.currentIndex += 1;
-      showMessage('Moved to next patient', 'success');
-      updateCurrentToken();
-      updateQueueStatus();
+    if (tokens.length === 0) {
+      if (dashboardState.expectedArrivals.length > 0) {
+        queueList.innerHTML = '<div class="queue-empty">No patients checked in yet</div>';
+      } else {
+        queueList.innerHTML = '<div class="queue-empty">No patients in queue</div>';
+      }
     } else {
-      // No more
-      dashboardState.queueTokens = [];
-      resetCurrentToken();
-      updateQueueStatus();
-      showMessage('No more patients', 'error');
+      queueList.innerHTML = tokens.map((token, index) => {
+        const isCurrent = index === dashboardState.currentIndex;
+        const isPrebooked = token.type === 'prebooked' || token.token_number?.startsWith('PB');
+        
+        let typeClass = isPrebooked ? 'type-prebooked' : 'type-walkin';
+        let typeLabel = isPrebooked ? 'Prebooked' : 'Walk-in';
+        
+        return `
+          <div class="queue-item ${isCurrent ? 'current' : ''}" data-index="${index}">
+            <div class="queue-item-left">
+              <span class="queue-item-token">${token.token_number}</span>
+              <span class="queue-item-name">${token.patient_name || 'Patient'}</span>
+            </div>
+            <span class="queue-item-type ${typeClass}">${typeLabel}</span>
+          </div>
+        `;
+      }).join('');
+
+      // Add click handlers to queue items
+      queueList.querySelectorAll('.queue-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const index = parseInt(item.dataset.index);
+          if (index !== dashboardState.currentIndex) {
+            dashboardState.currentIndex = index;
+            updateCurrentToken();
+            renderQueueList();
+          }
+        });
+      });
+    }
+    
+    // Add expected arrivals section if there are any
+    if (dashboardState.expectedArrivals.length > 0) {
+      const expectedHtml = `
+        <div class="expected-arrivals-section">
+          <div class="expected-header">Expected Arrivals (${dashboardState.expectedArrivals.length})</div>
+          ${dashboardState.expectedArrivals.map(token => `
+            <div class="queue-item not-arrived">
+              <div class="queue-item-left">
+                <span class="queue-item-token">${token.token_number}</span>
+                <span class="queue-item-name">${token.patient_name || 'Patient'}</span>
+              </div>
+              <span class="queue-item-type type-notarrived">Not Arrived</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      queueList.innerHTML += expectedHtml;
     }
   }
 
-  function cancelToken() {
+  // Update token status via API
+  async function updateTokenStatus() {
+    console.log('updateTokenStatus called');
+    
+    const status = document.getElementById('tokenStatus').value;
+    if (!status || !dashboardState.currentTokenId) {
+      console.log('No status or token ID');
+      return;
+    }
+
+    const uiToInternal = { 
+      'In Process': 'consulting', 
+      'Waiting': 'waiting', 
+      'Completed': 'completed',
+      'Cancelled': 'cancelled'
+    };
+    const internal = uiToInternal[status] || 'waiting';
+    
+    console.log('Updating status to:', internal, 'for token:', dashboardState.currentTokenId);
+
+    dashboardState.isProcessing = true;
+    
+    try {
+      const response = await fetch('api/update_token.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token_id: dashboardState.currentTokenId,
+          status: internal
+        })
+      });
+      
+      const data = await response.json();
+      console.log('Update result:', data);
+      
+      if (data.success) {
+        showMessage(`Token status updated to: ${status}`, 'success');
+        await loadQueue();
+      } else {
+        showMessage(data.message || 'Failed to update status', 'error');
+      }
+    } catch (error) {
+      showMessage('Error updating token status', 'error');
+      console.error('Error:', error);
+    } finally {
+      dashboardState.isProcessing = false;
+    }
+  }
+
+  // Next patient - complete current and move to next
+  async function nextPatient() {
+    console.log('nextPatient called, queue length:', dashboardState.queueTokens?.length);
+    
+    if (!dashboardState.queueTokens || dashboardState.queueTokens.length === 0) {
+      showMessage('No patients in queue', 'error');
+      return;
+    }
+    if (dashboardState.isProcessing) {
+      console.log('Already processing, skipping');
+      return;
+    }
+    
+    dashboardState.isProcessing = true;
+    
+    try {
+      // Mark current as completed
+      if (dashboardState.currentTokenId) {
+        console.log('Completing token:', dashboardState.currentTokenId);
+        const response = await fetch('api/update_token.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token_id: dashboardState.currentTokenId,
+            status: 'completed'
+          })
+        });
+        const result = await response.json();
+        console.log('Complete result:', result);
+      }
+      
+      // Reload queue
+      await loadQueue();
+      
+      // Set the new first token to consulting
+      if (dashboardState.queueTokens.length > 0 && dashboardState.currentTokenId) {
+        console.log('Setting new token to consulting:', dashboardState.currentTokenId);
+        await fetch('api/update_token.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token_id: dashboardState.currentTokenId,
+            status: 'consulting'
+          })
+        });
+        await loadQueue();
+      }
+      
+      showMessage('Moved to next patient', 'success');
+      
+    } catch (error) {
+      showMessage('Error moving to next patient', 'error');
+      console.error('Error:', error);
+    } finally {
+      dashboardState.isProcessing = false;
+    }
+  }
+
+  // Cancel token via API
+  async function cancelToken() {
+    console.log('cancelToken called');
+    
     const current = dashboardState.queueTokens[dashboardState.currentIndex];
-    if (!current) { showMessage('No token to cancel', 'error'); return; }
+    if (!current) { 
+      showMessage('No token to cancel', 'error'); 
+      return; 
+    }
 
     const confirmCancel = confirm(`Cancel token ${current.token_number}?`);
     if (!confirmCancel) return;
 
-    // Remove from queue locally
-    dashboardState.queueTokens.splice(dashboardState.currentIndex, 1);
-    if (dashboardState.currentIndex >= dashboardState.queueTokens.length) {
-      dashboardState.currentIndex = Math.max(0, dashboardState.queueTokens.length - 1);
+    dashboardState.isProcessing = true;
+    
+    try {
+      console.log('Cancelling token:', current.id, current.token_number);
+      const response = await fetch('api/cancel_token.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token_id: current.id,
+          token: current.token_number,
+          reason: 'Cancelled by staff'
+        })
+      });
+      
+      const data = await response.json();
+      console.log('Cancel result:', data);
+      
+      if (data.success) {
+        showMessage(`Token ${current.token_number} cancelled`, 'success');
+        await loadQueue();
+      } else {
+        showMessage(data.message || 'Failed to cancel token', 'error');
+      }
+    } catch (error) {
+      showMessage('Error cancelling token', 'error');
+      console.error('Error:', error);
+    } finally {
+      dashboardState.isProcessing = false;
     }
-
-    showMessage(`Token ${current.token_number} cancelled`, 'success');
-    if (dashboardState.queueTokens.length === 0) {
-      resetCurrentToken();
-    } else {
-      updateCurrentToken();
-    }
-    updateQueueStatus();
   }
 
-  function previewToken() { closeMenu(); showMessage('Preview Token - Feature coming soon', 'success'); }
+  function previewToken() { 
+    closeMenu(); 
+    // Pass doctor_id to preview page
+    window.location.href = `preview_token.html?doctor_id=${dashboardState.doctorId}`;
+  }
 
-  function setBreak() { closeMenu(); const breakTime = prompt('Enter break duration (minutes):', '15'); if (breakTime) showMessage(`Break set for ${breakTime} minutes`, 'success'); }
+  function setBreak() { 
+    closeMenu(); 
+    // Pass doctor_id to set break page
+    window.location.href = `set_break.html?doctor_id=${dashboardState.doctorId}`;
+  }
 
-  function logout() { closeMenu(); const confirmLogout = confirm('Are you sure you want to logout?'); if (confirmLogout) showMessage('Logged out (UI-only)', 'success'); }
+  function logout() { 
+    closeMenu(); 
+    const confirmLogout = confirm('Are you sure you want to logout?'); 
+    if (confirmLogout) {
+      // Clear session storage
+      sessionStorage.clear();
+      // Clear interval
+      if (dashboardState.refreshInterval) {
+        clearInterval(dashboardState.refreshInterval);
+      }
+      window.location.href = 'staff_login.html';
+    }
+  }
 
   function showMessage(text, type) {
     const container = document.getElementById('messageContainer');
@@ -589,6 +1013,13 @@
     const menuIcon = document.getElementById('menuToggle');
     if (!menu.contains(e.target) && !menuIcon.contains(e.target)) {
       closeMenu();
+    }
+  });
+
+  // Cleanup on page unload
+  window.addEventListener('beforeunload', () => {
+    if (dashboardState.refreshInterval) {
+      clearInterval(dashboardState.refreshInterval);
     }
   });
 

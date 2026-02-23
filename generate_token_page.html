@@ -46,6 +46,10 @@
         <span class="label">Department:</span>
         <span class="value" id="deptName"></span>
       </div>
+      <div class="token-info-row location-row" id="locationRow" style="display: none;">
+        <span class="label">Location:</span>
+        <span class="value" id="doctorLocation"></span>
+      </div>
     </div>
   </div>
   <a href="index.html" class="back-home-btn">🏠 Back to Home</a>
@@ -142,6 +146,16 @@
         document.getElementById('currentToken').textContent = data.data.current_token;
         document.getElementById('doctorName').textContent = doctor;
         document.getElementById('deptName').textContent = dept;
+
+        // Display location if available
+        if (data.data.location) {
+          const loc = data.data.location;
+          const locationParts = [loc.floor_block, loc.wing, loc.room_number].filter(p => p);
+          if (locationParts.length > 0) {
+            document.getElementById('doctorLocation').textContent = locationParts.join(' → ');
+            document.getElementById('locationRow').style.display = 'flex';
+          }
+        }
 
         // Hide generate button, show result
         generateBtn.style.display = 'none';

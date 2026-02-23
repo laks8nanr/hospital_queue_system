@@ -34,7 +34,7 @@ if (empty($patient_name)) {
 }
 
 // Check if pharmacy exists
-$check_sql = "SELECT id, name, block, floor, wing FROM pharmacies WHERE id = ? AND is_active = TRUE";
+$check_sql = "SELECT id, name, block, floor, wing, cash_counter, online_counter FROM pharmacies WHERE id = ? AND is_active = TRUE";
 $check_stmt = $conn->prepare($check_sql);
 $check_stmt->bind_param("i", $pharmacy_id);
 $check_stmt->execute();
@@ -93,12 +93,15 @@ if ($insert_stmt->execute()) {
             'token_id' => $token_id,
             'token_number' => $token_number,
             'patient_name' => $patient_name,
+            'payment_method' => $payment_method,
             'pharmacy' => [
                 'id' => $pharmacy['id'],
                 'name' => $pharmacy['name'],
                 'block' => $pharmacy['block'],
                 'floor' => $pharmacy['floor'],
                 'wing' => $pharmacy['wing'],
+                'cash_counter' => $pharmacy['cash_counter'] ?? 'Counter A',
+                'online_counter' => $pharmacy['online_counter'] ?? 'Counter 1',
                 'location' => "Block: {$pharmacy['block']}, Floor: {$pharmacy['floor']}, Wing: {$pharmacy['wing']}"
             ],
             'patients_ahead' => $patients_ahead,

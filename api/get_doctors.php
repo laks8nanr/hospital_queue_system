@@ -14,7 +14,8 @@ $today = date('Y-m-d');
 
 if ($department_id > 0) {
     // Query by department ID
-    $sql = "SELECT d.id, d.name, d.time_slot, d.qualification, d.fees, dep.name as department, dep.id as department_id
+    $sql = "SELECT d.id, d.name, d.time_slot, d.qualification, d.fees, dep.name as department, dep.id as department_id,
+            d.floor_block, d.wing, d.room_number
             FROM doctors d 
             JOIN departments dep ON d.department_id = dep.id 
             WHERE d.department_id = ? 
@@ -42,7 +43,8 @@ if ($department_id > 0) {
     }
 } else if (!empty($department_name)) {
     // Query by department name
-    $sql = "SELECT d.id, d.name, d.time_slot, d.qualification, d.fees, dep.name as department, dep.id as department_id
+    $sql = "SELECT d.id, d.name, d.time_slot, d.qualification, d.fees, dep.name as department, dep.id as department_id,
+            d.floor_block, d.wing, d.room_number
             FROM doctors d 
             JOIN departments dep ON d.department_id = dep.id 
             WHERE dep.name = ? 

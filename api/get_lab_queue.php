@@ -24,6 +24,8 @@ $testStmt->execute();
 $testResult = $testStmt->get_result();
 
 if ($testResult->num_rows === 0) {
+    $testStmt->close();
+    $conn->close();
     echo json_encode([
         'success' => false,
         'message' => 'Invalid test type'

@@ -31,13 +31,14 @@
     .status-inprogress { background: #fff9e6; }
     .status-completed { background: #e9f8ee; }
     .status-skipped { background: #fdecea; }
-    /* (On Break removed) */
+    .status-break { background: #e0e0e0; }
 
     /* Legend color samples */
     .pill-waiting { background: #e8f5ff; }
     .pill-inprogress { background: #fff9e6; }
     .pill-completed { background: #e9f8ee; }
     .pill-skipped { background: #fdecea; }
+    .pill-break { background: #e0e0e0; }
 
     .meta { font-size:13px; color:#7f8c8d; margin-bottom:8px; }
 
@@ -55,11 +56,14 @@
         <div class="page-title">Preview Tokens – Full Day</div>
         <div class="meta">Showing all tokens for today. Hover a tile for details.</div>
       </div>
-      <div class="legend" id="legend">
-        <div class="legend-item"><span class="legend-pill pill-waiting"></span> Waiting</div>
-        <div class="legend-item"><span class="legend-pill pill-inprogress"></span> In progress</div>
-        <div class="legend-item"><span class="legend-pill pill-completed"></span> Completed</div>
-        <div class="legend-item"><span class="legend-pill pill-skipped"></span> Skipped</div>
+      <div style="display: flex; gap: 15px; align-items: center;">
+        <div class="legend" id="legend">
+          <div class="legend-item"><span class="legend-pill pill-waiting"></span> Waiting</div>
+          <div class="legend-item"><span class="legend-pill pill-inprogress"></span> In progress</div>
+          <div class="legend-item"><span class="legend-pill pill-completed"></span> Completed</div>
+          <div class="legend-item"><span class="legend-pill pill-skipped"></span> Skipped</div>
+        </div>
+        <button onclick="goBack()" style="padding: 8px 16px; background: #2c3e50; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 13px;">← Back</button>
       </div>
     </div>
 
@@ -72,56 +76,110 @@
   </div>
 
   <script>
-    // Mock pharmacy tokens data
-    const mockTokens = [
-      { id: 1, token_number: 'P001', patient_name: '', status: 'consulting' },
-      { id: 2, token_number: 'P002', patient_name: '', status: 'waiting' },
-      { id: 3, token_number: 'P003', patient_name: '', status: 'skipped' }
-    ];
+    // Get doctor_id from URL or session
+    function getDoctorId() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('doctor_id') || sessionStorage.getItem('doctorId');
+    }
 
-    // Fetch tokens for the full day from mock data and render them
-    function fetchAndRender() {
+    const doctorId = getDoctorId();
+
+    // Fetch tokens for the full day from API
+    async function fetchAndRender() {
       const grid = document.getElementById('tokensGrid');
       const noTokens = document.getElementById('noTokens');
       grid.innerHTML = '';
       noTokens.style.display = 'none';
 
-      const tokens = mockTokens;
-      if (tokens.length === 0) { noTokens.style.display = 'block'; return; }
+      try {
+        // Build API URL
+        let apiUrl = 'api/get_all_tokens.php?date=today';
+        if (doctorId) {
+          apiUrl += `&doctor_id=${doctorId}`;
+        }
+        
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        
+        let tokens = [];
+        if (data.success && data.data) {
+          tokens = data.data;
+        }
+        
+        if (tokens.length === 0) { 
+          noTokens.style.display = 'block'; 
+          return; 
+        }
 
-      // Ensure sequential order by id (ascending)
-      tokens.sort((a,b) => (parseInt(a.id) || 0) - (parseInt(b.id) || 0));
-      tokens.forEach(t => {
-        const s = normalizeStatus(t.status);
-        const card = document.createElement('div');
-        card.className = 'token-card ' + statusClass(s);
-        card.title = `${t.token_number} — ${displayStatus(s)}\nPatient: ${t.patient_name || '-'}\nTime: --:-- -- `;
+        // Ensure sequential order by id (ascending)
+        tokens.sort((a,b) => (parseInt(a.id) || 0) - (parseInt(b.id) || 0));
+        
+        tokens.forEach(t => {
+          const s = normalizeStatus(t.status);
+          const card = document.createElement('div');
+          card.className = 'token-card ' + statusClass(s);
+          
+          const time = t.expected_time ? formatTime(t.expected_time) : '--:--';
+          card.title = `${t.token_number} — ${displayStatus(s)}\nPatient: ${t.patient_name || '-'}\nTime: ${time}`;
 
-        const left = document.createElement('div');
-        left.style.display = 'flex';
-        left.style.flexDirection = 'column';
-        left.style.gap = '4px';
+          const left = document.createElement('div');
+          left.style.display = 'flex';
+          left.style.flexDirection = 'column';
+          left.style.gap = '4px';
 
-        const num = document.createElement('div');
-        num.className = 'token-number';
-        num.textContent = t.token_number || '-';
+          const num = document.createElement('div');
+          num.className = 'token-number';
+          num.textContent = t.token_number || '-';
 
-        const name = document.createElement('div');
-        name.style.fontSize = '13px';
-        name.style.color = '#7f8c8d';
-        name.textContent = t.patient_name || '-';
+          const name = document.createElement('div');
+          name.style.fontSize = '13px';
+          name.style.color = '#7f8c8d';
+          name.textContent = t.patient_name || '-';
 
-        left.appendChild(num);
-        left.appendChild(name);
+          left.appendChild(num);
+          left.appendChild(name);
 
-        const stat = document.createElement('div');
-        stat.className = 'token-status';
-        stat.textContent = displayStatus(s);
+          const right = document.createElement('div');
+          right.style.display = 'flex';
+          right.style.flexDirection = 'column';
+          right.style.alignItems = 'flex-end';
+          right.style.gap = '4px';
 
-        card.appendChild(left);
-        card.appendChild(stat);
-        grid.appendChild(card);
-      });
+          const stat = document.createElement('div');
+          stat.className = 'token-status';
+          stat.textContent = displayStatus(s);
+
+          const timeEl = document.createElement('div');
+          timeEl.style.fontSize = '12px';
+          timeEl.style.color = '#95a5a6';
+          timeEl.textContent = time;
+
+          right.appendChild(stat);
+          right.appendChild(timeEl);
+
+          card.appendChild(left);
+          card.appendChild(right);
+          grid.appendChild(card);
+        });
+      } catch (error) {
+        console.error('Error fetching tokens:', error);
+        noTokens.textContent = 'Error loading tokens';
+        noTokens.style.display = 'block';
+      }
+    }
+
+    // Format time string
+    function formatTime(timeStr) {
+      if (!timeStr) return '--:--';
+      try {
+        const [hours, minutes] = timeStr.split(':');
+        const h = parseInt(hours);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const h12 = h % 12 || 12;
+        return `${h12}:${minutes} ${ampm}`;
+      } catch (e) {
+        return timeStr;
+      }
     }
 
     // Normalize backend status to UI categories
@@ -158,10 +216,15 @@
       }
     }
 
+    // Go back to dashboard
+    function goBack() {
+      window.location.href = 'staff_dashboard.html';
+    }
+
     // Initial load
     fetchAndRender();
 
-    // Optional: refresh every 10 seconds to keep preview current
+    // Refresh every 10 seconds to keep preview current
     setInterval(fetchAndRender, 10000);
   </script>
 </body>
