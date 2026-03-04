@@ -521,11 +521,10 @@
       var type = isYou ? 'you' : (item.status === 'in_progress' ? 'current' : '');
       var badge = 'Waiting';
       var extraClass = '';
-      var displayName = item.patient_name;
       
+      // Only show token number, hide names for privacy
       if (isYou) {
         badge = 'YOU';
-        displayName = item.patient_name + ' (You)';
         extraClass = ' you-highlight';
       } else if (item.status === 'in_progress') {
         badge = 'In Progress';
@@ -534,10 +533,10 @@
       html += '<div class="queue-item ' + type + extraClass + '">' +
         '<div class="queue-position">' + item.position + '</div>' +
         '<div class="queue-info">' +
-          '<div class="queue-name">' + displayName +
+          '<div class="queue-name">' + item.token_number +
             ' <span class="queue-badge badge-' + type + '">' + badge + '</span>' +
           '</div>' +
-          '<div class="queue-status">Token: ' + item.token_number + ' • ' + item.test_name + '</div>' +
+          (isYou ? '<div class="queue-status">Your token</div>' : '') +
         '</div>' +
       '</div>';
     }

@@ -186,6 +186,100 @@
       color: #721c24;
       margin: 0;
     }
+
+    .live-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 15px;
+      font-size: 12px;
+      color: #27ae60;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      background: #27ae60;
+      border-radius: 50%;
+      animation: livePulse 1.5s infinite;
+    }
+
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .queue-display {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .queue-display-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .queue-item-mini {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      margin-bottom: 5px;
+      background: white;
+      border-radius: 8px;
+      border-left: 3px solid #bdc3c7;
+    }
+
+    .queue-item-mini.you {
+      border-left-color: #27ae60;
+      background: #e8f5e9;
+    }
+
+    .queue-item-mini.consulting {
+      border-left-color: #3498db;
+      background: #e3f2fd;
+    }
+
+    .queue-item-position {
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      background: #ecf0f1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 12px;
+      margin-right: 10px;
+    }
+
+    .queue-item-mini.you .queue-item-position {
+      background: #27ae60;
+      color: white;
+    }
+
+    .queue-item-token {
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .queue-item-badge {
+      margin-left: auto;
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: bold;
+    }
+
+    .badge-you { background: #27ae60; color: white; }
+    .badge-consulting { background: #3498db; color: white; }
+    .badge-prebooked { background: #9b59b6; color: white; }
+    .badge-walkin { background: #f39c12; color: white; }
   </style>
 </head>
 <body class="center">
@@ -207,6 +301,12 @@
 
     <!-- Result Section -->
     <div class="result-section" id="resultSection">
+      <!-- Live Indicator -->
+      <div class="live-indicator" id="liveIndicator">
+        <span class="live-dot"></span>
+        <span>Live - Auto-updating</span>
+      </div>
+
       <!-- Token Info Card -->
       <div class="token-info-card" id="tokenInfoCard">
         <div class="token-number-display" id="tokenNumberDisplay">W-007</div>
@@ -220,14 +320,22 @@
 
       <!-- Queue Position (shown only for waiting/consulting) -->
       <div class="queue-position-card" id="queuePositionCard" style="display: none;">
-        <h3>🎯 Your Position</h3>
+        <h3>Your Position</h3>
         <div class="position-number" id="positionNumber">3</div>
         <div class="position-label" id="positionLabel">people ahead of you</div>
       </div>
 
+      <!-- Live Queue Display -->
+      <div class="queue-display" id="queueDisplay" style="display: none;">
+        <div class="queue-display-title">Live Queue</div>
+        <div id="queueList">
+          <!-- Queue items will be rendered here -->
+        </div>
+      </div>
+
       <!-- Cancelled Notice -->
       <div class="cancelled-notice" id="cancelledNotice" style="display: none;">
-        <h3>❌ Token Cancelled</h3>
+        <h3>Token Cancelled</h3>
         <p id="cancelReason">Your token has been cancelled. Please contact reception for assistance.</p>
       </div>
 
@@ -240,19 +348,30 @@
   </div>
 
   <script>
-    // Auto-check if token is in URL or session
+    // State management
+    let currentTokenData = null;
+    let refreshInterval = null;
+    let isRefreshing = false;
+
+    // Auto-check if token is in URL, localStorage, or sessionStorage
     window.onload = function() {
       const urlParams = new URLSearchParams(window.location.search);
       const tokenParam = urlParams.get('token') || urlParams.get('booking_id');
       
       if (tokenParam) {
         document.getElementById('tokenInput').value = tokenParam;
+        // Save to localStorage for persistence
+        localStorage.setItem('activeServiceToken', tokenParam);
         checkStatus();
       } else {
-        // Check sessionStorage for active token
-        const activeToken = sessionStorage.getItem('currentToken') || sessionStorage.getItem('labToken');
-        if (activeToken) {
-          document.getElementById('tokenInput').value = activeToken;
+        // Check localStorage first (persists across sessions), then sessionStorage
+        const savedToken = localStorage.getItem('activeServiceToken') || 
+                          sessionStorage.getItem('currentToken') || 
+                          sessionStorage.getItem('labToken');
+        if (savedToken) {
+          document.getElementById('tokenInput').value = savedToken;
+          // Auto-check the saved token
+          checkStatus();
         }
       }
     };
@@ -261,8 +380,6 @@
       const tokenInput = document.getElementById('tokenInput').value.trim().toUpperCase();
       const searchBtn = document.getElementById('searchBtn');
       const errorMessage = document.getElementById('errorMessage');
-      const resultSection = document.getElementById('resultSection');
-      const searchSection = document.getElementById('searchSection');
 
       if (!tokenInput) {
         showError('Please enter a token number or booking ID');
@@ -279,22 +396,33 @@
         const data = await response.json();
 
         if (data.success && data.status !== 'not_found') {
+          currentTokenData = data;
+          currentTokenData.token_number = data.token_number || data.booking_id || tokenInput;
+          // Save to localStorage for persistence
+          localStorage.setItem('activeServiceToken', currentTokenData.token_number);
           displayResult(data);
+          // Start auto-refresh
+          startAutoRefresh();
         } else {
           // Check lab token
           const labResponse = await fetch(`api/get_lab_queue.php?test_type=CBC&current_token=${encodeURIComponent(tokenInput)}`);
           const labData = await labResponse.json();
           
-          // Search in lab queue
           if (labData.success && labData.queue) {
             const found = labData.queue.find(t => t.token_number.toUpperCase() === tokenInput);
             if (found) {
+              currentTokenData = found;
+              currentTokenData.isLab = true;
+              localStorage.setItem('activeServiceToken', tokenInput);
               displayLabResult(found, labData);
+              startAutoRefresh();
             } else {
               showError('Token not found. Please check the token number and try again.');
+              localStorage.removeItem('activeServiceToken');
             }
           } else {
             showError('Token not found. Please check the token number and try again.');
+            localStorage.removeItem('activeServiceToken');
           }
         }
       } catch (error) {
@@ -302,7 +430,55 @@
         showError('Unable to check token status. Please try again.');
       } finally {
         searchBtn.disabled = false;
-        searchBtn.textContent = '🔍 Check Status';
+        searchBtn.textContent = 'Check Status';
+      }
+    }
+
+    function startAutoRefresh() {
+      if (refreshInterval) clearInterval(refreshInterval);
+      refreshInterval = setInterval(refreshStatus, 5000);
+    }
+
+    function stopAutoRefresh() {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+        refreshInterval = null;
+      }
+    }
+
+    async function refreshStatus() {
+      if (isRefreshing || !currentTokenData) return;
+      isRefreshing = true;
+
+      try {
+        const tokenNumber = currentTokenData.token_number;
+        
+        if (currentTokenData.isLab) {
+          // Refresh lab token
+          const response = await fetch(`api/get_lab_queue.php?test_type=CBC&current_token=${encodeURIComponent(tokenNumber)}`);
+          const data = await response.json();
+          if (data.success && data.queue) {
+            const found = data.queue.find(t => t.token_number.toUpperCase() === tokenNumber.toUpperCase());
+            if (found) {
+              currentTokenData = found;
+              currentTokenData.isLab = true;
+              displayLabResult(found, data);
+            }
+          }
+        } else {
+          // Refresh OPD token
+          const response = await fetch(`api/check_token_status.php?token=${encodeURIComponent(tokenNumber)}&booking_id=${encodeURIComponent(tokenNumber)}`);
+          const data = await response.json();
+          if (data.success && data.status !== 'not_found') {
+            currentTokenData = data;
+            currentTokenData.token_number = data.token_number || data.booking_id || tokenNumber;
+            displayResult(data);
+          }
+        }
+      } catch (error) {
+        console.error('Refresh error:', error);
+      } finally {
+        isRefreshing = false;
       }
     }
 
@@ -314,20 +490,18 @@
       const tokenDetails = document.getElementById('tokenDetails');
       const queuePositionCard = document.getElementById('queuePositionCard');
       const cancelledNotice = document.getElementById('cancelledNotice');
+      const queueDisplay = document.getElementById('queueDisplay');
+      const liveIndicator = document.getElementById('liveIndicator');
 
-      // Hide search, show results
       searchSection.style.display = 'none';
       resultSection.style.display = 'block';
 
-      // Set token number
       tokenNumberDisplay.textContent = data.token_number || data.booking_id;
 
-      // Set status badge
       const status = data.status.toLowerCase();
       statusBadge.textContent = status.toUpperCase();
       statusBadge.className = 'status-badge status-' + status;
 
-      // Build details
       let detailsHTML = '';
       if (data.doctor_name) {
         detailsHTML += `<div class="info-row"><span class="info-label">Doctor</span><span class="info-value">${data.doctor_name}</span></div>`;
@@ -339,22 +513,28 @@
         const loc = data.location;
         const locationParts = [loc.floor_block, loc.wing, loc.room_number].filter(p => p);
         if (locationParts.length > 0) {
-          detailsHTML += `<div class="info-row"><span class="info-label">Location</span><span class="info-value">📍 ${locationParts.join(' → ')}</span></div>`;
+          detailsHTML += `<div class="info-row"><span class="info-label">Location</span><span class="info-value">${locationParts.join(' > ')}</span></div>`;
         }
       }
       tokenDetails.innerHTML = detailsHTML || '<div class="info-row"><span class="info-label">Type</span><span class="info-value">OPD Consultation</span></div>';
 
-      // Show/hide position card and cancelled notice
       queuePositionCard.style.display = 'none';
       cancelledNotice.style.display = 'none';
+      queueDisplay.style.display = 'none';
+      liveIndicator.style.display = 'none';
 
       if (status === 'cancelled') {
         cancelledNotice.style.display = 'block';
         document.getElementById('cancelReason').textContent = data.reason 
           ? `Your token was cancelled ${data.reason}. Please contact reception.`
           : 'Your token has been cancelled. Please contact reception for assistance.';
+        stopAutoRefresh();
+        localStorage.removeItem('activeServiceToken');
+      } else if (status === 'completed') {
+        stopAutoRefresh();
+        localStorage.removeItem('activeServiceToken');
       } else if (status === 'waiting' || status === 'consulting') {
-        // Try to get queue position
+        liveIndicator.style.display = 'flex';
         fetchQueuePosition(data.token_number);
       }
     }
@@ -367,6 +547,7 @@
       const tokenDetails = document.getElementById('tokenDetails');
       const queuePositionCard = document.getElementById('queuePositionCard');
       const cancelledNotice = document.getElementById('cancelledNotice');
+      const liveIndicator = document.getElementById('liveIndicator');
 
       searchSection.style.display = 'none';
       resultSection.style.display = 'block';
@@ -379,11 +560,11 @@
 
       tokenDetails.innerHTML = `
         <div class="info-row"><span class="info-label">Test</span><span class="info-value">${token.test_name || queueData.test_name}</span></div>
-        <div class="info-row"><span class="info-label">Patient</span><span class="info-value">${token.patient_name}</span></div>
         <div class="info-row"><span class="info-label">Type</span><span class="info-value">Lab Test</span></div>
       `;
 
       cancelledNotice.style.display = 'none';
+      liveIndicator.style.display = 'flex';
       
       if (status === 'waiting') {
         queuePositionCard.style.display = 'block';
@@ -392,22 +573,87 @@
       } else {
         queuePositionCard.style.display = 'none';
       }
+
+      if (status === 'completed' || status === 'cancelled') {
+        liveIndicator.style.display = 'none';
+        stopAutoRefresh();
+        localStorage.removeItem('activeServiceToken');
+      }
     }
 
     async function fetchQueuePosition(tokenNumber) {
       try {
-        const response = await fetch(`api/get_live_queue.php?token=${encodeURIComponent(tokenNumber)}`);
+        const response = await fetch(`api/get_live_queue.php?current_token=${encodeURIComponent(tokenNumber)}`);
         const data = await response.json();
         
-        if (data.success && data.position !== undefined) {
+        if (data.success) {
           const queuePositionCard = document.getElementById('queuePositionCard');
+          const queueDisplay = document.getElementById('queueDisplay');
+          
+          // Find position
+          const myPosition = data.people_ahead !== undefined ? data.people_ahead : 0;
+          
           queuePositionCard.style.display = 'block';
-          document.getElementById('positionNumber').textContent = data.position;
-          document.getElementById('positionLabel').textContent = data.position === 1 ? 'You are next!' : 'people ahead of you';
+          document.getElementById('positionNumber').textContent = myPosition;
+          document.getElementById('positionLabel').textContent = myPosition === 0 ? 'You are next!' : 'people ahead of you';
+          
+          // Render queue display
+          if (data.queue && data.queue.length > 0) {
+            queueDisplay.style.display = 'block';
+            renderQueueDisplay(data.queue, tokenNumber);
+          }
         }
       } catch (error) {
         console.log('Could not fetch queue position');
       }
+    }
+
+    function renderQueueDisplay(queue, myToken) {
+      const queueList = document.getElementById('queueList');
+      let html = '';
+      
+      // Show only first 5 items in queue
+      const displayQueue = queue.slice(0, 5);
+      
+      displayQueue.forEach((item, index) => {
+        const isYou = item.is_you || item.token_number.toUpperCase() === myToken.toUpperCase();
+        const isConsulting = item.status === 'consulting';
+        const isPrebooked = item.token_type === 'prebooked' || item.token_number.startsWith('PB');
+        
+        let itemClass = '';
+        let badgeClass = '';
+        let badgeText = '';
+        
+        if (isYou) {
+          itemClass = 'you';
+          badgeClass = 'badge-you';
+          badgeText = 'YOU';
+        } else if (isConsulting) {
+          itemClass = 'consulting';
+          badgeClass = 'badge-consulting';
+          badgeText = 'In Consult';
+        } else if (isPrebooked) {
+          badgeClass = 'badge-prebooked';
+          badgeText = 'Booked';
+        } else {
+          badgeClass = 'badge-walkin';
+          badgeText = 'Walk-in';
+        }
+        
+        html += `
+          <div class="queue-item-mini ${itemClass}">
+            <div class="queue-item-position">${item.position}</div>
+            <span class="queue-item-token">${item.token_number}</span>
+            <span class="queue-item-badge ${badgeClass}">${badgeText}</span>
+          </div>
+        `;
+      });
+      
+      if (queue.length > 5) {
+        html += `<div style="text-align: center; color: #999; font-size: 12px; margin-top: 10px;">+${queue.length - 5} more in queue</div>`;
+      }
+      
+      queueList.innerHTML = html;
     }
 
     function showError(message) {
@@ -417,12 +663,19 @@
     }
 
     function resetSearch() {
+      stopAutoRefresh();
+      currentTokenData = null;
       document.getElementById('searchSection').style.display = 'block';
       document.getElementById('resultSection').style.display = 'none';
       document.getElementById('errorMessage').style.display = 'none';
       document.getElementById('tokenInput').value = '';
       document.getElementById('tokenInput').focus();
     }
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+      stopAutoRefresh();
+    });
 
     // Allow Enter key to search
     document.getElementById('tokenInput').addEventListener('keypress', function(e) {

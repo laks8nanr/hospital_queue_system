@@ -482,36 +482,36 @@
   <div class="dashboard-main">
     <div id="messageContainer"></div>
 
-    <!-- Current Token Card -->
+    <!-- Current Token Card - Enhanced with action buttons -->
     <div class="current-token-card">
-      <div class="token-label">Current Token</div>
+      <div class="token-label">Currently In Process</div>
       <div class="token-number" id="currentToken">--</div>
       <div class="patient-name" id="patientName">No active token</div>
+      <div class="token-type-badge" id="tokenTypeBadge" style="display:none;"></div>
+      
+      <!-- Token Action Buttons -->
+      <div class="token-actions" id="tokenActions" style="display:none;">
+        <button class="token-action-btn btn-complete" id="btnRelease" title="Complete consultation">
+          <span class="btn-icon">✓</span> Release
+        </button>
+        <button class="token-action-btn btn-cancel" id="btnCancelCurrent" title="Cancel token (late/no show)">
+          <span class="btn-icon">✕</span> Cancel
+        </button>
+        <button class="token-action-btn btn-review" id="btnMarkReview" title="Mark for follow-up review">
+          <span class="btn-icon">↻</span> Review
+        </button>
+      </div>
     </div>
 
-    <!-- Token Status Section -->
-    <div class="status-section">
-      <label class="status-label" for="tokenStatus">Token Status</label>
-      <select id="tokenStatus" class="status-select" disabled>
-        <option value="">-- Select Status --</option>
-        <option value="In Process">In Process</option>
-        <option value="Waiting">Waiting</option>
-        <option value="Completed">Completed</option>
-        <option value="Cancelled">Cancelled</option>
-      </select>
-      <div class="queue-status" id="queueStatus">No tokens in queue</div>
-    </div>
-
-    <!-- Action Buttons -->
+    <!-- Quick Actions Section -->
     <div class="actions-section">
-      <button class="action-btn btn-primary" id="nextPatientBtn" disabled>Next Patient</button>
-      <button class="action-btn btn-danger" id="cancelTokenBtn" disabled>Cancel Token</button>
+      <button class="action-btn btn-primary" id="nextPatientBtn" disabled>Call Next Patient</button>
     </div>
 
-    <!-- Queue List Section -->
+    <!-- Queue List Section - Shows 10 patients -->
     <div class="queue-list-section" id="queueListSection">
       <div class="queue-list-header">
-        <span class="queue-list-title">Waiting Queue</span>
+        <span class="queue-list-title">Queue Overview</span>
         <span class="queue-count" id="queueCount">0</span>
       </div>
       <div class="queue-list" id="queueList">

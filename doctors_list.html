@@ -873,10 +873,7 @@
           var fees = doctor.fees || 300;
           var waitTime = doctor.wait_time || 0;
           
-          var waitClass = waitTime <= 15 ? 'wait-time-low' : 
-                           waitTime <= 30 ? 'wait-time-medium' : 'wait-time-high';
-          
-          var waitDisplay = waitTime === 0 ? 'No wait' : '~' + waitTime + ' min';
+          // Wait time display removed - not showing prebooked queue info to walk-in patients
           
           // Build location string
           var locationParts = [doctor.floor_block, doctor.wing, doctor.room_number].filter(function(p) { return p; });
@@ -900,7 +897,7 @@
               '</div>' +
               '<div class="stat-box">' +
                 '<span class="stat-icon">⏱️</span>' +
-                '<span class="stat-value ' + waitClass + '">' + waitDisplay + '</span>' +
+                '<span class="stat-value wait-time-low">No wait</span>' +
                 '<span class="stat-label">Est. Wait Time</span>' +
               '</div>' +
               '<div class="stat-box">' +
@@ -949,8 +946,7 @@
       '<h4>👨‍⚕️ ' + name + '</h4>' +
       '<p>' + qualification + '</p>' +
       '<p><strong>' + dept + '</strong> | 🕐 ' + time + '</p>' +
-      '<p style="color: #1976d2;">📍 ' + location + '</p>' +
-      '<p style="color: #27ae60; font-weight: bold;">Est. Wait: ~' + waitTime + ' mins</p>';
+      '<p style="color: #1976d2;">📍 ' + location + '</p>';
     
     document.getElementById('feesAmount').textContent = fees;
     
@@ -1057,9 +1053,10 @@
     .then(response => response.json())
     .then(data => {
       if (data.success) {
-        // Store token info
+        // Store token info (both sessionStorage and localStorage for persistence)
         sessionStorage.setItem('currentToken', data.data.token_number);
         sessionStorage.setItem('tokenId', data.data.id || '');
+        localStorage.setItem('activeServiceToken', data.data.token_number);
         
         // Display token result
         showTokenDisplay(data.data, name);
@@ -1168,37 +1165,33 @@
       var item = queueData[i];
       var isYou = item.is_you || (currentToken && item.token_number === currentToken);
       var type = isYou ? 'you' : (item.status === 'consulting' ? 'current' : item.token_type);
-      var badge = 'Waiting';
+      var badge = '';
       var extraClass = '';
-      var displayName = item.patient_name;
       
+      // Only show token number, hide names for privacy
       if (isYou) {
         badge = 'YOU';
-        displayName = item.patient_name + ' (You)';
         extraClass = ' you-highlight';
       } else if (item.status === 'consulting') {
-        badge = 'Consulting Now';
-      } else if (item.token_type === 'prebooked') {
+        badge = 'Consulting';
+      } else if (item.token_type === 'prebooked' || (item.token_number && item.token_number.startsWith('PB'))) {
+        badge = 'Prebooked';
         if (item.checkin_status === 'not_checked_in') {
-          badge = 'Pre-booked (Not Arrived)';
           extraClass = ' not-arrived';
-        } else {
-          badge = 'Pre-booked';
         }
       } else if (item.token_type === 'review') {
         badge = 'Review';
-      } else if (item.token_type === 'walkin') {
+      } else {
         badge = 'Walk-in';
       }
       
       html += '<div class="queue-item ' + type + extraClass + '">' +
         '<div class="queue-position">' + item.position + '</div>' +
         '<div class="queue-info">' +
-          '<div class="queue-name">' +
-            displayName +
+          '<div class="queue-name">' + item.token_number +
             ' <span class="queue-badge badge-' + type + '">' + badge + '</span>' +
           '</div>' +
-          '<div class="queue-status">Token: ' + item.token_number + '</div>' +
+          (isYou ? '<div class="queue-status">Your token</div>' : '') +
         '</div>' +
       '</div>';
     }
