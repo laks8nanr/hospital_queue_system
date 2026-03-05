@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab Test Booking - MediNova Hospital</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0a4d68 0%, #088395 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .test-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .test-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        }
+
+        .test-card.mri { border-top: 4px solid #3498db; }
+        .test-card.ct-scan { border-top: 4px solid #2ecc71; }
+        .test-card.blood-test { border-top: 4px solid #9b59b6; }
+        .test-card.x-ray { border-top: 4px solid #f39c12; }
+
+        .test-icon {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+        }
+
+        .test-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .test-fee {
+            color: #27ae60;
+            font-weight: 600;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .modal-overlay.active { display: flex; justify-content: center; align-items: flex-start; }
+
+        .modal {
+            background: white;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 100%;
+            margin: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            padding: 25px;
+            text-align: center;
+            color: white;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .modal-header.mri { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .modal-header.ct-scan { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+        .modal-header.blood-test { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        .modal-header.x-ray { background: linear-gradient(135deg, #f39c12, #e67e22); }
+
+        .modal-header .icon { font-size: 3rem; }
+        .modal-header h3 { margin: 10px 0 0; }
+
+        .modal-body { padding: 25px; }
+
+        .section-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 20px 0 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title:first-child { margin-top: 0; }
+
+        .info-cards {
+            display: flex;
+            gap: 15px;
+        }
+
+        .info-card {
+            flex: 1;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .info-card.time { background: #e3f2fd; border: 2px solid #64b5f6; }
+        .info-card.fee { background: #e8f5e9; border: 2px solid #81c784; }
+
+        .info-card .value { font-size: 1.3rem; font-weight: 700; color: #2c3e50; }
+        .info-card .label { font-size: 0.85rem; color: #666; }
+
+        /* Date Selection */
+        .date-selector {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 10px 0;
+        }
+
+        .date-btn {
+            min-width: 70px;
+            padding: 12px 8px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .date-btn:hover { border-color: #088395; }
+        .date-btn.selected { background: #088395; color: white; border-color: #088395; }
+
+        .date-btn .day { font-size: 0.75rem; opacity: 0.8; }
+        .date-btn .date { font-size: 1.2rem; font-weight: 700; }
+        .date-btn .month { font-size: 0.7rem; }
+
+        /* Time Slots */
+        .time-slots {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .time-slot {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .time-slot:hover:not(.disabled) { border-color: #088395; }
+        .time-slot.selected { background: #088395; color: white; border-color: #088395; }
+        .time-slot.disabled { background: #f5f5f5; color: #999; cursor: not-allowed; }
+
+        /* Form */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: 500; margin-bottom: 6px; color: #2c3e50; }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #088395; }
+
+        .form-row { display: flex; gap: 15px; }
+        .form-row .form-group { flex: 1; }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .btn-primary { background: linear-gradient(135deg, #088395, #0a4d68); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(8,131,149,0.4); }
+        .btn-primary:disabled { background: #bdc3c7; cursor: not-allowed; transform: none; }
+
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid #ddd;
+            color: #666;
+            margin-top: 10px;
+        }
+        .btn-secondary:hover { background: #f5f5f5; }
+
+        /* Success Display */
+        .booking-success {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            border-radius: 15px;
+            color: white;
+        }
+
+        .booking-success.show { display: block; }
+
+        .booking-code {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 15px 0;
+            letter-spacing: 2px;
+        }
+
+        .booking-info { font-size: 0.9rem; opacity: 0.95; }
+        .booking-info p { margin: 5px 0; }
+
+        .instructions {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            font-size: 0.85rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: white;
+            text-decoration: none;
+            opacity: 0.9;
+        }
+
+        .back-link:hover { opacity: 1; }
+
+        /* Check-in Card */
+        .checkin-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .checkin-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .checkin-card p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .checkin-btn {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .checkin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(155,89,182,0.4);
+        }
+
+        @media (max-width: 600px) {
+            .test-grid { grid-template-columns: repeat(2, 1fr); }
+            .time-slots { grid-template-columns: repeat(3, 1fr); }
+            .form-row { flex-direction: column; gap: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔬 Book Lab Test</h1>
+            <p>Schedule your lab test in advance</p>
+        </div>
+
+        <!-- Already have booking? -->
+        <div class="checkin-card">
+            <h3>📋 Already Have a Booking?</h3>
+            <p>Enter your booking code to check-in and get your token</p>
+            <button class="checkin-btn" onclick="window.location.href='lab_checkin.html'">Check In Now →</button>
+        </div>
+
+        <div class="test-grid">
+            <div class="test-card mri" onclick="openModal('mri')">
+                <div class="test-icon">🧲</div>
+                <div class="test-name">MRI Scan</div>
+                <div class="test-fee">₹8,000</div>
+            </div>
+            <div class="test-card ct-scan" onclick="openModal('ct-scan')">
+                <div class="test-icon">🌀</div>
+                <div class="test-name">CT Scan</div>
+                <div class="test-fee">₹5,000</div>
+            </div>
+            <div class="test-card blood-test" onclick="openModal('blood-test')">
+                <div class="test-icon">🩸</div>
+                <div class="test-name">Blood Test</div>
+                <div class="test-fee">₹500</div>
+            </div>
+            <div class="test-card x-ray" onclick="openModal('x-ray')">
+                <div class="test-icon">☢️</div>
+                <div class="test-name">X-Ray</div>
+                <div class="test-fee">₹800</div>
+            </div>
+        </div>
+
+        <a href="patient_dashboard.php" class="back-link">← Back to Dashboard</a>
+    </div>
+
+    <!-- Booking Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header" id="modalHeader">
+                <div class="icon" id="modalIcon"></div>
+                <h3 id="modalTitle"></h3>
+            </div>
+            <div class="modal-body">
+                <div class="info-cards">
+                    <div class="info-card time">
+                        <div class="value" id="testDuration">30-60 mins</div>
+                        <div class="label">Duration</div>
+                    </div>
+                    <div class="info-card fee">
+                        <div class="value" id="testFee">₹8,000</div>
+                        <div class="label">Fee</div>
+                    </div>
+                </div>
+
+                <div class="section-title">📅 Select Date</div>
+                <div class="date-selector" id="dateSelector"></div>
+
+                <div class="section-title">⏰ Select Time Slot</div>
+                <div class="time-slots" id="timeSlots"></div>
+
+                <div class="section-title">👤 Patient Information</div>
+                <form id="bookingForm">
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" id="patientName" placeholder="Enter patient name" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Age *</label>
+                            <input type="number" id="patientAge" placeholder="Age" min="1" max="120" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Gender *</label>
+                            <select id="patientGender" required>
+                                <option value="">Select</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number *</label>
+                        <input type="tel" id="patientPhone" placeholder="10-digit number" maxlength="10" required>
+                    </div>
+                </form>
+
+                <!-- Booking Success Display -->
+                <div class="booking-success" id="bookingSuccess">
+                    <div>🎉 Booking Confirmed!</div>
+                    <div class="booking-code" id="bookingCode">LB0001</div>
+                    <div class="booking-info">
+                        <p><strong id="successTestName">MRI Scan</strong></p>
+                        <p id="successPatientName">Patient Name</p>
+                        <p id="successDateTime">Monday, Jan 15 at 10:00 AM</p>
+                    </div>
+                    <div class="instructions">
+                        📌 <strong>Important:</strong> Save your Booking Code. Present it at the lab counter on your appointment day to generate your token.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: 0 25px 25px;">
+                <button class="btn btn-primary" id="bookBtn" onclick="confirmBooking()">
+                    📅 Confirm Booking
+                </button>
+                <button class="btn btn-secondary" id="closeBtn" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" id="homeBtn" style="display:none;" onclick="goHome()">
+                    🏠 Back to Dashboard
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const testData = {
+            'mri': { name: 'MRI Scan', icon: '🧲', duration: '30-60 mins', fee: 8000, code: 'MRI', slots: 45, days: 21 },
+            'ct-scan': { name: 'CT Scan', icon: '🌀', duration: '15-30 mins', fee: 5000, code: 'CT', slots: 30, days: 14 },
+            'blood-test': { name: 'Blood Test', icon: '🩸', duration: '5-10 mins', fee: 500, code: 'BT', slots: 10, days: 7 },
+            'x-ray': { name: 'X-Ray', icon: '☢️', duration: '10-15 mins', fee: 800, code: 'XR', slots: 15, days: 7 }
+        };
+
+        let selectedTest = null;
+        let selectedDate = null;
+        let selectedTime = null;
+
+        function openModal(testType) {
+            selectedTest = testType;
+            const test = testData[testType];
+            
+            document.getElementById('modalHeader').className = 'modal-header ' + testType;
+            document.getElementById('modalIcon').textContent = test.icon;
+            document.getElementById('modalTitle').textContent = test.name;
+            document.getElementById('testDuration').textContent = test.duration;
+            document.getElementById('testFee').textContent = '₹' + test.fee.toLocaleString();
+
+            generateDateOptions(test.days);
+            document.getElementById('bookingSuccess').classList.remove('show');
+            document.getElementById('bookingForm').style.display = 'block';
+            document.getElementById('bookBtn').style.display = 'block';
+            document.getElementById('closeBtn').style.display = 'block';
+            document.getElementById('homeBtn').style.display = 'none';
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            selectedDate = null;
+            selectedTime = null;
+        }
+
+        function generateDateOptions(advanceDays) {
+            const container = document.getElementById('dateSelector');
+            container.innerHTML = '';
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+            for (let i = 0; i < Math.min(advanceDays, 14); i++) {
+                const date = new Date();
+                date.setDate(date.getDate() + i);
+                
+                const btn = document.createElement('button');
+                btn.className = 'date-btn';
+                btn.dataset.date = date.toISOString().split('T')[0];
+                btn.innerHTML = `
+                    <div class="day">${days[date.getDay()]}</div>
+                    <div class="date">${date.getDate()}</div>
+                    <div class="month">${months[date.getMonth()]}</div>
+                `;
+                btn.onclick = () => selectDate(btn);
+                container.appendChild(btn);
+            }
+
+            // Auto-select first date
+            const firstBtn = container.querySelector('.date-btn');
+            if (firstBtn) selectDate(firstBtn);
+        }
+
+        function selectDate(btn) {
+            document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedDate = btn.dataset.date;
+            generateTimeSlots();
+        }
+
+        function generateTimeSlots() {
+            const container = document.getElementById('timeSlots');
+            container.innerHTML = '';
+            const startHour = 9;
+            const endHour = 17;
+            const now = new Date();
+            const isToday = selectedDate === now.toISOString().split('T')[0];
+
+            for (let hour = startHour; hour < endHour; hour++) {
+                for (let min = 0; min < 60; min += 30) {
+                    const timeStr = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
+                    const displayTime = formatTime(hour, min);
+                    
+                    const slot = document.createElement('button');
+                    slot.type = 'button';
+                    slot.className = 'time-slot';
+                    slot.dataset.time = timeStr;
+                    slot.textContent = displayTime;
+
+                    // Disable past times for today
+                    if (isToday && (hour < now.getHours() || (hour === now.getHours() && min <= now.getMinutes()))) {
+                        slot.classList.add('disabled');
+                    } else {
+                        slot.onclick = () => selectTime(slot);
+                    }
+                    container.appendChild(slot);
+                }
+            }
+        }
+
+        function formatTime(hour, min) {
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const h = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
+            return `${h}:${min.toString().padStart(2, '0')} ${ampm}`;
+        }
+
+        function selectTime(slot) {
+            if (slot.classList.contains('disabled')) return;
+            document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+            slot.classList.add('selected');
+            selectedTime = slot.dataset.time;
+        }
+
+        async function confirmBooking() {
+            const name = document.getElementById('patientName').value.trim();
+            const age = document.getElementById('patientAge').value;
+            const gender = document.getElementById('patientGender').value;
+            const phone = document.getElementById('patientPhone').value.trim();
+
+            if (!name || !age || !gender || !phone) {
+                alert('Please fill all required fields');
+                return;
+            }
+            if (phone.length !== 10 || !/^\d+$/.test(phone)) {
+                alert('Please enter a valid 10-digit phone number');
+                return;
+            }
+            if (!selectedDate || !selectedTime) {
+                alert('Please select date and time slot');
+                return;
+            }
+
+            const test = testData[selectedTest];
+            const btn = document.getElementById('bookBtn');
+            btn.disabled = true;
+            btn.textContent = 'Processing...';
+
+            try {
+                const response = await fetch('api/book_lab_test.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        test_code: test.code,
+                        patient_name: name,
+                        patient_age: parseInt(age),
+                        patient_gender: gender,
+                        patient_phone: phone,
+                        appointment_date: selectedDate,
+                        appointment_time: selectedTime,
+                        payment_amount: test.fee
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccess(data.data);
+                } else {
+                    alert(data.message);
+                    btn.disabled = false;
+                    btn.textContent = '📅 Confirm Booking';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Booking failed. Please try again.');
+                btn.disabled = false;
+                btn.textContent = '📅 Confirm Booking';
+            }
+        }
+
+        function showSuccess(data) {
+            document.getElementById('bookingCode').textContent = data.booking_code;
+            document.getElementById('successTestName').textContent = data.test_name;
+            document.getElementById('successPatientName').textContent = data.patient_name;
+            document.getElementById('successDateTime').textContent = data.display_date + ' at ' + data.display_time;
+
+            document.getElementById('bookingForm').style.display = 'none';
+            document.querySelectorAll('.section-title').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.date-selector, .time-slots, .info-cards').forEach(el => el.style.display = 'none');
+            document.getElementById('bookingSuccess').classList.add('show');
+            document.getElementById('bookBtn').style.display = 'none';
+            document.getElementById('closeBtn').style.display = 'none';
+            document.getElementById('homeBtn').style.display = 'block';
+        }
+
+        function goHome() {
+            window.location.href = 'patient_dashboard.php';
+        }
+
+        // Close modal on overlay click
+        document.getElementById('modalOverlay').onclick = function(e) {
+            if (e.target === this) closeModal();
+        };
+    </script>
+</body>
+</html>

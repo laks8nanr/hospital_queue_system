@@ -1,48 +1,103 @@
 <!-- Walk-in patient requirement selection -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DORA Hospital - Walk-in</title>
-  <link rel="stylesheet" href="style.css">
+  <title>MediNova Hospital - Walk-in</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0a4d68 0%, #088395 50%, #05bfdb 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    .header { display: flex; justify-content: center; padding: 20px 0 30px; }
+    .logo-container { display: flex; align-items: center; gap: 15px; }
+    .logo-symbol {
+      width: 55px; height: 55px;
+      background: linear-gradient(135deg, #fff 0%, #e0f7fa 100%);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+    .logo-text { color: white; }
+    .logo-title { font-size: 1.6rem; font-weight: 700; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+    .logo-subtitle { font-size: 0.8rem; opacity: 0.9; letter-spacing: 2px; text-transform: uppercase; }
+    .main-container {
+      max-width: 500px; width: 100%;
+      background: white; border-radius: 25px;
+      padding: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    .page-title { text-align: center; margin-bottom: 30px; }
+    .page-title h2 { color: #0a4d68; font-size: 1.5rem; font-weight: 600; }
+    .page-title p { color: #666; font-size: 0.9rem; margin-top: 5px; }
+    .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .option-card {
+      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      border-radius: 18px; padding: 30px 20px; text-align: center;
+      cursor: pointer; transition: all 0.3s; border: 2px solid transparent;
+    }
+    .option-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(8,131,149,0.2);
+      border-color: #088395;
+    }
+    .option-icon { font-size: 3rem; margin-bottom: 15px; display: block; }
+    .option-name { font-weight: 600; color: #2c3e50; font-size: 1.1rem; }
+    .back-link { display: block; text-align: center; margin-top: 25px; color: white; text-decoration: none; font-weight: 500; }
+    .back-link:hover { text-decoration: underline; }
+  </style>
 </head>
-<body class="center">
-
-<h1 class="hospital-title">DORA Hospital</h1>
-<h2>Select the Requirement</h2>
-
-<div class="button-container">
-  <!-- Consultation button - goes directly to department selection -->
-  <div class="box-btn" onclick="selectRequirement('consultation')">
-    <div class="box-content">
-      <span class="box-icon">🩺</span>
-      <span class="box-text">Consultation</span>
+<body>
+  <div class="header">
+    <div class="logo-container">
+      <div class="logo-symbol">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 3H15V9H21V15H15V21H9V15H3V9H9V3Z" fill="#0a4d68" stroke="#088395" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <div class="logo-title">MediNova Hospital</div>
+        <div class="logo-subtitle">Smart Healthcare</div>
+      </div>
     </div>
   </div>
 
-  <!-- Lab button -->
-  <div class="box-btn lab" onclick="selectRequirement('lab')">
-    <div class="box-content">
-      <span class="box-icon">🔬</span>
-      <span class="box-text">Lab</span>
+  <div class="main-container">
+    <div class="page-title">
+      <h2>🚶 Walk-in Patient</h2>
+      <p>Select your requirement</p>
+    </div>
+
+    <div class="options-grid">
+      <div class="option-card" onclick="selectRequirement('consultation')">
+        <span class="option-icon">🩺</span>
+        <div class="option-name">Consultation</div>
+      </div>
+      <div class="option-card" onclick="selectRequirement('lab')">
+        <span class="option-icon">🔬</span>
+        <div class="option-name">Lab Test</div>
+      </div>
     </div>
   </div>
-</div>
+
+  <a href="index.html" class="back-link">← Back to Services</a>
 
 <script>
   function selectRequirement(type) {
     sessionStorage.setItem('selectedRequirement', type);
-    
     if (type === 'consultation') {
-      // Go directly to department selection (form moved to doctor selection page)
       window.location.href = 'walkin.html';
     } else if (type === 'lab') {
-      // Go to lab test selection page
       window.location.href = 'select_test.html';
     }
   }
 </script>
-
 </body>
 </html>

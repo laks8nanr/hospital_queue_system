@@ -4,20 +4,21 @@ header('Access-Control-Allow-Origin: *');
 
 include '../db.php';
 
-// Get booking ID from query string
-$booking_id = isset($_GET['booking_id']) ? strtoupper(trim($_GET['booking_id'])) : '';
+// Get patient ID from query string
+$patient_id = isset($_GET['patient_id']) ? strtoupper(trim($_GET['patient_id'])) : '';
 
-if (empty($booking_id)) {
+if (empty($patient_id)) {
     echo json_encode([
         'success' => false,
-        'message' => 'Booking ID is required'
+        'message' => 'Patient ID is required'
     ]);
     exit;
 }
 
-// Query to get booking details with doctor and department info
+// Query to get booking details with doctor and department info - find by patient_id
 $query = "SELECT 
     pb.booking_id,
+    pb.patient_id,
     pb.patient_name,
     pb.patient_age,
     pb.patient_phone,
@@ -37,19 +38,21 @@ $query = "SELECT
 FROM prebooked_appointments pb
 JOIN doctors d ON pb.doctor_id = d.id
 JOIN departments dept ON pb.department_id = dept.id
-WHERE pb.booking_id = ?
+WHERE pb.patient_id = ?
 AND pb.status IN ('booked', 'confirmed')
-AND pb.appointment_date >= CURDATE()";
+AND pb.appointment_date >= CURDATE()
+ORDER BY pb.appointment_date ASC, pb.appointment_time ASC
+LIMIT 1";
 
 $stmt = $conn->prepare($query);
-$stmt->bind_param("s", $booking_id);
+$stmt->bind_param("s", $patient_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows === 0) {
     echo json_encode([
         'success' => false,
-        'message' => 'Booking not found or already used. Please check your Booking ID.'
+        'message' => 'No active booking found for this Patient ID.'
     ]);
     exit;
 }

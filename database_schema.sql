@@ -39,13 +39,17 @@ CREATE TABLE IF NOT EXISTS doctors (
 -- PREBOOKED APPOINTMENTS TABLE
 -- Added by hospital reception
 -- Patients verify and check-in through website
+-- Includes patient authentication credentials
 -- ============================================
 CREATE TABLE IF NOT EXISTS prebooked_appointments (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id VARCHAR(20) UNIQUE,                    -- PRE001, PRE002 (unique login ID for prebooked patients)
     booking_id VARCHAR(20) NOT NULL UNIQUE,           -- PB001, PB002, etc. (also used as token number)
     patient_name VARCHAR(100) NOT NULL,
     patient_age INT NOT NULL,
     patient_phone VARCHAR(20) NOT NULL,
+    email VARCHAR(100),                               -- Email for login
+    password VARCHAR(255),                            -- Hashed password for login
     department_id INT NOT NULL,
     doctor_id INT NOT NULL,
     appointment_date DATE NOT NULL,
@@ -57,6 +61,7 @@ CREATE TABLE IF NOT EXISTS prebooked_appointments (
     
     INDEX idx_date_doctor (appointment_date, doctor_id),
     INDEX idx_status (status),
+    INDEX idx_email (email),
     FOREIGN KEY (department_id) REFERENCES departments(id),
     FOREIGN KEY (doctor_id) REFERENCES doctors(id)
 );
@@ -85,6 +90,28 @@ CREATE TABLE IF NOT EXISTS tokens (
     INDEX idx_booking_id (booking_id),
     FOREIGN KEY (department_id) REFERENCES departments(id),
     FOREIGN KEY (doctor_id) REFERENCES doctors(id)
+);
+
+-- ============================================
+-- PATIENT SESSIONS TABLE
+-- Tracks login/logout for all patient types
+-- ============================================
+CREATE TABLE IF NOT EXISTS patient_sessions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id VARCHAR(50) NOT NULL,                  -- Patient ID (PRE001, PAT001, etc.)
+    patient_name VARCHAR(100) NOT NULL,
+    patient_type ENUM('registered', 'prebooked', 'walkin') NOT NULL DEFAULT 'registered',
+    login_time DATETIME NOT NULL,
+    logout_time DATETIME DEFAULT NULL,
+    session_duration_minutes INT DEFAULT NULL,        -- Calculated on logout
+    ip_address VARCHAR(45) DEFAULT NULL,
+    user_agent VARCHAR(255) DEFAULT NULL,
+    status ENUM('active', 'logged_out', 'expired') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    INDEX idx_patient_id (patient_id),
+    INDEX idx_login_time (login_time),
+    INDEX idx_status (status)
 );
 
 -- ============================================

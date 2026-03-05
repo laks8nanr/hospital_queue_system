@@ -7,7 +7,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>DORA Hospital - Prebooked Patient</title>
+  <title>MediNova Hospital - Prebooked Patient</title>
   <link rel="stylesheet" href="style.css">
   <script src="notifications.js"></script>
   <style>
@@ -164,33 +164,6 @@
     .confirm-btn:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 15px rgba(155, 89, 182, 0.4);
-    }
-    
-    .pay-btn {
-      width: 100%;
-      padding: 18px;
-      background: linear-gradient(135deg, #f39c12, #e67e22);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      font-size: 18px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s;
-      display: none;
-    }
-    
-    .pay-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4);
-    }
-    
-    .pay-btn.show {
-      display: block;
-    }
-    
-    .pay-btn.paid {
-      background: linear-gradient(135deg, #27ae60, #2ecc71);
     }
     
     .checkin-btn {
@@ -556,16 +529,16 @@
 </head>
 <body class="center">
 
-<h1 class="hospital-title">DORA Hospital</h1>
+<h1 class="hospital-title" style="color: #8e44ad;">MediNova Hospital</h1>
 
-<!-- VERIFY MODE: Enter Booking ID -->
+<!-- VERIFY MODE: Enter Patient ID -->
 <div id="verifyMode" class="verify-mode">
   <h2>Prebooked Patient</h2>
   
   <div class="verify-container">
-    <p style="color: #666; margin-bottom: 20px;">Enter your Booking ID to check-in</p>
+    <p style="color: #666; margin-bottom: 20px;">Enter your Patient ID to check-in</p>
     
-    <input type="text" id="bookingIdInput" class="booking-input" placeholder="PB001" maxlength="10">
+    <input type="text" id="patientIdInput" class="booking-input" placeholder="PRE001" maxlength="10">
     
     <div class="error-msg" id="verifyError"></div>
     
@@ -650,10 +623,6 @@
     
     <button class="confirm-btn" id="confirmBtn" onclick="confirmBooking()">
       ✓ Confirm Details
-    </button>
-    
-    <button class="pay-btn" id="payBtn" onclick="payFees()">
-      💳 Pay Consultation Fee: ₹<span id="feeAmount">0</span>
     </button>
     
     <button class="checkin-btn" id="checkinBtn" onclick="checkIn()">
@@ -752,19 +721,18 @@
 <script>
   var bookingData = null;
   var confirmed = false;
-  var paid = false;
   var currentToken = null;
   var currentPatientName = null;
   var refreshInterval = null;
   var hasActiveToken = false;
   
   function verifyBooking() {
-    var bookingId = document.getElementById('bookingIdInput').value.trim().toUpperCase();
+    var patientId = document.getElementById('patientIdInput').value.trim().toUpperCase();
     var errorDiv = document.getElementById('verifyError');
     var verifyBtn = document.getElementById('verifyBtn');
     
-    if (!bookingId) {
-      errorDiv.textContent = 'Please enter your Booking ID';
+    if (!patientId) {
+      errorDiv.textContent = 'Please enter your Patient ID';
       return;
     }
     
@@ -772,8 +740,8 @@
     verifyBtn.disabled = true;
     verifyBtn.textContent = 'Verifying...';
     
-    // Call API to verify booking
-    fetch('api/verify_booking.php?booking_id=' + encodeURIComponent(bookingId))
+    // Call API to verify booking with patient ID
+    fetch('api/verify_booking.php?patient_id=' + encodeURIComponent(patientId))
       .then(function(response) { return response.json(); })
       .then(function(data) {
         if (data.success) {
@@ -811,20 +779,15 @@
     document.getElementById('appointmentDate').textContent = bookingData.appointment_date;
     document.getElementById('appointmentTime').textContent = formatTime(bookingData.appointment_time);
     
-    // Set fee amount
-    document.getElementById('feeAmount').textContent = bookingData.doctor_fees;
-    
     // Switch to details mode
     document.getElementById('verifyMode').style.display = 'none';
     document.getElementById('detailsMode').style.display = 'block';
     
     // Reset state
     confirmed = false;
-    paid = false;
     hasActiveToken = false;
     document.getElementById('activeTokenWarning').style.display = 'none';
     document.getElementById('confirmBtn').style.display = 'block';
-    document.getElementById('payBtn').classList.remove('show', 'paid');
     document.getElementById('checkinBtn').classList.remove('active');
     
     // Check for active token BEFORE showing confirm button
@@ -876,31 +839,12 @@
   function confirmBooking() {
     confirmed = true;
     document.getElementById('confirmBtn').style.display = 'none';
-    document.getElementById('payBtn').classList.add('show');
-  }
-  
-  function payFees() {
-    // Block if active token exists
-    if (hasActiveToken) {
-      alert('You already have an active token. Please complete or cancel it before checking in.');
-      return;
-    }
-    
-    var payBtn = document.getElementById('payBtn');
-    payBtn.textContent = '⏳ Processing...';
-    payBtn.disabled = true;
-    
-    setTimeout(function() {
-      paid = true;
-      payBtn.textContent = '✅ Payment Successful';
-      payBtn.classList.add('paid');
-      document.getElementById('checkinBtn').classList.add('active');
-      document.getElementById('checkinBtn').style.display = 'block';
-    }, 1500);
+    document.getElementById('checkinBtn').classList.add('active');
+    document.getElementById('checkinBtn').style.display = 'block';
   }
   
   function checkIn() {
-    if (!paid) return;
+    if (!confirmed) return;
     
     var checkinBtn = document.getElementById('checkinBtn');
     checkinBtn.textContent = '⏳ Checking in...';

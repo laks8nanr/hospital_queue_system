@@ -31,6 +31,7 @@
     .status-inprogress { background: #fff9e6; }
     .status-completed { background: #e9f8ee; }
     .status-skipped { background: #fdecea; }
+    .status-review { background: #fff3e0; }
     .status-break { background: #e0e0e0; }
 
     /* Legend color samples */
@@ -38,6 +39,7 @@
     .pill-inprogress { background: #fff9e6; }
     .pill-completed { background: #e9f8ee; }
     .pill-skipped { background: #fdecea; }
+    .pill-review { background: #fff3e0; }
     .pill-break { background: #e0e0e0; }
 
     .meta { font-size:13px; color:#7f8c8d; margin-bottom:8px; }
@@ -62,6 +64,7 @@
           <div class="legend-item"><span class="legend-pill pill-inprogress"></span> In progress</div>
           <div class="legend-item"><span class="legend-pill pill-completed"></span> Completed</div>
           <div class="legend-item"><span class="legend-pill pill-skipped"></span> Skipped</div>
+          <div class="legend-item"><span class="legend-pill pill-review"></span> Review</div>
         </div>
         <button onclick="goBack()" style="padding: 8px 16px; background: #2c3e50; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 13px;">← Back</button>
       </div>
@@ -189,7 +192,9 @@
       if (status === 'waiting') return 'waiting';
       if (status === 'consulting' || status === 'in_progress' || status === 'in progress') return 'inprogress';
       if (status === 'completed' || status === 'done') return 'completed';
-      if (status === 'skipped' || status === 'cancelled' || status === 'canceled') return 'skipped';
+      if (status === 'skipped') return 'skipped';
+      if (status === 'cancelled' || status === 'canceled') return 'skipped';
+      if (status === 'review') return 'review';
       if (status === 'break' || status === 'on_break' || status === 'on break') return 'break';
       return status;
     }
@@ -200,6 +205,7 @@
         case 'inprogress': return 'status-inprogress';
         case 'completed': return 'status-completed';
         case 'skipped': return 'status-skipped';
+        case 'review': return 'status-review';
         case 'break': return 'status-break';
         default: return 'status-waiting';
       }
@@ -211,6 +217,7 @@
         case 'inprogress': return 'In progress';
         case 'completed': return 'Completed';
         case 'skipped': return 'Skipped';
+        case 'review': return 'Review';
         case 'break': return 'On Break';
         default: return s;
       }

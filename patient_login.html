@@ -3,58 +3,69 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Patient Login - HealthCare Hospital</title>
-
+<title>Patient Login - MediNova Hospital</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* Your entire CSS remains unchanged */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-    font-family: 'Arial', sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #0a4d68 0%, #088395 50%, #05bfdb 100%);
     min-height: 100vh;
-    display: flex;
-    justify-content: center;
+    display: flex; flex-direction: column;
     align-items: center;
-    padding: 1rem;
+    padding: 20px;
 }
+
+.header { display: flex; justify-content: center; padding: 20px 0 30px; }
+.logo-container { display: flex; align-items: center; gap: 15px; }
+.logo-symbol {
+    width: 55px; height: 55px;
+    background: linear-gradient(135deg, #fff 0%, #e0f7fa 100%);
+    border-radius: 14px; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+.logo-text { color: white; }
+.logo-title { font-size: 1.6rem; font-weight: 700; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+.logo-subtitle { font-size: 0.8rem; opacity: 0.9; letter-spacing: 2px; text-transform: uppercase; }
 
 .login-container {
     background: white;
-    border-radius: 15px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    border-radius: 25px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
     width: 100%;
-    max-width: 450px;
-    padding: 2.5rem;
+    max-width: 420px;
+    padding: 40px;
 }
 
-.login-header { text-align: center; margin-bottom: 2rem; }
-.login-header h1 { color: #667eea; font-size: 2rem; margin-bottom: 0.5rem; }
-.login-header p { color: #666; font-size: 1rem; }
+.login-header { text-align: center; margin-bottom: 30px; }
+.login-header h1 { color: #0a4d68; font-size: 1.5rem; margin-bottom: 0.5rem; font-weight: 600; }
+.login-header p { color: #666; font-size: 0.9rem; }
+.icon { font-size: 3rem; margin-bottom: 15px; }
 
-.icon { font-size: 4rem; margin-bottom: 1rem; }
-
-.form-group { margin-bottom: 1.5rem; }
-.form-group label { display: block; color: #333; font-weight: 600; margin-bottom: 0.5rem; }
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; color: #2c3e50; font-weight: 600; margin-bottom: 8px; }
 
 .form-group input {
     width: 100%;
-    padding: 0.9rem;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
+    padding: 14px 16px;
+    border: 2px solid #ddd;
+    border-radius: 12px;
     font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    transition: border-color 0.3s;
 }
 
 .form-group input:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #088395;
 }
 
 .password-container { position: relative; }
 
 .toggle-password {
     position: absolute;
-    right: 12px;
+    right: 14px;
     top: 50%;
     transform: translateY(-50%);
     cursor: pointer;
@@ -64,95 +75,96 @@ body {
 
 .login-btn {
     width: 100%;
-    padding: 1rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 16px;
+    background: linear-gradient(135deg, #088395, #0a4d68);
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 14px;
     font-size: 1.1rem;
-    font-weight: bold;
+    font-weight: 600;
     cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.3s;
+}
+
+.login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(8,131,149,0.4);
 }
 
 .error-message {
     background: #ffe6e6;
     color: #d63031;
-    padding: 0.8rem;
-    border-radius: 8px;
-    margin-bottom: 1rem;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 15px;
     display: none;
+    font-size: 0.9rem;
 }
 
-.register-link, .back-home {
-    text-align: center;
-    margin-top: 1.5rem;
-}
+.links-section { text-align: center; margin-top: 20px; }
+.links-section a { color: #088395; text-decoration: none; font-weight: 500; font-size: 0.9rem; }
+.links-section a:hover { text-decoration: underline; }
+.links-section p { margin-top: 12px; color: #666; font-size: 0.9rem; }
 
-.register-link a, .back-home a {
-    color: #667eea;
-    text-decoration: none;
-    font-weight: 600;
-}
+.back-link { display: block; text-align: center; margin-top: 25px; color: white; text-decoration: none; font-weight: 500; }
+.back-link:hover { text-decoration: underline; }
 </style>
 </head>
 
 <body>
-
-<div class="login-container">
-
-<div class="login-header">
-    <div class="icon">👤</div>
-    <h1>Patient Login</h1>
-    <p>Access your medical records and appointments</p>
-</div>
-
-<div id="errorMessage" class="error-message"></div>
-
-<!-- UPDATED FORM -->
-<form id="loginForm" action="login.php" method="POST">
-
-    <div class="form-group">
-        <label>Patient ID / Email</label>
-        <input type="text" 
-               name="login_input"
-               id="patientId"
-               placeholder="Enter your Patient ID or Email"
-               required>
-    </div>
-
-    <div class="form-group">
-        <label>Password</label>
-        <div class="password-container">
-            <input type="password" 
-                   name="password"
-                   id="password"
-                   placeholder="Enter your password"
-                   required>
-            <span class="toggle-password" onclick="togglePassword()">👁️</span>
+<div class="header">
+    <div class="logo-container">
+        <div class="logo-symbol">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 3H15V9H21V15H15V21H9V15H3V9H9V3Z" fill="#0a4d68" stroke="#088395" stroke-width="1.5"/>
+            </svg>
+        </div>
+        <div class="logo-text">
+            <div class="logo-title">MediNova Hospital</div>
+            <div class="logo-subtitle">Smart Healthcare</div>
         </div>
     </div>
-
-    <button type="submit" name="login" class="login-btn">Login</button>
-
-</form>
-
-<div class="register-link">
-    New patient? <a href="register.html">Create an account</a>
 </div>
 
-<div class="back-home">
-    <a href="home.html">← Back to Home</a>
+<div class="login-container">
+    <div class="login-header">
+        <div class="icon">👤</div>
+        <h1>Patient Login</h1>
+        <p>Access your medical records and appointments</p>
+    </div>
+
+    <div id="errorMessage" class="error-message"></div>
+
+    <form id="loginForm" action="login.php" method="POST">
+        <div class="form-group">
+            <label>Patient ID / Email</label>
+            <input type="text" name="login_input" id="patientId" placeholder="Enter your Patient ID or Email" required>
+        </div>
+
+        <div class="form-group">
+            <label>Password</label>
+            <div class="password-container">
+                <input type="password" name="password" id="password" placeholder="Enter your password" required>
+                <span class="toggle-password" onclick="togglePassword()">👁️</span>
+            </div>
+        </div>
+
+        <button type="submit" name="login" class="login-btn">🔐 Login</button>
+    </form>
+
+    <div class="links-section">
+        <a href="forgot_password.html?type=patient">Forgot Password?</a>
+        <p>New patient? <a href="register.html">Create an account</a></p>
+    </div>
 </div>
 
-</div>
+<a href="home.html" class="back-link">← Back to Home</a>
 
 <script>
-
-// Toggle password
 function togglePassword() {
     const passwordInput = document.getElementById('password');
     const toggleIcon = document.querySelector('.toggle-password');
-
     if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
         toggleIcon.textContent = '🙈';
@@ -162,7 +174,6 @@ function togglePassword() {
     }
 }
 
-// Show error/success from PHP
 const params = new URLSearchParams(window.location.search);
 if (params.get("error")) {
     const errorDiv = document.getElementById('errorMessage');
@@ -177,7 +188,6 @@ if (params.get("success")) {
     errorDiv.style.display = 'block';
 }
 
-// Handle form submission with AJAX for pharmacy redirect support
 document.getElementById('loginForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
@@ -200,10 +210,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         const data = await response.json();
 
         if (data.success) {
-            // Store patient data in session storage
             sessionStorage.setItem('patientData', JSON.stringify(data.data));
-
-            // Check if there's a redirect after login
             const redirect = sessionStorage.getItem('afterLoginRedirect');
             if (redirect) {
                 sessionStorage.removeItem('afterLoginRedirect');
@@ -215,18 +222,16 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
             errorDiv.textContent = data.message || 'Login failed';
             errorDiv.style.display = 'block';
             loginBtn.disabled = false;
-            loginBtn.textContent = 'Login';
+            loginBtn.textContent = '🔐 Login';
         }
     } catch (error) {
         console.error('Login error:', error);
         errorDiv.textContent = 'Network error. Please try again.';
         errorDiv.style.display = 'block';
         loginBtn.disabled = false;
-        loginBtn.textContent = 'Login';
+        loginBtn.textContent = '🔐 Login';
     }
 });
-
 </script>
-
 </body>
 </html>

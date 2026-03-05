@@ -4,12 +4,92 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DORA Hospital - Generate Token</title>
-  <link rel="stylesheet" href="style.css">
+  <title>MediNova Hospital - Generate Token</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #0a4d68 0%, #088395 50%, #05bfdb 100%);
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    .header { display: flex; justify-content: center; padding: 20px 0 30px; }
+    .logo-container { display: flex; align-items: center; gap: 15px; }
+    .logo-symbol {
+      width: 55px; height: 55px;
+      background: linear-gradient(135deg, #fff 0%, #e0f7fa 100%);
+      border-radius: 14px; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+    .logo-text { color: white; }
+    .logo-title { font-size: 1.6rem; font-weight: 700; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+    .logo-subtitle { font-size: 0.8rem; opacity: 0.9; letter-spacing: 2px; text-transform: uppercase; }
+    h2 { color: white; text-align: center; margin-bottom: 25px; font-weight: 500; }
+    .selection-summary {
+      background: white; border-radius: 16px;
+      padding: 25px; width: 100%; max-width: 450px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      margin-bottom: 20px;
+    }
+    .summary-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
+    .summary-item:last-child { border-bottom: none; }
+    .summary-label { color: #666; font-weight: 500; }
+    .summary-value { color: #0a4d68; font-weight: 600; }
+    .generate-btn {
+      background: linear-gradient(135deg, #fff 0%, #e0f7fa 100%);
+      color: #0a4d68; border: none; padding: 16px 40px;
+      font-size: 1.1rem; font-weight: 600; border-radius: 14px;
+      cursor: pointer; font-family: 'Poppins', sans-serif;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+      transition: all 0.3s;
+    }
+    .generate-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 35px rgba(0,0,0,0.25); }
+    .generate-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+    .token-result { text-align: center; width: 100%; max-width: 450px; }
+    .token-result h2 { color: white; margin-bottom: 20px; }
+    .token-card {
+      background: white; border-radius: 20px;
+      padding: 30px; box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+    }
+    .token-number {
+      font-size: 3rem; font-weight: 700; color: #0a4d68;
+      background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+      padding: 20px; border-radius: 16px; margin-bottom: 25px;
+    }
+    .token-details { text-align: left; }
+    .token-info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+    .token-info-row:last-child { border-bottom: none; }
+    .token-info-row .label { color: #666; font-weight: 500; }
+    .token-info-row .value { color: #0a4d68; font-weight: 600; }
+    .back-home-btn {
+      display: inline-block; margin-top: 25px;
+      background: linear-gradient(135deg, #088395, #0a4d68);
+      color: white; text-decoration: none; padding: 14px 30px;
+      border-radius: 12px; font-weight: 600;
+      transition: all 0.3s;
+    }
+    .back-home-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(8,131,149,0.4); }
+  </style>
 </head>
-<body class="center">
+<body>
 
-<h1 class="hospital-title">DORA Hospital</h1>
+<div class="header">
+  <div class="logo-container">
+    <div class="logo-symbol">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M9 3H15V9H21V15H15V21H9V15H3V9H9V3Z" fill="#0a4d68" stroke="#088395" stroke-width="1.5"/>
+      </svg>
+    </div>
+    <div class="logo-text">
+      <div class="logo-title">MediNova Hospital</div>
+      <div class="logo-subtitle">Smart Healthcare</div>
+    </div>
+  </div>
+</div>
+
 <h2>Confirm Appointment</h2>
 
 <div class="selection-summary" id="summary">

@@ -3,374 +3,543 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DORA Hospital - Check Token Status</title>
-  <link rel="stylesheet" href="style.css">
+  <title>MediNova Hospital - Check Token Status</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    .status-container {
-      max-width: 500px;
-      margin: 30px auto;
-      padding: 30px;
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0a4d68 0%, #088395 50%, #05bfdb 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .header {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      justify-content: center;
+      padding: 20px 0 25px;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .logo-symbol {
+      width: 55px;
+      height: 55px;
+      background: linear-gradient(135deg, #fff 0%, #e0f7fa 100%);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .logo-text { color: white; }
+    .logo-title { font-size: 1.6rem; font-weight: 700; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+    .logo-subtitle { font-size: 0.8rem; opacity: 0.9; letter-spacing: 2px; text-transform: uppercase; }
+
+    .main-container {
       background: white;
-      border-radius: 20px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+      border-radius: 25px;
+      padding: 35px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
     }
 
-    .search-section {
-      margin-bottom: 30px;
-    }
+    .page-title { text-align: center; margin-bottom: 30px; }
+    .page-title h2 { color: #0a4d68; font-size: 1.5rem; font-weight: 600; }
+    .page-title p { color: #666; font-size: 0.9rem; margin-top: 5px; }
 
-    .search-label {
-      display: block;
-      margin-bottom: 10px;
-      font-weight: bold;
-      color: #2c3e50;
-    }
+    .search-section { margin-bottom: 25px; }
+    .search-label { display: block; margin-bottom: 10px; font-weight: 600; color: #2c3e50; }
 
     .search-input {
       width: 100%;
-      padding: 15px;
-      font-size: 18px;
+      padding: 16px;
+      font-size: 1.3rem;
       border: 2px solid #ddd;
-      border-radius: 10px;
+      border-radius: 14px;
       text-align: center;
-      font-weight: bold;
+      font-weight: 600;
       text-transform: uppercase;
-      box-sizing: border-box;
+      letter-spacing: 2px;
+      transition: border-color 0.3s;
     }
-
-    .search-input:focus {
-      outline: none;
-      border-color: #3498db;
-    }
+    .search-input:focus { outline: none; border-color: #088395; }
 
     .search-btn {
       width: 100%;
-      padding: 15px;
+      padding: 16px;
       margin-top: 15px;
-      background: linear-gradient(135deg, #3498db, #2980b9);
+      background: linear-gradient(135deg, #088395, #0a4d68);
       color: white;
       border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      font-weight: bold;
+      border-radius: 14px;
+      font-size: 1.1rem;
+      font-weight: 600;
       cursor: pointer;
       transition: all 0.3s;
     }
+    .search-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(8,131,149,0.4); }
+    .search-btn:disabled { background: #bdc3c7; cursor: not-allowed; transform: none; }
 
-    .search-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
-    }
-
-    .search-btn:disabled {
-      background: #bdc3c7;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .result-section {
-      display: none;
-    }
-
-    .token-info-card {
-      background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-      border-radius: 15px;
-      padding: 25px;
-      border-left: 5px solid #3498db;
-      margin-bottom: 20px;
-    }
-
-    .token-number-display {
-      font-size: 36px;
-      font-weight: bold;
-      color: #2c3e50;
-      text-align: center;
-      margin-bottom: 15px;
-    }
-
-    .status-badge {
-      display: inline-block;
-      padding: 8px 20px;
-      border-radius: 20px;
-      font-weight: bold;
-      font-size: 14px;
-      text-transform: uppercase;
-    }
-
-    .status-waiting { background: #fff3cd; color: #856404; }
-    .status-consulting { background: #d4edda; color: #155724; }
-    .status-completed { background: #cce5ff; color: #004085; }
-    .status-cancelled { background: #f8d7da; color: #721c24; }
-
-    .info-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px 0;
-      border-bottom: 1px solid rgba(0,0,0,0.1);
-    }
-
-    .info-row:last-child {
-      border-bottom: none;
-    }
-
-    .info-label {
-      color: #666;
-    }
-
-    .info-value {
-      font-weight: bold;
-      color: #2c3e50;
-    }
-
-    .queue-position-card {
-      background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
-      border-radius: 15px;
-      padding: 20px;
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .queue-position-card h3 {
-      margin: 0 0 10px 0;
-      color: #27ae60;
-    }
-
-    .position-number {
-      font-size: 48px;
-      font-weight: bold;
-      color: #27ae60;
-    }
-
-    .position-label {
-      font-size: 14px;
-      color: #666;
-    }
-
-    .error-message {
-      background: #f8d7da;
-      color: #721c24;
-      padding: 15px;
-      border-radius: 10px;
-      text-align: center;
-      display: none;
-    }
-
-    .back-link {
-      display: block;
-      text-align: center;
-      margin-top: 20px;
-      color: #3498db;
-      text-decoration: none;
-      font-weight: bold;
-    }
-
-    .back-link:hover {
-      text-decoration: underline;
-    }
-
-    .cancelled-notice {
-      background: linear-gradient(135deg, #fdecea, #f8d7da);
-      border-radius: 15px;
-      padding: 20px;
-      text-align: center;
-      margin-bottom: 20px;
-      border-left: 5px solid #e74c3c;
-    }
-
-    .cancelled-notice h3 {
-      color: #c0392b;
-      margin: 0 0 10px 0;
-    }
-
-    .cancelled-notice p {
-      color: #721c24;
-      margin: 0;
-    }
+    .result-section { display: none; }
 
     .live-indicator {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      margin-bottom: 15px;
-      font-size: 12px;
+      margin-bottom: 20px;
+      font-size: 0.85rem;
       color: #27ae60;
+      font-weight: 500;
     }
 
     .live-dot {
-      width: 8px;
-      height: 8px;
+      width: 10px;
+      height: 10px;
       background: #27ae60;
       border-radius: 50%;
       animation: livePulse 1.5s infinite;
     }
+    @keyframes livePulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.8); } }
 
-    @keyframes livePulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
+    .token-info-card {
+      background: linear-gradient(135deg, #0a4d68, #088395);
+      border-radius: 20px;
+      padding: 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 30px rgba(10, 77, 104, 0.4);
     }
 
-    .queue-display {
-      background: #f8f9fa;
+    .token-number-display {
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      line-height: 1;
+    }
+
+    .status-badge-container { text-align: center; margin: 15px 0; }
+
+    .status-badge {
+      display: inline-block;
+      padding: 6px 18px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background: rgba(255,255,255,0.2);
+      color: white;
+    }
+
+    .token-type-label {
+      text-align: center;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.8);
+      margin-top: 5px;
+    }
+
+    /* Token Stats Grid */
+    .token-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .token-stat-item {
+      background: rgba(255,255,255,0.15);
       border-radius: 12px;
       padding: 15px;
-      margin-bottom: 20px;
-    }
-
-    .queue-display-title {
-      font-size: 14px;
-      font-weight: bold;
-      color: #2c3e50;
-      margin-bottom: 10px;
       text-align: center;
     }
 
-    .queue-item-mini {
+    .token-stat-item.full-width {
+      grid-column: span 2;
+    }
+
+    .token-stat-item .icon {
+      font-size: 20px;
+      margin-bottom: 5px;
+    }
+
+    .token-stat-item .value {
+      font-size: 18px;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .token-stat-item .label {
+      font-size: 11px;
+      color: rgba(255,255,255,0.8);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .status-waiting { background: #fff3cd; color: #856404; }
+    .status-consulting { background: #d4edda; color: #155724; }
+    .status-completed { background: #cce5ff; color: #004085; }
+    .status-cancelled { background: #f8d7da; color: #721c24; }
+
+    /* Queue Section - Matching prebooked.html style */
+    .queue-section {
+      background: #fff;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+
+    .queue-title {
+      font-size: 18px;
+      color: #2c3e50;
+      margin-bottom: 15px;
       display: flex;
       align-items: center;
-      padding: 8px 12px;
-      margin-bottom: 5px;
-      background: white;
-      border-radius: 8px;
-      border-left: 3px solid #bdc3c7;
+      gap: 10px;
     }
 
-    .queue-item-mini.you {
+    .queue-track {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .queue-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px;
+      border-radius: 12px;
+      background: #f8f9fa;
+      border-left: 4px solid #bdc3c7;
+    }
+
+    .queue-item.current {
+      background: linear-gradient(135deg, #d4edda, #c3e6cb);
       border-left-color: #27ae60;
-      background: #e8f5e9;
+      animation: pulse 2s infinite;
     }
 
-    .queue-item-mini.consulting {
+    .queue-item.prebooked {
+      border-left-color: #9b59b6;
+      background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+    }
+
+    .queue-item.walkin {
       border-left-color: #3498db;
-      background: #e3f2fd;
+      background: linear-gradient(135deg, #e3f2fd, #bbdefb);
     }
 
-    .queue-item-position {
-      width: 25px;
-      height: 25px;
+    .queue-item.you {
+      border-left-color: #27ae60;
+      background: linear-gradient(135deg, #d4edda, #c3e6cb);
+      box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+      border: 2px solid #27ae60;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .queue-position {
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
-      background: #ecf0f1;
+      background: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      font-size: 12px;
-      margin-right: 10px;
+      font-size: 16px;
+      margin-right: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
-    .queue-item-mini.you .queue-item-position {
-      background: #27ae60;
-      color: white;
-    }
+    .queue-item.current .queue-position { background: #27ae60; color: white; }
+    .queue-item.prebooked .queue-position { background: #9b59b6; color: white; }
+    .queue-item.walkin .queue-position { background: #3498db; color: white; }
+    .queue-item.you .queue-position { background: #27ae60; color: white; }
 
-    .queue-item-token {
+    .queue-info { flex: 1; }
+
+    .queue-name {
       font-weight: bold;
+      color: #2c3e50;
       font-size: 14px;
     }
 
-    .queue-item-badge {
-      margin-left: auto;
-      font-size: 10px;
+    .queue-badge {
+      display: inline-block;
       padding: 2px 8px;
       border-radius: 10px;
+      font-size: 10px;
       font-weight: bold;
+      text-transform: uppercase;
+      margin-left: 8px;
     }
 
-    .badge-you { background: #27ae60; color: white; }
-    .badge-consulting { background: #3498db; color: white; }
     .badge-prebooked { background: #9b59b6; color: white; }
-    .badge-walkin { background: #f39c12; color: white; }
+    .badge-walkin { background: #3498db; color: white; }
+    .badge-you { background: #27ae60; color: white; }
+    .badge-current { background: #27ae60; color: white; }
+
+    .queue-status {
+      font-size: 12px;
+      color: #7f8c8d;
+    }
+
+    .action-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .action-btn {
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .action-btn.swap {
+      background: #bdc3c7;
+      color: white;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+    .action-btn.swap:hover { box-shadow: none; }
+
+    .action-btn.cancel {
+      background: linear-gradient(135deg, #e74c3c, #c0392b);
+      color: white;
+    }
+    .action-btn.cancel:hover { box-shadow: 0 5px 20px rgba(231,76,60,0.4); }
+
+    .action-btn.reset {
+      background: #95a5a6;
+      color: white;
+      grid-column: span 2;
+    }
+
+    .error-message {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 15px;
+      border-radius: 12px;
+      text-align: center;
+      display: none;
+      margin-bottom: 15px;
+    }
+
+    .cancelled-notice {
+      background: linear-gradient(135deg, #fdecea, #f8d7da);
+      border-radius: 15px;
+      padding: 25px;
+      text-align: center;
+      margin-bottom: 20px;
+      border-left: 5px solid #e74c3c;
+    }
+    .cancelled-notice h3 { color: #c0392b; margin-bottom: 10px; }
+    .cancelled-notice p { color: #721c24; font-size: 0.9rem; }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      opacity: 0.9;
+    }
+    .back-link:hover { opacity: 1; text-decoration: underline; }
+
+    /* Swap Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+      background: white;
+      border-radius: 25px;
+      width: 100%;
+      max-width: 400px;
+      padding: 35px;
+      animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .modal h3 { color: #2c3e50; margin-bottom: 10px; font-size: 1.3rem; text-align: center; }
+    .modal p { color: #666; font-size: 0.9rem; text-align: center; margin-bottom: 20px; }
+
+    .modal input {
+      width: 100%;
+      padding: 14px;
+      font-size: 1.1rem;
+      border: 2px solid #ddd;
+      border-radius: 12px;
+      text-align: center;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-bottom: 15px;
+    }
+    .modal input:focus { outline: none; border-color: #9b59b6; }
+
+    .modal-btns { display: flex; gap: 12px; }
+    .modal-btn {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .modal-btn.secondary { background: #e0e0e0; color: #666; }
+    .modal-btn.primary { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; }
+
+    @media (max-width: 500px) {
+      .main-container { padding: 25px 20px; }
+      .token-number-display { font-size: 2.2rem; }
+      .action-buttons { grid-template-columns: 1fr; }
+      .action-btn.reset { grid-column: span 1; }
+    }
   </style>
 </head>
-<body class="center">
-  <h1 class="hospital-title">DORA Hospital</h1>
-  <h2>Check Token Status</h2>
+<body>
+  <div class="header">
+    <div class="logo-container">
+      <div class="logo-symbol">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 3H15V9H21V15H15V21H9V15H3V9H9V3Z" fill="#0a4d68" stroke="#088395" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <div class="logo-title">MediNova Hospital</div>
+        <div class="logo-subtitle">Smart Healthcare</div>
+      </div>
+    </div>
+  </div>
 
-  <div class="status-container">
+  <div class="main-container">
+    <div class="page-title">
+      <h2>📊 Track Your Token</h2>
+      <p>Enter your token number to check status</p>
+    </div>
+
     <!-- Search Section -->
     <div class="search-section" id="searchSection">
-      <label class="search-label">Enter your Token or Booking ID:</label>
-      <input type="text" id="tokenInput" class="search-input" placeholder="e.g., W-007 or PB-XXXXX" maxlength="20">
+      <label class="search-label">Token Number</label>
+      <input type="text" id="tokenInput" class="search-input" placeholder="e.g., W-007" maxlength="20">
       <button class="search-btn" id="searchBtn" onclick="checkStatus()">
         🔍 Check Status
       </button>
     </div>
 
-    <!-- Error Message -->
     <div class="error-message" id="errorMessage"></div>
 
     <!-- Result Section -->
     <div class="result-section" id="resultSection">
-      <!-- Live Indicator -->
       <div class="live-indicator" id="liveIndicator">
         <span class="live-dot"></span>
-        <span>Live - Auto-updating</span>
+        <span>Live Updates Active</span>
       </div>
 
-      <!-- Token Info Card -->
       <div class="token-info-card" id="tokenInfoCard">
         <div class="token-number-display" id="tokenNumberDisplay">W-007</div>
-        <div style="text-align: center; margin-bottom: 15px;">
+        <div class="status-badge-container">
           <span class="status-badge" id="statusBadge">WAITING</span>
         </div>
-        <div id="tokenDetails">
-          <!-- Dynamic details -->
+        <div class="token-type-label">Your Token Number</div>
+        <div class="token-stats-grid" id="tokenStatsGrid">
+          <!-- Will be populated by JS -->
         </div>
       </div>
 
-      <!-- Queue Position (shown only for waiting/consulting) -->
-      <div class="queue-position-card" id="queuePositionCard" style="display: none;">
-        <h3>Your Position</h3>
-        <div class="position-number" id="positionNumber">3</div>
-        <div class="position-label" id="positionLabel">people ahead of you</div>
-      </div>
-
-      <!-- Live Queue Display -->
-      <div class="queue-display" id="queueDisplay" style="display: none;">
-        <div class="queue-display-title">Live Queue</div>
-        <div id="queueList">
-          <!-- Queue items will be rendered here -->
+      <!-- Live Queue Section -->
+      <div class="queue-section" id="queueSection" style="display: none;">
+        <div class="queue-title">
+          <span>📋</span>
+          <span>Live Queue</span>
+          <span id="refreshIndicator" style="margin-left: auto; font-size: 12px; color: #27ae60;">● Live</span>
+        </div>
+        <div class="queue-track" id="queueTrack">
+          <!-- Queue items will be generated here -->
         </div>
       </div>
 
-      <!-- Cancelled Notice -->
       <div class="cancelled-notice" id="cancelledNotice" style="display: none;">
-        <h3>Token Cancelled</h3>
-        <p id="cancelReason">Your token has been cancelled. Please contact reception for assistance.</p>
+        <h3>❌ Token Cancelled</h3>
+        <p id="cancelReason">Your token has been cancelled.</p>
       </div>
 
-      <button class="search-btn" onclick="resetSearch()" style="background: #95a5a6;">
-        Check Another Token
-      </button>
+      <div class="action-buttons" id="actionButtons">
+        <button class="action-btn swap" disabled>🔄 Swap Token (Coming Soon)</button>
+        <button class="action-btn cancel" onclick="cancelMyToken()">❌ Cancel</button>
+      </div>
     </div>
+  </div>
 
-    <a href="index.html" class="back-link">← Back to Home</a>
+  <a href="index.html" class="back-link">← Back to Services</a>
+
+  <!-- Swap Token Modal -->
+  <div class="modal-overlay" id="swapModal">
+    <div class="modal">
+      <h3>🔄 Swap Your Token</h3>
+      <p>Enter the token number you want to swap positions with</p>
+      <input type="text" id="swapTokenInput" placeholder="e.g., W-010" maxlength="20">
+      <div class="modal-btns">
+        <button class="modal-btn secondary" onclick="closeSwapModal()">Cancel</button>
+        <button class="modal-btn primary" onclick="requestSwap()">Request Swap</button>
+      </div>
+    </div>
   </div>
 
   <script>
-    // State management
     let currentTokenData = null;
     let refreshInterval = null;
-    let isRefreshing = false;
 
-    // Auto-check if token is in URL, localStorage, or sessionStorage
     window.onload = function() {
       const urlParams = new URLSearchParams(window.location.search);
-      const tokenParam = urlParams.get('token') || urlParams.get('booking_id');
+      const tokenParam = urlParams.get('token');
       
       if (tokenParam) {
         document.getElementById('tokenInput').value = tokenParam;
-        // Save to localStorage for persistence
-        localStorage.setItem('activeServiceToken', tokenParam);
         checkStatus();
       } else {
-        // Check localStorage first (persists across sessions), then sessionStorage
-        const savedToken = localStorage.getItem('activeServiceToken') || 
-                          sessionStorage.getItem('currentToken') || 
-                          sessionStorage.getItem('labToken');
+        const savedToken = sessionStorage.getItem('currentToken') || sessionStorage.getItem('labToken');
         if (savedToken) {
           document.getElementById('tokenInput').value = savedToken;
-          // Auto-check the saved token
           checkStatus();
         }
       }
@@ -382,7 +551,7 @@
       const errorMessage = document.getElementById('errorMessage');
 
       if (!tokenInput) {
-        showError('Please enter a token number or booking ID');
+        showError('Please enter a token number');
         return;
       }
 
@@ -391,47 +560,181 @@
       errorMessage.style.display = 'none';
 
       try {
-        // First check OPD token
-        const response = await fetch(`api/check_token_status.php?token=${encodeURIComponent(tokenInput)}&booking_id=${encodeURIComponent(tokenInput)}`);
+        const response = await fetch(`api/check_token_status.php?token=${encodeURIComponent(tokenInput)}`);
         const data = await response.json();
 
         if (data.success && data.status !== 'not_found') {
           currentTokenData = data;
-          currentTokenData.token_number = data.token_number || data.booking_id || tokenInput;
-          // Save to localStorage for persistence
-          localStorage.setItem('activeServiceToken', currentTokenData.token_number);
+          currentTokenData.token_number = data.token_number || tokenInput;
           displayResult(data);
-          // Start auto-refresh
           startAutoRefresh();
         } else {
-          // Check lab token
-          const labResponse = await fetch(`api/get_lab_queue.php?test_type=CBC&current_token=${encodeURIComponent(tokenInput)}`);
-          const labData = await labResponse.json();
-          
-          if (labData.success && labData.queue) {
-            const found = labData.queue.find(t => t.token_number.toUpperCase() === tokenInput);
-            if (found) {
-              currentTokenData = found;
-              currentTokenData.isLab = true;
-              localStorage.setItem('activeServiceToken', tokenInput);
-              displayLabResult(found, labData);
-              startAutoRefresh();
-            } else {
-              showError('Token not found. Please check the token number and try again.');
-              localStorage.removeItem('activeServiceToken');
-            }
-          } else {
-            showError('Token not found. Please check the token number and try again.');
-            localStorage.removeItem('activeServiceToken');
-          }
+          showError('Token not found. Please check and try again.');
         }
       } catch (error) {
         console.error('Error:', error);
-        showError('Unable to check token status. Please try again.');
+        showError('Unable to check status. Please try again.');
       } finally {
         searchBtn.disabled = false;
-        searchBtn.textContent = 'Check Status';
+        searchBtn.textContent = '🔍 Check Status';
       }
+    }
+
+    function displayResult(data) {
+      document.getElementById('searchSection').style.display = 'none';
+      document.getElementById('resultSection').style.display = 'block';
+
+      document.getElementById('tokenNumberDisplay').textContent = data.token_number;
+
+      const status = data.status.toLowerCase();
+      const statusBadge = document.getElementById('statusBadge');
+      statusBadge.textContent = status.toUpperCase();
+      statusBadge.className = 'status-badge status-' + status;
+
+      // Build stats grid similar to prebooked.html
+      let statsHTML = '';
+      
+      // Expected Time
+      const expectedTime = data.expected_time || '--';
+      statsHTML += `<div class="token-stat-item"><div class="icon">⏰</div><div class="value">${expectedTime}</div><div class="label">Expected Time</div></div>`;
+      
+      // Wait Time (calculate from patients ahead)
+      const patientsAhead = data.patients_ahead !== undefined ? data.patients_ahead : 0;
+      const waitMins = patientsAhead * 10;
+      statsHTML += `<div class="token-stat-item"><div class="icon">⏳</div><div class="value">~${waitMins} mins</div><div class="label">Wait Time</div></div>`;
+      
+      // People Ahead
+      statsHTML += `<div class="token-stat-item"><div class="icon">👥</div><div class="value">${patientsAhead}</div><div class="label">People Ahead</div></div>`;
+      
+      // Doctor
+      const doctorName = data.doctor_name || 'Not Assigned';
+      statsHTML += `<div class="token-stat-item"><div class="icon">👨‍⚕️</div><div class="value">${doctorName}</div><div class="label">Doctor</div></div>`;
+      
+      // Location (full width)
+      if (data.location) {
+        const loc = data.location;
+        const locationStr = [loc.floor_block, loc.wing, loc.room_number].filter(p => p).join(' → ');
+        if (locationStr) {
+          statsHTML += `<div class="token-stat-item full-width"><div class="icon">📍</div><div class="value">${locationStr}</div><div class="label">Location</div></div>`;
+        }
+      }
+      
+      document.getElementById('tokenStatsGrid').innerHTML = statsHTML;
+
+      const cancelledNotice = document.getElementById('cancelledNotice');
+      const liveIndicator = document.getElementById('liveIndicator');
+      const actionButtons = document.getElementById('actionButtons');
+
+      cancelledNotice.style.display = 'none';
+      liveIndicator.style.display = 'flex';
+      
+      // Hide queue section initially
+      const queueSection = document.getElementById('queueSection');
+      if (queueSection) queueSection.style.display = 'none';
+      
+      // Only show swap and cancel for active tokens (no Check Another Token)
+      actionButtons.innerHTML = `
+        <button class="action-btn swap" disabled>🔄 Swap Token (Coming Soon)</button>
+        <button class="action-btn cancel" onclick="cancelMyToken()">❌ Cancel</button>
+      `;
+
+      if (status === 'cancelled') {
+        cancelledNotice.style.display = 'block';
+        liveIndicator.style.display = 'none';
+        actionButtons.innerHTML = `<button class="action-btn reset" onclick="resetSearch()">← Check Another Token</button>`;
+        stopAutoRefresh();
+      } else if (status === 'completed') {
+        liveIndicator.style.display = 'none';
+        actionButtons.innerHTML = `<button class="action-btn reset" onclick="resetSearch()">← Check Another Token</button>`;
+        stopAutoRefresh();
+      } else if (status === 'waiting' || status === 'consulting') {
+        fetchQueuePosition(data.token_number);
+      }
+    }
+
+    async function fetchQueuePosition(tokenNumber) {
+      try {
+        // Use doctor_id from currentTokenData to get correct queue
+        const doctorId = currentTokenData && currentTokenData.doctor_id ? currentTokenData.doctor_id : 0;
+        const response = await fetch(`api/get_live_queue.php?doctor_id=${doctorId}&current_token=${encodeURIComponent(tokenNumber)}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          // Update the stats grid with fresh data
+          const ahead = data.people_ahead !== undefined ? data.people_ahead : 0;
+          const waitMins = ahead * 10;
+          
+          // Update people ahead in stats grid
+          const statsGrid = document.getElementById('tokenStatsGrid');
+          if (statsGrid) {
+            const statItems = statsGrid.querySelectorAll('.token-stat-item');
+            statItems.forEach(item => {
+              const label = item.querySelector('.label');
+              if (label) {
+                const labelText = label.textContent.toLowerCase();
+                if (labelText === 'people ahead') {
+                  item.querySelector('.value').textContent = ahead;
+                } else if (labelText === 'wait time') {
+                  item.querySelector('.value').textContent = `~${waitMins} mins`;
+                }
+              }
+            });
+          }
+          
+          // Display queue list if available
+          if (data.queue && data.queue.length > 0) {
+            const queueSection = document.getElementById('queueSection');
+            queueSection.style.display = 'block';
+            renderQueueItems(data.queue, tokenNumber);
+          }
+        }
+      } catch (error) {
+        console.log('Could not fetch queue position');
+      }
+    }
+
+    function renderQueueItems(queueData, myToken) {
+      const queueTrack = document.getElementById('queueTrack');
+      let html = '';
+      
+      for (let i = 0; i < queueData.length; i++) {
+        const item = queueData[i];
+        const itemToken = (item.token_number || '').toUpperCase();
+        const currentToken = (myToken || '').toUpperCase();
+        const isYou = item.is_you === true || (currentToken && itemToken === currentToken);
+        const isConsulting = item.status === 'consulting';
+        
+        let type = isYou ? 'you' : (isConsulting ? 'current' : 
+          (item.token_number.startsWith('PB') || item.token_type === 'prebooked' ? 'prebooked' : 'walkin'));
+        
+        let badge = '';
+        if (isYou) {
+          badge = 'YOU';
+        } else if (isConsulting) {
+          badge = 'In Consult';
+        } else if (item.token_number.startsWith('PB') || item.token_type === 'prebooked') {
+          badge = 'Prebooked';
+        } else {
+          badge = 'Walk-in';
+        }
+        
+        const badgeClass = isYou ? 'badge-you' : (isConsulting ? 'badge-current' : 
+          (item.token_number.startsWith('PB') || item.token_type === 'prebooked' ? 'badge-prebooked' : 'badge-walkin'));
+        
+        html += `
+          <div class="queue-item ${type}">
+            <div class="queue-position">${item.position || (i + 1)}</div>
+            <div class="queue-info">
+              <div class="queue-name">${item.token_number}
+                <span class="queue-badge ${badgeClass}">${badge}</span>
+              </div>
+              ${isYou ? '<div class="queue-status">Your token</div>' : ''}
+            </div>
+          </div>
+        `;
+      }
+      
+      queueTrack.innerHTML = html;
     }
 
     function startAutoRefresh() {
@@ -440,220 +743,47 @@
     }
 
     function stopAutoRefresh() {
-      if (refreshInterval) {
-        clearInterval(refreshInterval);
-        refreshInterval = null;
-      }
+      if (refreshInterval) { clearInterval(refreshInterval); refreshInterval = null; }
     }
 
     async function refreshStatus() {
-      if (isRefreshing || !currentTokenData) return;
-      isRefreshing = true;
-
+      if (!currentTokenData) return;
       try {
-        const tokenNumber = currentTokenData.token_number;
-        
-        if (currentTokenData.isLab) {
-          // Refresh lab token
-          const response = await fetch(`api/get_lab_queue.php?test_type=CBC&current_token=${encodeURIComponent(tokenNumber)}`);
-          const data = await response.json();
-          if (data.success && data.queue) {
-            const found = data.queue.find(t => t.token_number.toUpperCase() === tokenNumber.toUpperCase());
-            if (found) {
-              currentTokenData = found;
-              currentTokenData.isLab = true;
-              displayLabResult(found, data);
+        const response = await fetch(`api/check_token_status.php?token=${encodeURIComponent(currentTokenData.token_number)}`);
+        const data = await response.json();
+        if (data.success && data.status !== 'not_found') {
+          currentTokenData = data;
+          currentTokenData.token_number = data.token_number || currentTokenData.token_number;
+          // Update stats without re-rendering everything
+          updateStatsFromData(data);
+          // Refresh queue with correct doctor_id
+          if (data.status === 'waiting' || data.status === 'consulting') {
+            fetchQueuePosition(data.token_number);
+          }
+        }
+      } catch (error) { console.error('Refresh error:', error); }
+    }
+    
+    function updateStatsFromData(data) {
+      // Update the stats grid values
+      const patientsAhead = data.patients_ahead !== undefined ? data.patients_ahead : 0;
+      const waitMins = patientsAhead * 10;
+      
+      const statsGrid = document.getElementById('tokenStatsGrid');
+      if (statsGrid) {
+        const statItems = statsGrid.querySelectorAll('.token-stat-item');
+        statItems.forEach(item => {
+          const label = item.querySelector('.label');
+          if (label) {
+            const labelText = label.textContent.toLowerCase();
+            if (labelText === 'people ahead') {
+              item.querySelector('.value').textContent = patientsAhead;
+            } else if (labelText === 'wait time') {
+              item.querySelector('.value').textContent = `~${waitMins} mins`;
             }
           }
-        } else {
-          // Refresh OPD token
-          const response = await fetch(`api/check_token_status.php?token=${encodeURIComponent(tokenNumber)}&booking_id=${encodeURIComponent(tokenNumber)}`);
-          const data = await response.json();
-          if (data.success && data.status !== 'not_found') {
-            currentTokenData = data;
-            currentTokenData.token_number = data.token_number || data.booking_id || tokenNumber;
-            displayResult(data);
-          }
-        }
-      } catch (error) {
-        console.error('Refresh error:', error);
-      } finally {
-        isRefreshing = false;
+        });
       }
-    }
-
-    function displayResult(data) {
-      const resultSection = document.getElementById('resultSection');
-      const searchSection = document.getElementById('searchSection');
-      const tokenNumberDisplay = document.getElementById('tokenNumberDisplay');
-      const statusBadge = document.getElementById('statusBadge');
-      const tokenDetails = document.getElementById('tokenDetails');
-      const queuePositionCard = document.getElementById('queuePositionCard');
-      const cancelledNotice = document.getElementById('cancelledNotice');
-      const queueDisplay = document.getElementById('queueDisplay');
-      const liveIndicator = document.getElementById('liveIndicator');
-
-      searchSection.style.display = 'none';
-      resultSection.style.display = 'block';
-
-      tokenNumberDisplay.textContent = data.token_number || data.booking_id;
-
-      const status = data.status.toLowerCase();
-      statusBadge.textContent = status.toUpperCase();
-      statusBadge.className = 'status-badge status-' + status;
-
-      let detailsHTML = '';
-      if (data.doctor_name) {
-        detailsHTML += `<div class="info-row"><span class="info-label">Doctor</span><span class="info-value">${data.doctor_name}</span></div>`;
-      }
-      if (data.department_name) {
-        detailsHTML += `<div class="info-row"><span class="info-label">Department</span><span class="info-value">${data.department_name}</span></div>`;
-      }
-      if (data.location) {
-        const loc = data.location;
-        const locationParts = [loc.floor_block, loc.wing, loc.room_number].filter(p => p);
-        if (locationParts.length > 0) {
-          detailsHTML += `<div class="info-row"><span class="info-label">Location</span><span class="info-value">${locationParts.join(' > ')}</span></div>`;
-        }
-      }
-      tokenDetails.innerHTML = detailsHTML || '<div class="info-row"><span class="info-label">Type</span><span class="info-value">OPD Consultation</span></div>';
-
-      queuePositionCard.style.display = 'none';
-      cancelledNotice.style.display = 'none';
-      queueDisplay.style.display = 'none';
-      liveIndicator.style.display = 'none';
-
-      if (status === 'cancelled') {
-        cancelledNotice.style.display = 'block';
-        document.getElementById('cancelReason').textContent = data.reason 
-          ? `Your token was cancelled ${data.reason}. Please contact reception.`
-          : 'Your token has been cancelled. Please contact reception for assistance.';
-        stopAutoRefresh();
-        localStorage.removeItem('activeServiceToken');
-      } else if (status === 'completed') {
-        stopAutoRefresh();
-        localStorage.removeItem('activeServiceToken');
-      } else if (status === 'waiting' || status === 'consulting') {
-        liveIndicator.style.display = 'flex';
-        fetchQueuePosition(data.token_number);
-      }
-    }
-
-    function displayLabResult(token, queueData) {
-      const resultSection = document.getElementById('resultSection');
-      const searchSection = document.getElementById('searchSection');
-      const tokenNumberDisplay = document.getElementById('tokenNumberDisplay');
-      const statusBadge = document.getElementById('statusBadge');
-      const tokenDetails = document.getElementById('tokenDetails');
-      const queuePositionCard = document.getElementById('queuePositionCard');
-      const cancelledNotice = document.getElementById('cancelledNotice');
-      const liveIndicator = document.getElementById('liveIndicator');
-
-      searchSection.style.display = 'none';
-      resultSection.style.display = 'block';
-
-      tokenNumberDisplay.textContent = token.token_number;
-
-      const status = token.status.toLowerCase();
-      statusBadge.textContent = status === 'in_progress' ? 'IN PROGRESS' : status.toUpperCase();
-      statusBadge.className = 'status-badge status-' + (status === 'in_progress' ? 'consulting' : status);
-
-      tokenDetails.innerHTML = `
-        <div class="info-row"><span class="info-label">Test</span><span class="info-value">${token.test_name || queueData.test_name}</span></div>
-        <div class="info-row"><span class="info-label">Type</span><span class="info-value">Lab Test</span></div>
-      `;
-
-      cancelledNotice.style.display = 'none';
-      liveIndicator.style.display = 'flex';
-      
-      if (status === 'waiting') {
-        queuePositionCard.style.display = 'block';
-        document.getElementById('positionNumber').textContent = token.position || queueData.current_position || '?';
-        document.getElementById('positionLabel').textContent = 'in queue';
-      } else {
-        queuePositionCard.style.display = 'none';
-      }
-
-      if (status === 'completed' || status === 'cancelled') {
-        liveIndicator.style.display = 'none';
-        stopAutoRefresh();
-        localStorage.removeItem('activeServiceToken');
-      }
-    }
-
-    async function fetchQueuePosition(tokenNumber) {
-      try {
-        const response = await fetch(`api/get_live_queue.php?current_token=${encodeURIComponent(tokenNumber)}`);
-        const data = await response.json();
-        
-        if (data.success) {
-          const queuePositionCard = document.getElementById('queuePositionCard');
-          const queueDisplay = document.getElementById('queueDisplay');
-          
-          // Find position
-          const myPosition = data.people_ahead !== undefined ? data.people_ahead : 0;
-          
-          queuePositionCard.style.display = 'block';
-          document.getElementById('positionNumber').textContent = myPosition;
-          document.getElementById('positionLabel').textContent = myPosition === 0 ? 'You are next!' : 'people ahead of you';
-          
-          // Render queue display
-          if (data.queue && data.queue.length > 0) {
-            queueDisplay.style.display = 'block';
-            renderQueueDisplay(data.queue, tokenNumber);
-          }
-        }
-      } catch (error) {
-        console.log('Could not fetch queue position');
-      }
-    }
-
-    function renderQueueDisplay(queue, myToken) {
-      const queueList = document.getElementById('queueList');
-      let html = '';
-      
-      // Show only first 5 items in queue
-      const displayQueue = queue.slice(0, 5);
-      
-      displayQueue.forEach((item, index) => {
-        const isYou = item.is_you || item.token_number.toUpperCase() === myToken.toUpperCase();
-        const isConsulting = item.status === 'consulting';
-        const isPrebooked = item.token_type === 'prebooked' || item.token_number.startsWith('PB');
-        
-        let itemClass = '';
-        let badgeClass = '';
-        let badgeText = '';
-        
-        if (isYou) {
-          itemClass = 'you';
-          badgeClass = 'badge-you';
-          badgeText = 'YOU';
-        } else if (isConsulting) {
-          itemClass = 'consulting';
-          badgeClass = 'badge-consulting';
-          badgeText = 'In Consult';
-        } else if (isPrebooked) {
-          badgeClass = 'badge-prebooked';
-          badgeText = 'Booked';
-        } else {
-          badgeClass = 'badge-walkin';
-          badgeText = 'Walk-in';
-        }
-        
-        html += `
-          <div class="queue-item-mini ${itemClass}">
-            <div class="queue-item-position">${item.position}</div>
-            <span class="queue-item-token">${item.token_number}</span>
-            <span class="queue-item-badge ${badgeClass}">${badgeText}</span>
-          </div>
-        `;
-      });
-      
-      if (queue.length > 5) {
-        html += `<div style="text-align: center; color: #999; font-size: 12px; margin-top: 10px;">+${queue.length - 5} more in queue</div>`;
-      }
-      
-      queueList.innerHTML = html;
     }
 
     function showError(message) {
@@ -672,17 +802,79 @@
       document.getElementById('tokenInput').focus();
     }
 
-    // Cleanup on page unload
-    window.addEventListener('beforeunload', function() {
-      stopAutoRefresh();
+    function showSwapModal() {
+      document.getElementById('swapModal').classList.add('active');
+      document.getElementById('swapTokenInput').focus();
+    }
+
+    function closeSwapModal() {
+      document.getElementById('swapModal').classList.remove('active');
+      document.getElementById('swapTokenInput').value = '';
+    }
+
+    async function requestSwap() {
+      const targetToken = document.getElementById('swapTokenInput').value.trim().toUpperCase();
+      if (!targetToken) { alert('Please enter a token number to swap with'); return; }
+      if (!currentTokenData) { alert('No active token to swap'); return; }
+      if (targetToken === currentTokenData.token_number) { alert('Cannot swap with yourself'); return; }
+
+      try {
+        const response = await fetch('api/swap_token.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token_a: currentTokenData.token_number,
+            token_b: targetToken
+          })
+        });
+        const data = await response.json();
+        if (data.success) {
+          alert('✅ Swap request sent! The other patient will be notified.');
+          closeSwapModal();
+        } else {
+          alert('❌ ' + (data.message || 'Could not process swap request'));
+        }
+      } catch (error) {
+        alert('Swap feature coming soon!');
+        closeSwapModal();
+      }
+    }
+
+    async function cancelMyToken() {
+      if (!currentTokenData) return;
+      if (!confirm('Are you sure you want to cancel token ' + currentTokenData.token_number + '?')) return;
+
+      try {
+        const response = await fetch('api/cancel_token.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: currentTokenData.token_number })
+        });
+        const data = await response.json();
+        alert(data.success ? '✅ Token cancelled successfully!' : '❌ ' + data.message);
+        if (data.success) {
+          sessionStorage.removeItem('currentToken');
+          resetSearch();
+        }
+      } catch (error) {
+        alert('Token cancelled.');
+        resetSearch();
+      }
+    }
+
+    document.getElementById('swapModal').addEventListener('click', function(e) {
+      if (e.target === this) closeSwapModal();
     });
 
-    // Allow Enter key to search
     document.getElementById('tokenInput').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        checkStatus();
-      }
+      if (e.key === 'Enter') checkStatus();
     });
+
+    document.getElementById('swapTokenInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') requestSwap();
+    });
+
+    window.addEventListener('beforeunload', stopAutoRefresh);
   </script>
 </body>
 </html>

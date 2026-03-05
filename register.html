@@ -1,157 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Create Account - HealthCare Hospital</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Create Account - MediNova Hospital</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #0a4d68 0%, #088395 50%, #05bfdb 100%);
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
 
-        body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 1rem;
-        }
+.header { display: flex; justify-content: center; padding: 20px 0 30px; }
+.logo-container { display: flex; align-items: center; gap: 15px; }
+.logo-symbol {
+    width: 55px; height: 55px;
+    background: linear-gradient(135deg, #fff 0%, #e0f7fa 100%);
+    border-radius: 14px; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+.logo-text { color: white; }
+.logo-title { font-size: 1.6rem; font-weight: 700; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+.logo-subtitle { font-size: 0.8rem; opacity: 0.9; letter-spacing: 2px; text-transform: uppercase; }
 
-        .login-container {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 450px;
-            padding: 2.5rem;
-        }
+.login-container {
+    background: white;
+    border-radius: 25px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 420px;
+    padding: 40px;
+}
 
-        .login-header { text-align: center; margin-bottom: 2rem; }
-        .login-header h1 { color: #667eea; font-size: 2rem; margin-bottom: 0.5rem; }
-        .login-header p { color: #666; font-size: 1rem; }
-        .icon { font-size: 3rem; margin-bottom: 1rem; }
+.login-header { text-align: center; margin-bottom: 25px; }
+.login-header h1 { color: #0a4d68; font-size: 1.5rem; margin-bottom: 0.5rem; font-weight: 600; }
+.login-header p { color: #666; font-size: 0.9rem; }
+.icon { font-size: 3rem; margin-bottom: 15px; }
 
-        .form-group { margin-bottom: 1.2rem; }
-        .form-group label { 
-            display: block; 
-            color: #333; 
-            font-weight: 600; 
-            margin-bottom: 0.4rem; 
-            font-size: 0.95rem; 
-        }
+.form-group { margin-bottom: 18px; }
+.form-group label { display: block; color: #2c3e50; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem; }
 
-        .form-group input { 
-            width: 100%; 
-            padding: 0.8rem; 
-            border: 2px solid #e0e0e0; 
-            border-radius: 8px; 
-            font-size: 1rem; 
-            transition: border-color 0.3s; 
-        }
+.form-group input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    transition: border-color 0.3s;
+}
 
-        .form-group input:focus { 
-            outline: none; 
-            border-color: #667eea; 
-        }
+.form-group input:focus {
+    outline: none;
+    border-color: #088395;
+}
 
-        .login-btn {
-            width: 100%; 
-            padding: 1rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white; 
-            border: none; 
-            border-radius: 8px;
-            font-size: 1.1rem; 
-            font-weight: bold; 
-            cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-            margin-top: 1rem;
-        }
+.login-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #088395, #0a4d68);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    margin-top: 10px;
+    transition: all 0.3s;
+}
 
-        .login-btn:hover { 
-            transform: translateY(-2px); 
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); 
-        }
+.login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(8,131,149,0.4);
+}
 
-        .error-message {
-            padding: 0.8rem; 
-            border-radius: 8px; 
-            margin-bottom: 1rem; 
-            display: none; 
-            font-size: 0.9rem;
-            background: #ffe6e6; 
-            color: #d63031;
-        }
+.error-message {
+    background: #ffe6e6;
+    color: #d63031;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    display: none;
+    font-size: 0.9rem;
+}
 
-        .register-link { 
-            text-align: center; 
-            margin-top: 1.5rem; 
-            color: #666; 
-        }
+.register-link { text-align: center; margin-top: 20px; color: #666; font-size: 0.9rem; }
+.register-link a { color: #088395; text-decoration: none; font-weight: 600; }
+.register-link a:hover { text-decoration: underline; }
 
-        .register-link a { 
-            color: #667eea; 
-            text-decoration: none; 
-            font-weight: 600; 
-        }
-    </style>
+.back-link { display: block; text-align: center; margin-top: 25px; color: white; text-decoration: none; font-weight: 500; }
+.back-link:hover { text-decoration: underline; }
+</style>
 </head>
 
 <body>
+<div class="header">
+    <div class="logo-container">
+        <div class="logo-symbol">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 3H15V9H21V15H15V21H9V15H3V9H9V3Z" fill="#0a4d68" stroke="#088395" stroke-width="1.5"/>
+            </svg>
+        </div>
+        <div class="logo-text">
+            <div class="logo-title">MediNova Hospital</div>
+            <div class="logo-subtitle">Smart Healthcare</div>
+        </div>
+    </div>
+</div>
 
 <div class="login-container">
-
     <div class="login-header">
-        <div class="icon">🏥</div>
+        <div class="icon">📝</div>
         <h1>Create Account</h1>
         <p>Enter your details to register as a patient</p>
     </div>
 
     <div id="errorMessage" class="error-message"></div>
 
-    <!-- FORM START -->
     <form id="registerForm" action="register.php" method="POST">
-
         <div class="form-group">
             <label for="fullName">Full Name</label>
-            <input type="text" id="fullName" name="name"
-                   placeholder="Enter your full name" required>
+            <input type="text" id="fullName" name="name" placeholder="Enter your full name" required>
         </div>
 
         <div class="form-group">
             <label for="email">Email Address</label>
-            <input type="email" id="email" name="email"
-                   placeholder="example@mail.com" required>
+            <input type="email" id="email" name="email" placeholder="example@mail.com" required>
         </div>
 
         <div class="form-group">
             <label for="password">Password</label>
-            <input type="password" id="password" name="password"
-                   placeholder="Create a password" required>
+            <input type="password" id="password" name="password" placeholder="Create a password" required>
         </div>
 
         <div class="form-group">
             <label for="confirmPassword">Confirm Password</label>
-            <input type="password" id="confirmPassword"
-                   placeholder="Repeat your password" required>
+            <input type="password" id="confirmPassword" placeholder="Repeat your password" required>
         </div>
 
-        <button type="submit" class="login-btn">Register</button>
-
+        <button type="submit" class="login-btn">✓ Register</button>
     </form>
-    <!-- FORM END -->
 
     <div class="register-link">
         Already have an account? <a href="patient_login.html">Login here</a>
     </div>
-
 </div>
+
+<a href="home.html" class="back-link">← Back to Home</a>
 
 <script>
 document.getElementById('registerForm').addEventListener('submit', function(e) {
-
     const pass = document.getElementById('password').value;
     const confirmPass = document.getElementById('confirmPassword').value;
     const errorDiv = document.getElementById('errorMessage');
@@ -163,9 +168,7 @@ document.getElementById('registerForm').addEventListener('submit', function(e) {
         errorDiv.textContent = "Passwords do not match!";
         errorDiv.style.display = 'block';
     }
-
 });
 </script>
-
 </body>
 </html>

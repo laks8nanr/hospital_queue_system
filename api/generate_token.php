@@ -154,10 +154,10 @@ $count_stmt->close();
 
 $token_number = $prefix . str_pad($token_count, 3, '0', STR_PAD_LEFT);
 
-// Calculate expected time (10 minutes per patient ahead)
-$waiting_sql = "SELECT COUNT(*) as waiting FROM tokens WHERE DATE(created_at) = ? AND department_id = ? AND status = 'waiting'";
+// Calculate expected time and patients ahead (by doctor_id for accurate doctor-specific queue)
+$waiting_sql = "SELECT COUNT(*) as waiting FROM tokens WHERE DATE(created_at) = ? AND doctor_id = ? AND status = 'waiting'";
 $waiting_stmt = $conn->prepare($waiting_sql);
-$waiting_stmt->bind_param("si", $today, $department_id);
+$waiting_stmt->bind_param("si", $today, $doctor_id);
 $waiting_stmt->execute();
 $waiting_result = $waiting_stmt->get_result();
 $waiting_row = $waiting_result->fetch_assoc();
@@ -167,10 +167,10 @@ $waiting_stmt->close();
 $wait_minutes = $patients_ahead * 10;
 $expected_time = date('H:i:s', strtotime("+$wait_minutes minutes"));
 
-// Get currently consulting token
-$current_sql = "SELECT token_number FROM tokens WHERE DATE(created_at) = ? AND department_id = ? AND status = 'consulting' LIMIT 1";
+// Get currently consulting token for this doctor
+$current_sql = "SELECT token_number FROM tokens WHERE DATE(created_at) = ? AND doctor_id = ? AND status = 'consulting' LIMIT 1";
 $current_stmt = $conn->prepare($current_sql);
-$current_stmt->bind_param("si", $today, $department_id);
+$current_stmt->bind_param("si", $today, $doctor_id);
 $current_stmt->execute();
 $current_result = $current_stmt->get_result();
 $current_token = 'None';
@@ -179,6 +179,19 @@ if ($current_result->num_rows > 0) {
     $current_token = $current_row['token_number'];
 }
 $current_stmt->close();
+
+// Get doctor name for response
+$doctor_name_sql = "SELECT name FROM doctors WHERE id = ?";
+$doctor_name_stmt = $conn->prepare($doctor_name_sql);
+$doctor_name_stmt->bind_param("i", $doctor_id);
+$doctor_name_stmt->execute();
+$doctor_name_result = $doctor_name_stmt->get_result();
+$doctor_name = '';
+if ($doctor_name_result->num_rows > 0) {
+    $doctor_name_row = $doctor_name_result->fetch_assoc();
+    $doctor_name = $doctor_name_row['name'];
+}
+$doctor_name_stmt->close();
 
 // Insert new token
 $insert_sql = "INSERT INTO tokens (token_number, patient_name, patient_age, patient_phone, patient_id, department_id, doctor_id, token_type, expected_time, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'waiting', NOW())";
@@ -204,6 +217,7 @@ if ($insert_stmt->execute()) {
             'patients_ahead' => $patients_ahead,
             'current_token' => $current_token,
             'department' => $department,
+            'doctor_name' => $doctor_name,
             'location' => [
                 'floor_block' => $doctor_location['floor_block'],
                 'wing' => $doctor_location['wing'],

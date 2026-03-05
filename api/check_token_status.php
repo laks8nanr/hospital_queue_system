@@ -101,14 +101,61 @@ try {
     }
     
     if ($status) {
+        // Calculate patients ahead and current consulting token
+        $patients_ahead = 0;
+        $current_token = 'None';
+        $expected_time = null;
+        
+        if ($tokenData && isset($tokenData['doctor_id']) && ($status === 'waiting' || $status === 'consulting')) {
+            $doctor_id = $tokenData['doctor_id'];
+            $my_token_id = $tokenData['id'];
+            
+            // Get current consulting token for this doctor
+            $currentSql = "SELECT token_number FROM tokens WHERE doctor_id = ? AND status = 'consulting' AND DATE(created_at) = ? LIMIT 1";
+            $currentStmt = $conn->prepare($currentSql);
+            $currentStmt->bind_param("is", $doctor_id, $today);
+            $currentStmt->execute();
+            $currentResult = $currentStmt->get_result();
+            if ($currentResult->num_rows > 0) {
+                $currentRow = $currentResult->fetch_assoc();
+                $current_token = $currentRow['token_number'];
+            }
+            $currentStmt->close();
+            
+            // Count patients ahead (waiting tokens with lower id than mine for the same doctor)
+            $aheadSql = "SELECT COUNT(*) as ahead FROM tokens WHERE doctor_id = ? AND status = 'waiting' AND id < ? AND DATE(created_at) = ?";
+            $aheadStmt = $conn->prepare($aheadSql);
+            $aheadStmt->bind_param("iis", $doctor_id, $my_token_id, $today);
+            $aheadStmt->execute();
+            $aheadResult = $aheadStmt->get_result();
+            if ($aheadResult->num_rows > 0) {
+                $aheadRow = $aheadResult->fetch_assoc();
+                $patients_ahead = $aheadRow['ahead'];
+            }
+            $aheadStmt->close();
+            
+            // Use stored expected_time if available, otherwise calculate
+            if (isset($tokenData['expected_time']) && $tokenData['expected_time']) {
+                $expected_time = date('h:i A', strtotime($tokenData['expected_time']));
+            } else {
+                // Estimate expected time (approx 10 min per patient)
+                $minutes_to_wait = $patients_ahead * 10;
+                $expected_time = date('h:i A', strtotime("+{$minutes_to_wait} minutes"));
+            }
+        }
+        
         $response = [
             'success' => true,
             'status' => $status,
             'reason' => $reason,
             'token_number' => $tokenData ? $tokenData['token_number'] : $token_number,
             'booking_id' => $tokenData && isset($tokenData['booking_id']) ? $tokenData['booking_id'] : $booking_id,
+            'doctor_id' => $tokenData && isset($tokenData['doctor_id']) ? $tokenData['doctor_id'] : null,
             'doctor_name' => $tokenData && isset($tokenData['doctor_name']) ? $tokenData['doctor_name'] : null,
             'department_name' => $tokenData && isset($tokenData['department_name']) ? $tokenData['department_name'] : null,
+            'patients_ahead' => $patients_ahead,
+            'current_token' => $current_token,
+            'expected_time' => $expected_time,
             'location' => [
                 'floor_block' => $tokenData && isset($tokenData['floor_block']) ? $tokenData['floor_block'] : '',
                 'wing' => $tokenData && isset($tokenData['wing']) ? $tokenData['wing'] : '',

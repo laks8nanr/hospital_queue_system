@@ -1,49 +1,229 @@
-<!-- Department selection for consultation -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DORA Hospital - Select Department</title>
-  <link rel="stylesheet" href="style.css">
+  <title>MediNova Hospital - Select Department</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0a4d68 0%, #088395 50%, #05bfdb 100%);
+      padding: 20px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: center;
+      padding: 20px 0 30px;
+    }
+
+    .logo-container { display: flex; align-items: center; gap: 15px; }
+
+    .logo-symbol {
+      width: 55px;
+      height: 55px;
+      background: linear-gradient(135deg, #fff 0%, #e0f7fa 100%);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .logo-text { color: white; }
+    .logo-title { font-size: 1.6rem; font-weight: 700; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+    .logo-subtitle { font-size: 0.8rem; opacity: 0.9; letter-spacing: 2px; text-transform: uppercase; }
+
+    .main-container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 25px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+
+    .page-title {
+      text-align: center;
+      margin-bottom: 35px;
+    }
+    .page-title h2 { color: #0a4d68; font-size: 1.8rem; font-weight: 600; }
+    .page-title p { color: #666; font-size: 0.95rem; margin-top: 8px; }
+
+    .departments-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    .dept-card {
+      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      border-radius: 18px;
+      padding: 25px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      border: 2px solid transparent;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dept-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #088395, #05bfdb);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .dept-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(8,131,149,0.2);
+      border-color: #088395;
+    }
+
+    .dept-card:hover::before { opacity: 1; }
+
+    .dept-icon {
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .dept-name {
+      font-weight: 600;
+      color: #2c3e50;
+      font-size: 1rem;
+    }
+
+    .dept-desc {
+      font-size: 0.8rem;
+      color: #888;
+      margin-top: 5px;
+    }
+
+    .back-section { text-align: center; margin-top: 30px; }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 30px;
+      background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+      color: white;
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+
+    @media (max-width: 600px) {
+      .main-container { padding: 25px 20px; }
+      .departments-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .dept-card { padding: 20px 15px; }
+      .dept-icon { font-size: 2rem; }
+      .dept-name { font-size: 0.9rem; }
+    }
+  </style>
 </head>
-<body class="center">
-
-<h1 class="hospital-title">DORA Hospital</h1>
-<h2>Select Department</h2>
-
-<div class="button-container">
-  <!-- General Medicine -->
-  <a href="doctors_list.html?dept=General Medicine" class="box-btn">
-    <div class="box-content">
-      <span class="box-icon">🏥</span>
-      <span class="box-text">General Medicine</span>
+<body>
+  <div class="header">
+    <div class="logo-container">
+      <div class="logo-symbol">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 3H15V9H21V15H15V21H9V15H3V9H9V3Z" fill="#0a4d68" stroke="#088395" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <div class="logo-title">MediNova Hospital</div>
+        <div class="logo-subtitle">Smart Healthcare</div>
+      </div>
     </div>
-  </a>
+  </div>
 
-  <!-- Pediatrics -->
-  <a href="doctors_list.html?dept=Pediatrics" class="box-btn">
-    <div class="box-content">
-      <span class="box-icon">👶</span>
-      <span class="box-text">Pediatrics</span>
+  <div class="main-container">
+    <div class="page-title">
+      <h2>🏥 Select Department</h2>
+      <p>Choose a department to see available doctors</p>
     </div>
-  </a>
 
-  <!-- Orthopedics -->
-  <a href="doctors_list.html?dept=Orthopedics" class="box-btn">
-    <div class="box-content">
-      <span class="box-icon">🦴</span>
-      <span class="box-text">Orthopedics</span>
+    <div class="departments-grid">
+      <a href="doctors_list.html?dept=General Medicine" class="dept-card">
+        <span class="dept-icon">🩺</span>
+        <div class="dept-name">General Medicine</div>
+        <div class="dept-desc">Primary Care</div>
+      </a>
+
+      <a href="doctors_list.html?dept=Orthopedics" class="dept-card">
+        <span class="dept-icon">🦴</span>
+        <div class="dept-name">Orthopedics</div>
+        <div class="dept-desc">Bones & Joints</div>
+      </a>
+
+      <a href="doctors_list.html?dept=Pediatrics" class="dept-card">
+        <span class="dept-icon">👶</span>
+        <div class="dept-name">Pediatrics</div>
+        <div class="dept-desc">Child Health</div>
+      </a>
+
+      <a href="doctors_list.html?dept=Cardiology" class="dept-card">
+        <span class="dept-icon">❤️</span>
+        <div class="dept-name">Cardiology</div>
+        <div class="dept-desc">Heart & Vascular</div>
+      </a>
+
+      <a href="doctors_list.html?dept=Dermatology" class="dept-card">
+        <span class="dept-icon">🧴</span>
+        <div class="dept-name">Dermatology</div>
+        <div class="dept-desc">Skin & Hair</div>
+      </a>
+
+      <a href="doctors_list.html?dept=ENT" class="dept-card">
+        <span class="dept-icon">👂</span>
+        <div class="dept-name">ENT</div>
+        <div class="dept-desc">Ear, Nose & Throat</div>
+      </a>
+
+      <a href="doctors_list.html?dept=Neurology" class="dept-card">
+        <span class="dept-icon">🧠</span>
+        <div class="dept-name">Neurology</div>
+        <div class="dept-desc">Brain & Nerves</div>
+      </a>
+
+      <a href="doctors_list.html?dept=Ophthalmology" class="dept-card">
+        <span class="dept-icon">👁️</span>
+        <div class="dept-name">Ophthalmology</div>
+        <div class="dept-desc">Eye Care</div>
+      </a>
+
+      <a href="doctors_list.html?dept=Psychiatry" class="dept-card">
+        <span class="dept-icon">🧘</span>
+        <div class="dept-name">Psychiatry</div>
+        <div class="dept-desc">Mental Health</div>
+      </a>
+
+      <a href="doctors_list.html?dept=Urology" class="dept-card">
+        <span class="dept-icon">🏥</span>
+        <div class="dept-name">Urology</div>
+        <div class="dept-desc">Urinary & Kidney</div>
+      </a>
     </div>
-  </a>
-</div>
 
-<!-- Back Navigation -->
-<div style="margin-top: 30px;">
-  <a href="walkin_page.html" class="box-btn" style="background: linear-gradient(135deg, #95a5a6, #7f8c8d); width: auto; height: auto; padding: 15px 30px; display: inline-block;">
-    <span style="font-size: 16px; font-weight: bold;">← Back</span>
-  </a>
-</div>
-
+    <div class="back-section">
+      <a href="walkin_page.html" class="back-btn">← Back to Options</a>
+    </div>
+  </div>
 </body>
 </html>

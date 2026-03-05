@@ -101,6 +101,24 @@
       letter-spacing: 0.5px;
     }
 
+    .time-input {
+      font-size: 16px;
+      font-weight: 600;
+      color: #2c3e50;
+      font-family: 'Courier New', monospace;
+      padding: 8px 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      min-width: 120px;
+      text-align: center;
+      transition: border-color 0.3s;
+    }
+
+    .time-input:focus {
+      outline: none;
+      border-color: #3498db;
+    }
+
     .time-value {
       font-size: 16px;
       font-weight: 600;
@@ -172,6 +190,29 @@
       cursor: not-allowed;
     }
 
+    .btn-emergency {
+      background: linear-gradient(135deg, #e74c3c, #c0392b);
+      color: white;
+      width: 100%;
+      font-size: 16px;
+    }
+
+    .btn-emergency:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(231, 76, 60, 0.4);
+    }
+
+    .btn-resume {
+      background: linear-gradient(135deg, #27ae60, #1e8449);
+      color: white;
+      font-size: 16px;
+    }
+
+    .btn-resume:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(39, 174, 96, 0.4);
+    }
+
     /* Responsive */
     @media (max-width: 480px) {
       .break-container {
@@ -217,18 +258,28 @@
     <div class="break-times">
       <div class="time-row">
         <div class="time-label">Break Start Time</div>
-        <div class="time-value empty" id="breakStartTime">--:-- --</div>
+        <input type="time" class="time-input" id="breakStartInput">
       </div>
       <div class="time-row">
         <div class="time-label">Break End Time</div>
-        <div class="time-value empty" id="breakEndTime">--:-- --</div>
+        <input type="time" class="time-input" id="breakEndInput">
+      </div>
+      <div class="time-row" id="durationRow" style="display: none;">
+        <div class="time-label">Break Duration</div>
+        <div class="time-value" id="breakDuration">0 mins</div>
       </div>
     </div>
 
     <!-- Action Buttons -->
     <div class="action-buttons">
-      <button class="btn btn-break" id="breakBtn">Break</button>
-      <button class="btn btn-over" id="overBtn" disabled>Over</button>
+      <button class="btn btn-break" id="setBreakBtn">Set Break</button>
+      <button class="btn btn-over" id="cancelBreakBtn">Cancel Break</button>
+    </div>
+
+    <!-- Emergency Button -->
+    <div style="margin-top: 16px; display: flex; gap: 12px;">
+      <button class="btn btn-emergency" id="emergencyBtn" style="flex: 1;">🚨 Emergency</button>
+      <button class="btn btn-resume" id="resumeBtn" style="flex: 1; display: none;">▶ Resume</button>
     </div>
 
     <!-- Back Button -->
@@ -241,9 +292,7 @@
     // Break State
     let breakState = {
       doctorId: null,
-      status: 'available', // 'available' or 'on-break'
-      breakStartTime: null,
-      breakEndTime: null
+      hasActiveBreak: false
     };
 
     // Get doctor_id from URL
@@ -264,17 +313,34 @@
       document.getElementById('currentTime').textContent = time;
     }
 
-    // Format time for display
-    function formatTime(date) {
-      if (!date) return '--:-- --';
-      if (typeof date === 'string') {
-        date = new Date(date);
+    // Calculate and display break duration
+    function calculateDuration() {
+      const startInput = document.getElementById('breakStartInput').value;
+      const endInput = document.getElementById('breakEndInput').value;
+      const durationRow = document.getElementById('durationRow');
+      const durationEl = document.getElementById('breakDuration');
+      
+      if (startInput && endInput) {
+        const [startH, startM] = startInput.split(':').map(Number);
+        const [endH, endM] = endInput.split(':').map(Number);
+        
+        let durationMins = (endH * 60 + endM) - (startH * 60 + startM);
+        
+        if (durationMins > 0) {
+          durationRow.style.display = 'flex';
+          if (durationMins >= 60) {
+            const hours = Math.floor(durationMins / 60);
+            const mins = durationMins % 60;
+            durationEl.textContent = `${hours}h ${mins}m`;
+          } else {
+            durationEl.textContent = `${durationMins} mins`;
+          }
+        } else {
+          durationRow.style.display = 'none';
+        }
+      } else {
+        durationRow.style.display = 'none';
       }
-      return date.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-      });
     }
 
     // Load break status from API
@@ -285,14 +351,22 @@
         const response = await fetch(`api/manage_break.php?doctor_id=${breakState.doctorId}`);
         const data = await response.json();
         
-        if (data.success) {
-          if (data.data.is_on_break) {
-            breakState.status = 'on-break';
-            breakState.breakStartTime = data.data.break_start ? new Date(data.data.break_start) : null;
-          } else {
-            breakState.status = 'available';
-            breakState.breakEndTime = data.data.break_end ? new Date(data.data.break_end) : null;
+        if (data.success && data.data.is_on_break) {
+          breakState.hasActiveBreak = true;
+          // Populate inputs with existing break times
+          if (data.data.break_start) {
+            const start = new Date(data.data.break_start);
+            document.getElementById('breakStartInput').value = 
+              start.getHours().toString().padStart(2,'0') + ':' + 
+              start.getMinutes().toString().padStart(2,'0');
           }
+          if (data.data.break_end) {
+            const end = new Date(data.data.break_end);
+            document.getElementById('breakEndInput').value = 
+              end.getHours().toString().padStart(2,'0') + ':' + 
+              end.getMinutes().toString().padStart(2,'0');
+          }
+          calculateDuration();
           updateUI();
         }
       } catch (error) {
@@ -302,42 +376,117 @@
 
     // Update UI based on break state
     function updateUI() {
-      const breakBtn = document.getElementById('breakBtn');
-      const overBtn = document.getElementById('overBtn');
+      const setBreakBtn = document.getElementById('setBreakBtn');
+      const cancelBreakBtn = document.getElementById('cancelBreakBtn');
+      const emergencyBtn = document.getElementById('emergencyBtn');
+      const resumeBtn = document.getElementById('resumeBtn');
       const statusDot = document.getElementById('statusDot');
       const statusText = document.getElementById('statusText');
-      const breakStartTimeEl = document.getElementById('breakStartTime');
-      const breakEndTimeEl = document.getElementById('breakEndTime');
 
-      if (breakState.status === 'on-break') {
-        // On Break status
-        breakBtn.disabled = true;
-        overBtn.disabled = false;
-        statusDot.style.background = '#3498db'; // Blue
-        statusText.textContent = 'On Break';
-        breakStartTimeEl.classList.remove('empty');
-        breakStartTimeEl.textContent = formatTime(breakState.breakStartTime);
-        breakEndTimeEl.classList.add('empty');
-        breakEndTimeEl.textContent = '--:-- --';
+      if (breakState.hasActiveBreak) {
+        statusDot.style.background = '#e74c3c';
+        statusText.textContent = '🚨 Break Active';
+        setBreakBtn.textContent = 'Update Break';
+        cancelBreakBtn.style.display = 'block';
+        emergencyBtn.style.display = 'none';
+        resumeBtn.style.display = 'block';
       } else {
-        // Available status
-        breakBtn.disabled = false;
-        overBtn.disabled = true;
-        statusDot.style.background = '#27ae60'; // Green
+        statusDot.style.background = '#27ae60';
         statusText.textContent = 'Available';
-        if (breakState.breakEndTime) {
-          breakEndTimeEl.classList.remove('empty');
-          breakEndTimeEl.textContent = formatTime(breakState.breakEndTime);
-        }
+        setBreakBtn.textContent = 'Set Break';
+        cancelBreakBtn.style.display = 'none';
+        emergencyBtn.style.display = 'block';
+        resumeBtn.style.display = 'none';
       }
     }
 
-    // Break button clicked - Start break via API
-    async function onBreakClick() {
-      if (!breakState.doctorId) {
-        alert('Doctor ID not found');
+    // Set Break button clicked
+    async function onSetBreakClick() {
+      const startInput = document.getElementById('breakStartInput').value;
+      const endInput = document.getElementById('breakEndInput').value;
+      
+      if (!startInput || !endInput) {
+        alert('Please select both start and end times');
         return;
       }
+      
+      const [startH, startM] = startInput.split(':').map(Number);
+      const [endH, endM] = endInput.split(':').map(Number);
+      const durationMins = (endH * 60 + endM) - (startH * 60 + startM);
+      
+      if (durationMins <= 0) {
+        alert('End time must be after start time');
+        return;
+      }
+      
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const response = await fetch('api/manage_break.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            doctor_id: breakState.doctorId,
+            action: 'set_break',
+            break_start: `${today} ${startInput}:00`,
+            break_end: `${today} ${endInput}:00`
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          breakState.hasActiveBreak = true;
+          updateUI();
+          alert(`Break set! ${data.patients_updated || 0} patient(s) queue times updated.`);
+        } else {
+          alert(data.message || 'Failed to set break');
+        }
+      } catch (error) {
+        console.error('Error setting break:', error);
+        alert('Error setting break');
+      }
+    }
+
+    // Cancel Break button clicked
+    async function onCancelBreakClick() {
+      if (!confirm('Cancel the scheduled break?')) return;
+      
+      try {
+        const response = await fetch('api/manage_break.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            doctor_id: breakState.doctorId,
+            action: 'cancel_break'
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          breakState.hasActiveBreak = false;
+          document.getElementById('breakStartInput').value = '';
+          document.getElementById('breakEndInput').value = '';
+          document.getElementById('durationRow').style.display = 'none';
+          updateUI();
+          alert('Break cancelled');
+        } else {
+          alert(data.message || 'Failed to cancel break');
+        }
+      } catch (error) {
+        console.error('Error cancelling break:', error);
+        alert('Error cancelling break');
+      }
+    }
+
+    // Go back to dashboard
+    function goBack() {
+      window.location.href = 'staff_dashboard.html';
+    }
+
+    // Emergency button clicked - immediate indefinite break
+    async function onEmergencyClick() {
+      if (!confirm('Declare an EMERGENCY? This will pause the queue indefinitely until you click Resume.')) return;
       
       try {
         const response = await fetch('api/manage_break.php', {
@@ -352,25 +501,20 @@
         const data = await response.json();
         
         if (data.success) {
-          breakState.status = 'on-break';
-          breakState.breakStartTime = new Date();
+          breakState.hasActiveBreak = true;
           updateUI();
+          alert('Emergency declared! Queue is paused. Click Resume when ready to continue.');
         } else {
-          alert(data.message || 'Failed to start break');
+          alert(data.message || 'Failed to declare emergency');
         }
       } catch (error) {
-        console.error('Error starting break:', error);
-        alert('Error starting break');
+        console.error('Error declaring emergency:', error);
+        alert('Error declaring emergency');
       }
     }
 
-    // Over button clicked - End break via API
-    async function onOverClick() {
-      if (!breakState.doctorId) {
-        alert('Doctor ID not found');
-        return;
-      }
-      
+    // Resume button clicked - end break/emergency
+    async function onResumeClick() {
       try {
         const response = await fetch('api/manage_break.php', {
           method: 'POST',
@@ -384,55 +528,59 @@
         const data = await response.json();
         
         if (data.success) {
-          breakState.status = 'available';
-          breakState.breakEndTime = new Date();
+          breakState.hasActiveBreak = false;
+          document.getElementById('breakStartInput').value = '';
+          document.getElementById('breakEndInput').value = '';
+          document.getElementById('durationRow').style.display = 'none';
           updateUI();
+          alert('Resumed! Queue is now active.');
         } else {
-          alert(data.message || 'Failed to end break');
+          alert(data.message || 'Failed to resume');
         }
       } catch (error) {
-        console.error('Error ending break:', error);
-        alert('Error ending break');
+        console.error('Error resuming:', error);
+        alert('Error resuming');
       }
-    }
-
-    // Go back to dashboard
-    function goBack() {
-      window.location.href = 'staff_dashboard.html';
     }
 
     // Setup event listeners
     function init() {
       breakState.doctorId = getDoctorId();
       
-      // Redirect to login if no doctor ID found
       if (!breakState.doctorId) {
         alert('Please login first to access this page.');
         window.location.href = 'staff_login.html';
         return;
       }
       
-      document.getElementById('breakBtn').addEventListener('click', onBreakClick);
-      document.getElementById('overBtn').addEventListener('click', onOverClick);
+      document.getElementById('setBreakBtn').addEventListener('click', onSetBreakClick);
+      document.getElementById('cancelBreakBtn').addEventListener('click', onCancelBreakClick);
+      document.getElementById('emergencyBtn').addEventListener('click', onEmergencyClick);
+      document.getElementById('resumeBtn').addEventListener('click', onResumeClick);
+      document.getElementById('breakStartInput').addEventListener('change', calculateDuration);
+      document.getElementById('breakEndInput').addEventListener('change', calculateDuration);
       
-      // Add back button if not exists
       const backBtn = document.getElementById('backBtn');
       if (backBtn) {
         backBtn.addEventListener('click', goBack);
       }
 
-      // Update current time every second
+      // Set default times (current time to +1 hour)
+      const now = new Date();
+      const startTime = now.getHours().toString().padStart(2,'0') + ':' + 
+                        now.getMinutes().toString().padStart(2,'0');
+      const endTime = (now.getHours() + 1).toString().padStart(2,'0') + ':' + 
+                      now.getMinutes().toString().padStart(2,'0');
+      document.getElementById('breakStartInput').value = startTime;
+      document.getElementById('breakEndInput').value = endTime;
+      calculateDuration();
+
       updateCurrentTime();
       setInterval(updateCurrentTime, 1000);
-
-      // Load break status from API
       loadBreakStatus();
-      
-      // Initial UI update
       updateUI();
     }
 
-    // Initialize on page load
     window.addEventListener('load', init);
   </script>
 </body>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DORA Hospital - Pharmacy Token</title>
+  <title>MediNova Hospital - Pharmacy Token</title>
   <link rel="stylesheet" href="style.css">
   <style>
     /* Pharmacy Token Generation Styles */
@@ -850,7 +850,7 @@
     <!-- Header -->
     <div class="page-header">
       <div class="hospital-logo">💊</div>
-      <div class="hospital-name">DORA Hospital</div>
+      <div class="hospital-name" style="color: #27ae60;">MediNova Hospital</div>
       <div class="page-subtitle">Pharmacy Services</div>
     </div>
 
@@ -1109,8 +1109,16 @@
     // Logout
     function logout() {
       if (confirm('Are you sure you want to logout?')) {
-        sessionStorage.removeItem('patientData');
-        window.location.href = 'home.html';
+        // Call logout API to record logout time
+        const patientData = JSON.parse(sessionStorage.getItem('patientData') || '{}');
+        fetch('api/patient_logout.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ patient_id: patientData.patient_id || '' })
+        }).finally(() => {
+          sessionStorage.removeItem('patientData');
+          window.location.href = 'home.html';
+        });
       }
     }
 

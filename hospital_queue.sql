@@ -98,10 +98,13 @@ INSERT INTO `doctors` (`id`, `name`, `department_id`, `time_slot`, `qualificatio
 
 CREATE TABLE `prebooked_appointments` (
   `id` int(11) NOT NULL,
+  `patient_id` varchar(20) DEFAULT NULL,
   `booking_id` varchar(20) NOT NULL,
   `patient_name` varchar(100) NOT NULL,
   `patient_age` int(11) NOT NULL,
   `patient_phone` varchar(20) NOT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `password` varchar(255) DEFAULT NULL,
   `department_id` int(11) NOT NULL,
   `doctor_id` int(11) NOT NULL,
   `appointment_date` date NOT NULL,
@@ -116,25 +119,25 @@ CREATE TABLE `prebooked_appointments` (
 -- Dumping data for table `prebooked_appointments`
 --
 
-INSERT INTO `prebooked_appointments` (`id`, `booking_id`, `patient_name`, `patient_age`, `patient_phone`, `department_id`, `doctor_id`, `appointment_date`, `appointment_time`, `status`, `payment_status`, `created_at`, `updated_at`) VALUES
-(1, 'PB001', 'Priya Sharma', 28, '9876543210', 1, 1, '2026-02-10', '10:00:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
-(2, 'PB002', 'Sneha Reddy', 35, '9876543211', 1, 1, '2026-02-10', '10:30:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
-(3, 'PB003', 'Rahul Menon', 42, '9876543212', 1, 1, '2026-02-10', '11:00:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
-(4, 'PB004', 'Riya Patel', 23, '3445562757', 1, 2, '2026-02-10', '14:00:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
-(5, 'PB005', 'Aakash Rao', 31, '9123456701', 1, 2, '2026-02-10', '14:30:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 07:13:20'),
-(6, 'PB006', 'Meera Das', 27, '9876501234', 1, 2, '2026-02-10', '15:30:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 07:13:28'),
-(7, 'PB007', 'Sandeep Jain', 45, '9988112233', 2, 3, '2026-02-10', '10:45:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
-(8, 'PB008', 'Ishita Singh', 34, '9765432109', 2, 3, '2026-02-10', '11:00:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
-(9, 'PB009', 'Harish Kumar', 29, '9345612870', 2, 3, '2026-02-10', '11:15:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
-(10, 'PB010', 'Lakshmi Nair', 38, '9012345678', 2, 4, '2026-02-10', '14:30:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
-(11, 'PB011', 'Ganesh Pillai', 41, '9234567890', 2, 4, '2026-02-10', '15:45:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
-(12, 'PB012', 'Divya George', 26, '9456123789', 2, 4, '2026-02-10', '16:00:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
-(13, 'PB013', 'Sameer Ali', 33, '9654321876', 3, 5, '2026-02-10', '09:15:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
-(14, 'PB014', 'Ananya Bose', 28, '9786543210', 3, 5, '2026-02-10', '10:30:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
-(15, 'PB015', 'Rahul Desai', 36, '9345678123', 3, 5, '2026-02-10', '11:45:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
-(16, 'PB016', 'Ali', 33, '9654321876', 3, 6, '2026-02-10', '09:15:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
-(17, 'PB017', 'Anna', 28, '9786543210', 3, 6, '2026-02-10', '10:30:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
-(18, 'PB018', 'Ram', 36, '9345678123', 3, 6, '2026-02-10', '11:45:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14');
+INSERT INTO `prebooked_appointments` (`id`, `patient_id`, `booking_id`, `patient_name`, `patient_age`, `patient_phone`, `email`, `password`, `department_id`, `doctor_id`, `appointment_date`, `appointment_time`, `status`, `payment_status`, `created_at`, `updated_at`) VALUES
+(1, 'PRE001', 'PB001', 'Priya Sharma', 28, '9876543210', 'priya.sharma@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 1, '2026-02-10', '10:00:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
+(2, 'PRE002', 'PB002', 'Sneha Reddy', 35, '9876543211', 'sneha.reddy@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 1, '2026-02-10', '10:30:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
+(3, 'PRE003', 'PB003', 'Rahul Menon', 42, '9876543212', 'rahul.menon@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 1, '2026-02-10', '11:00:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
+(4, 'PRE004', 'PB004', 'Riya Patel', 23, '3445562757', 'riya.patel@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 2, '2026-02-10', '14:00:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
+(5, 'PRE005', 'PB005', 'Aakash Rao', 31, '9123456701', 'aakash.rao@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 2, '2026-02-10', '14:30:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 07:13:20'),
+(6, 'PRE006', 'PB006', 'Meera Das', 27, '9876501234', 'meera.das@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 2, '2026-02-10', '15:30:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 07:13:28'),
+(7, 'PRE007', 'PB007', 'Sandeep Jain', 45, '9988112233', 'sandeep.jain@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2, 3, '2026-02-10', '10:45:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
+(8, 'PRE008', 'PB008', 'Ishita Singh', 34, '9765432109', 'ishita.singh@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2, 3, '2026-02-10', '11:00:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
+(9, 'PRE009', 'PB009', 'Harish Kumar', 29, '9345612870', 'harish.kumar@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2, 3, '2026-02-10', '11:15:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
+(10, 'PRE010', 'PB010', 'Lakshmi Nair', 38, '9012345678', 'lakshmi.nair@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2, 4, '2026-02-10', '14:30:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
+(11, 'PRE011', 'PB011', 'Ganesh Pillai', 41, '9234567890', 'ganesh.pillai@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2, 4, '2026-02-10', '15:45:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
+(12, 'PRE012', 'PB012', 'Divya George', 26, '9456123789', 'divya.george@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2, 4, '2026-02-10', '16:00:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
+(13, 'PRE013', 'PB013', 'Sameer Ali', 33, '9654321876', 'sameer.ali@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 3, 5, '2026-02-10', '09:15:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
+(14, 'PRE014', 'PB014', 'Ananya Bose', 28, '9786543210', 'ananya.bose@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 3, 5, '2026-02-10', '10:30:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
+(15, 'PRE015', 'PB015', 'Rahul Desai', 36, '9345678123', 'rahul.desai@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 3, 5, '2026-02-10', '11:45:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
+(16, 'PRE016', 'PB016', 'Ali', 33, '9654321876', 'ali@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 3, 6, '2026-02-10', '09:15:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
+(17, 'PRE017', 'PB017', 'Anna', 28, '9786543210', 'anna@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 3, 6, '2026-02-10', '10:30:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14'),
+(18, 'PRE018', 'PB018', 'Ram', 36, '9345678123', 'ram@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 3, 6, '2026-02-10', '11:45:00', 'booked', 'pending', '2026-02-03 18:54:52', '2026-02-10 06:07:14');
 
 -- --------------------------------------------------------
 
@@ -180,6 +183,30 @@ CREATE TABLE `tokens` (
   `booking_id` varchar(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `patient_sessions`
+--
+
+CREATE TABLE `patient_sessions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `patient_id` varchar(50) NOT NULL COMMENT 'Patient ID (PRE001, PAT001, etc.)',
+  `patient_name` varchar(100) NOT NULL,
+  `patient_type` enum('registered','prebooked','walkin') NOT NULL DEFAULT 'registered',
+  `login_time` datetime NOT NULL,
+  `logout_time` datetime DEFAULT NULL,
+  `session_duration_minutes` int(11) DEFAULT NULL COMMENT 'Calculated on logout',
+  `ip_address` varchar(45) DEFAULT NULL,
+  `user_agent` varchar(255) DEFAULT NULL,
+  `status` enum('active','logged_out','expired') DEFAULT 'active',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_patient_id` (`patient_id`),
+  KEY `idx_login_time` (`login_time`),
+  KEY `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 --
 -- Indexes for dumped tables
 --
@@ -209,7 +236,9 @@ ALTER TABLE `doctors`
 --
 ALTER TABLE `prebooked_appointments`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `booking_id` (`booking_id`);
+  ADD UNIQUE KEY `booking_id` (`booking_id`),
+  ADD UNIQUE KEY `patient_id` (`patient_id`),
+  ADD KEY `email` (`email`);
 
 --
 -- Indexes for table `staff`

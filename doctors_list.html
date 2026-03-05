@@ -4,56 +4,92 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DORA Hospital - Select Doctor</title>
+  <title>MediNova Hospital - Select Doctor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <style>
+    body { 
+      font-family: 'Poppins', sans-serif !important; 
+      background: linear-gradient(180deg, #f8fafb 0%, #e8eef3 100%);
+      min-height: 100vh;
+      padding-bottom: 40px;
+    }
+    .header { display: flex; justify-content: center; padding: 25px 0 20px; }
+    .logo-container { display: flex; align-items: center; gap: 15px; }
+    .logo-symbol {
+      width: 55px; height: 55px;
+      background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+      border-radius: 14px; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 15px rgba(8,131,149,0.2);
+    }
+    .logo-text { color: #0a4d68; }
+    .logo-title { font-size: 1.6rem; font-weight: 700; }
+    .logo-subtitle { font-size: 0.8rem; opacity: 0.7; letter-spacing: 2px; text-transform: uppercase; }
+    
+    h2 { 
+      color: #0a4d68; 
+      font-weight: 600; 
+      font-size: 1.6rem;
+      margin-bottom: 8px;
+    }
+    .dept-subtitle { 
+      color: #088395; 
+      font-size: 0.95rem;
+      font-weight: 500;
+      margin-bottom: 20px;
+    }
+    
     .view-mode { display: block; }
     .form-mode { display: none; }
     .token-mode { display: none; }
     
     .doctor-card-expanded {
-      background: linear-gradient(135deg, #fff, #f0f9ff);
-      border: 2px solid #3498db;
-      border-radius: 16px;
-      padding: 20px;
+      background: linear-gradient(135deg, #fff 0%, #f8fafb 100%);
+      border: 2px solid #e8eef3;
+      border-radius: 20px;
+      padding: 24px;
       margin: 15px 0;
-      box-shadow: 0 4px 20px rgba(52, 152, 219, 0.2);
+      box-shadow: 0 6px 25px rgba(8, 131, 149, 0.1);
       transition: all 0.3s;
     }
     
     .doctor-card-expanded:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 30px rgba(52, 152, 219, 0.3);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 35px rgba(8, 131, 149, 0.18);
+      border-color: #088395;
     }
     
     .doctor-header {
       display: flex;
       align-items: center;
-      gap: 15px;
-      margin-bottom: 15px;
+      gap: 18px;
+      margin-bottom: 18px;
     }
     
     .doctor-avatar {
-      width: 60px;
-      height: 60px;
-      background: linear-gradient(135deg, #3498db, #2980b9);
-      border-radius: 50%;
+      width: 65px;
+      height: 65px;
+      background: linear-gradient(135deg, #088395, #0a4d68);
+      border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 30px;
+      font-size: 32px;
+      box-shadow: 0 6px 20px rgba(8, 131, 149, 0.3);
     }
     
     .doctor-main-info h3 {
       margin: 0;
-      color: #2c3e50;
+      color: #0a4d68;
       font-size: 20px;
+      font-weight: 600;
     }
     
     .doctor-qualification {
-      color: #7f8c8d;
+      color: #088395;
       font-size: 14px;
-      margin-top: 3px;
+      margin-top: 4px;
+      font-weight: 500;
     }
     
     .doctor-stats {
@@ -64,29 +100,31 @@
     }
     
     .stat-box {
-      background: #f8f9fa;
-      border-radius: 10px;
-      padding: 12px 8px;
+      background: linear-gradient(135deg, #f8fafb, #e8eef3);
+      border-radius: 14px;
+      padding: 14px 10px;
       text-align: center;
+      border: 1px solid #e8eef3;
     }
     
     .stat-icon {
-      font-size: 20px;
+      font-size: 22px;
       display: block;
-      margin-bottom: 5px;
+      margin-bottom: 6px;
     }
     
     .stat-value {
-      font-size: 16px;
-      font-weight: bold;
-      color: #2c3e50;
+      font-size: 15px;
+      font-weight: 700;
+      color: #0a4d68;
       display: block;
     }
     
     .stat-label {
       font-size: 11px;
-      color: #95a5a6;
+      color: #088395;
       display: block;
+      font-weight: 500;
     }
     
     .wait-time-low { color: #27ae60; }
@@ -95,21 +133,23 @@
     
     .select-doctor-btn {
       width: 100%;
-      padding: 12px;
-      margin-top: 15px;
-      background: linear-gradient(135deg, #3498db, #2980b9);
+      padding: 14px;
+      margin-top: 18px;
+      background: linear-gradient(135deg, #088395, #0a4d68);
       color: white;
       border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      font-weight: bold;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 600;
       cursor: pointer;
       transition: all 0.3s;
+      font-family: 'Poppins', sans-serif;
+      letter-spacing: 0.3px;
     }
     
     .select-doctor-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(8, 131, 149, 0.35);
     }
     
     /* Patient Form Styles */
@@ -117,48 +157,51 @@
       max-width: 450px;
       margin: 20px auto;
       background: #fff;
-      border-radius: 20px;
-      padding: 30px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-      border-top: 5px solid #3498db;
+      border-radius: 24px;
+      padding: 35px;
+      box-shadow: 0 10px 40px rgba(8, 131, 149, 0.12);
+      border-top: 5px solid #088395;
     }
     
     .selected-doctor-info {
-      background: linear-gradient(135deg, #e8f4f8, #d4edda);
-      border-radius: 12px;
-      padding: 15px;
-      margin-bottom: 20px;
+      background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 25px;
       text-align: center;
+      border: 2px solid #05bfdb;
     }
     
     .selected-doctor-info h4 {
       margin: 0 0 5px 0;
-      color: #2c3e50;
+      color: #0a4d68;
+      font-weight: 600;
     }
     
     .selected-doctor-info p {
       margin: 0;
-      color: #666;
+      color: #088395;
       font-size: 14px;
     }
     
     .pay-fees-btn {
       width: 100%;
-      padding: 15px;
-      margin-top: 15px;
+      padding: 16px;
+      margin-top: 18px;
       background: linear-gradient(135deg, #f39c12, #e67e22);
       color: white;
       border: none;
-      border-radius: 10px;
-      font-size: 18px;
-      font-weight: bold;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 600;
       cursor: pointer;
       transition: all 0.3s;
+      font-family: 'Poppins', sans-serif;
     }
     
     .pay-fees-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(243, 156, 18, 0.35);
     }
     
     .pay-fees-btn.paid {
@@ -168,35 +211,37 @@
     
     .generate-token-btn {
       width: 100%;
-      padding: 15px;
-      margin-top: 10px;
-      background: #bdc3c7;
+      padding: 16px;
+      margin-top: 12px;
+      background: #d0d8e0;
       color: white;
       border: none;
-      border-radius: 10px;
-      font-size: 18px;
-      font-weight: bold;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 600;
       cursor: not-allowed;
       transition: all 0.3s;
+      font-family: 'Poppins', sans-serif;
     }
     
     .generate-token-btn.active {
-      background: linear-gradient(135deg, #27ae60, #2ecc71);
+      background: linear-gradient(135deg, #088395, #0a4d68);
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+      box-shadow: 0 6px 20px rgba(8, 131, 149, 0.3);
     }
     
     .generate-token-btn.active:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(39, 174, 96, 0.5);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(8, 131, 149, 0.4);
     }
     
     .back-btn {
       background: none;
       border: none;
-      color: #3498db;
+      color: #088395;
       cursor: pointer;
       font-size: 14px;
+      font-weight: 500;
       margin-bottom: 15px;
     }
     
@@ -208,100 +253,126 @@
     .token-display-container {
       max-width: 500px;
       margin: 20px auto;
+      padding: 0 15px;
     }
     
     .your-token-card {
-      background: linear-gradient(135deg, #2c3e50, #34495e);
-      border-radius: 20px;
-      padding: 25px;
+      background: linear-gradient(145deg, #1a3a4d 0%, #0a4d68 50%, #088395 100%);
+      border-radius: 24px;
+      padding: 30px;
       color: white;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 15px 40px rgba(10, 77, 104, 0.4);
       margin-bottom: 25px;
+      border: 2px solid rgba(255,255,255,0.1);
     }
     
     .token-header {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
     }
     
     .your-token-number {
-      font-size: 70px;
-      font-weight: bold;
-      color: #2ecc71;
-      text-shadow: 0 2px 10px rgba(46, 204, 113, 0.5);
+      font-size: 80px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #05bfdb, #00d4aa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 4px 8px rgba(5,191,219,0.3));
       line-height: 1;
+      letter-spacing: 2px;
     }
     
     .token-type-badge {
       display: inline-block;
-      background: #3498db;
-      padding: 5px 15px;
-      border-radius: 20px;
+      background: linear-gradient(135deg, #05bfdb, #088395);
+      padding: 8px 20px;
+      border-radius: 25px;
       font-size: 12px;
-      margin-top: 10px;
+      font-weight: 600;
+      margin-top: 15px;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 15px rgba(5,191,219,0.3);
     }
     
     .token-stats-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 15px;
-      margin-top: 20px;
+      gap: 12px;
+      margin-top: 25px;
     }
     
     .token-stat-item {
-      background: rgba(255,255,255,0.1);
-      border-radius: 12px;
-      padding: 15px;
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 18px 12px;
       text-align: center;
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.3s;
+    }
+    
+    .token-stat-item:hover {
+      background: rgba(255,255,255,0.12);
+      transform: translateY(-2px);
     }
     
     .token-stat-item .icon {
-      font-size: 24px;
-      margin-bottom: 5px;
+      font-size: 26px;
+      margin-bottom: 8px;
+      display: block;
     }
     
     .token-stat-item .value {
-      font-size: 22px;
-      font-weight: bold;
-      color: #2ecc71;
+      font-size: 20px;
+      font-weight: 700;
+      color: #05bfdb;
+      display: block;
     }
     
     .token-stat-item .label {
-      font-size: 12px;
-      color: #bdc3c7;
+      font-size: 11px;
+      color: rgba(255,255,255,0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
     }
     
     /* Queue Visualization */
     .queue-section {
       background: #fff;
-      border-radius: 20px;
-      padding: 20px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      border-radius: 24px;
+      padding: 25px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+      border: 1px solid #e8eef3;
     }
     
     .queue-title {
-      font-size: 18px;
-      color: #2c3e50;
-      margin-bottom: 15px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #0a4d68;
+      margin-bottom: 18px;
       display: flex;
       align-items: center;
       gap: 10px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #e8eef3;
     }
     
     .queue-track {
       position: relative;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
     
     .queue-item {
       display: flex;
       align-items: center;
-      padding: 12px 15px;
-      border-radius: 12px;
-      background: #f8f9fa;
-      border-left: 4px solid #bdc3c7;
+      padding: 14px 18px;
+      border-radius: 14px;
+      background: #f8fafb;
+      border-left: 5px solid #d0d8e0;
       transition: all 0.3s;
     }
     
@@ -313,27 +384,29 @@
     
     .queue-item.prebooked {
       border-left-color: #9b59b6;
-      background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+      background: linear-gradient(135deg, #f8f0fc, #f3e5f5);
     }
     
     .queue-item.walkin {
-      border-left-color: #3498db;
-      background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+      border-left-color: #088395;
+      background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
     }
     
     .queue-item.review {
       border-left-color: #e67e22;
-      background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+      background: linear-gradient(135deg, #fff8f0, #ffe8d5);
     }
     
     .queue-item.you {
-      border-left-color: #2ecc71;
-      background: linear-gradient(135deg, #e8f8f5, #a9dfbf);
-      box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+      border-left-color: #05bfdb;
+      background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+      box-shadow: 0 6px 20px rgba(5, 191, 219, 0.25);
+      border: 2px solid #05bfdb;
+      border-left-width: 5px;
     }
     
     .queue-item.you-highlight {
-      border: 3px solid #2ecc71;
+      border: 3px solid #05bfdb;
       animation: youPulse 1.5s infinite;
     }
     
@@ -348,24 +421,24 @@
     }
     
     .queue-position {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
       background: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: bold;
-      font-size: 16px;
-      margin-right: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      font-weight: 700;
+      font-size: 15px;
+      margin-right: 15px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
     }
     
-    .queue-item.current .queue-position { background: #27ae60; color: white; }
-    .queue-item.prebooked .queue-position { background: #9b59b6; color: white; }
-    .queue-item.walkin .queue-position { background: #3498db; color: white; }
-    .queue-item.review .queue-position { background: #e67e22; color: white; }
-    .queue-item.you .queue-position { background: #2ecc71; color: white; }
+    .queue-item.current .queue-position { background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; }
+    .queue-item.prebooked .queue-position { background: linear-gradient(135deg, #9b59b6, #a855f7); color: white; }
+    .queue-item.walkin .queue-position { background: linear-gradient(135deg, #088395, #05bfdb); color: white; }
+    .queue-item.review .queue-position { background: linear-gradient(135deg, #e67e22, #f39c12); color: white; }
+    .queue-item.you .queue-position { background: linear-gradient(135deg, #05bfdb, #00d4aa); color: white; box-shadow: 0 4px 15px rgba(5,191,219,0.4); }
     
     .queue-item.not-arrived {
       opacity: 0.6;
@@ -384,19 +457,20 @@
     
     .queue-badge {
       display: inline-block;
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-size: 10px;
-      font-weight: bold;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 9px;
+      font-weight: 700;
       text-transform: uppercase;
-      margin-left: 8px;
+      margin-left: 10px;
+      letter-spacing: 0.5px;
     }
     
-    .badge-prebooked { background: #9b59b6; color: white; }
-    .badge-walkin { background: #3498db; color: white; }
-    .badge-review { background: #e67e22; color: white; }
-    .badge-you { background: #2ecc71; color: white; }
-    .badge-current { background: #27ae60; color: white; }
+    .badge-prebooked { background: linear-gradient(135deg, #9b59b6, #a855f7); color: white; }
+    .badge-walkin { background: linear-gradient(135deg, #088395, #05bfdb); color: white; }
+    .badge-review { background: linear-gradient(135deg, #e67e22, #f39c12); color: white; }
+    .badge-you { background: linear-gradient(135deg, #05bfdb, #00d4aa); color: white; }
+    .badge-current { background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; }
     
     .queue-status {
       font-size: 12px;
@@ -407,66 +481,71 @@
     .queue-legend {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 15px;
-      padding-top: 15px;
-      border-top: 1px solid #eee;
+      gap: 15px;
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 2px solid #e8eef3;
       justify-content: center;
     }
     
     .legend-item {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       font-size: 11px;
-      color: #666;
+      color: #0a4d68;
+      font-weight: 500;
     }
     
     .legend-dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
+      width: 14px;
+      height: 14px;
+      border-radius: 6px;
     }
     
-    .legend-dot.prebooked { background: #9b59b6; }
-    .legend-dot.walkin { background: #3498db; }
-    .legend-dot.review { background: #e67e22; }
-    .legend-dot.current { background: #27ae60; }
+    .legend-dot.prebooked { background: linear-gradient(135deg, #9b59b6, #a855f7); }
+    .legend-dot.walkin { background: linear-gradient(135deg, #088395, #05bfdb); }
+    .legend-dot.review { background: linear-gradient(135deg, #e67e22, #f39c12); }
+    .legend-dot.current { background: linear-gradient(135deg, #27ae60, #2ecc71); }
     
     .cancel-token-btn {
       width: 100%;
-      padding: 15px;
+      padding: 16px;
       margin-top: 20px;
       background: linear-gradient(135deg, #e74c3c, #c0392b);
       color: white;
       border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      font-weight: bold;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 600;
       cursor: pointer;
       transition: all 0.3s;
+      font-family: 'Poppins', sans-serif;
     }
     
     .cancel-token-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(231, 76, 60, 0.35);
     }
     
     .home-btn {
       width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      background: #3498db;
+      padding: 14px;
+      margin-top: 12px;
+      background: linear-gradient(135deg, #088395, #0a4d68);
       color: white;
       border: none;
-      border-radius: 10px;
+      border-radius: 14px;
       font-size: 14px;
+      font-weight: 600;
       cursor: pointer;
       transition: all 0.3s;
+      font-family: 'Poppins', sans-serif;
     }
     
     .home-btn:hover {
-      background: #2980b9;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(8,131,149,0.35);
     }
     
     /* ========== MOBILE RESPONSIVE ========== */
@@ -650,7 +729,19 @@
 </head>
 <body class="center">
 
-<h1 class="hospital-title">DORA Hospital</h1>
+<div class="header">
+  <div class="logo-container">
+    <div class="logo-symbol">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M9 3H15V9H21V15H15V21H9V15H3V9H9V3Z" fill="#0a4d68" stroke="#088395" stroke-width="1.5"/>
+      </svg>
+    </div>
+    <div class="logo-text">
+      <div class="logo-title">MediNova Hospital</div>
+      <div class="logo-subtitle">Smart Healthcare</div>
+    </div>
+  </div>
+</div>
 
 <!-- VIEW MODE: Doctor List -->
 <div id="viewMode" class="view-mode">
