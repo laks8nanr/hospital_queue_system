@@ -326,6 +326,7 @@
       display: flex;
       align-items: center;
       gap: 15px;
+      flex: 1;
     }
 
     .queue-token {
@@ -336,16 +337,47 @@
       background: white;
       padding: 8px 12px;
       border-radius: 6px;
+      min-width: 80px;
+      text-align: center;
+    }
+
+    .queue-patient-info {
+      flex: 1;
     }
 
     .queue-patient {
       font-size: 14px;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    .queue-patient-id {
+      font-size: 12px;
       color: #7f8c8d;
+      margin-top: 2px;
     }
 
     .queue-time {
       font-size: 12px;
       color: #95a5a6;
+    }
+
+    .btn-received {
+      background: linear-gradient(135deg, #27ae60, #2ecc71);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+
+    .btn-received:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
     }
 
     .queue-empty {
@@ -732,15 +764,16 @@
       }
 
       queueList.innerHTML = queueData.map((token, index) => `
-        <div class="queue-item ${index === 0 ? 'next' : ''}">
+        <div class="queue-item ${index === 0 ? 'next' : ''}" id="queue-item-${token.id}">
           <div class="queue-item-left">
             <div class="queue-token">${token.token_number}</div>
-            <div>
+            <div class="queue-patient-info">
               <div class="queue-patient">${token.patient_name || '-'}</div>
-              <div class="queue-time">Token at ${token.created_time}</div>
+              <div class="queue-patient-id">ID: ${token.patient_id || 'N/A'}</div>
+              <div class="queue-time">${token.payment_method === 'online' ? '💳 Online Paid' : '💵 Cash'} • ${token.created_time}</div>
             </div>
           </div>
-          ${index === 0 ? '<span style="color: #27ae60; font-weight: 600;">NEXT</span>' : ''}
+          <button class="btn-received" onclick="markAsReceived(${token.id}, '${token.token_number}')">✓ Received</button>
         </div>
       `).join('');
     }
@@ -801,6 +834,58 @@
       } catch (error) {
         console.error('Error updating token:', error);
         showToast('Network error', 'error');
+      }
+    }
+
+    // Mark patient as received (medicine collected)
+    async function markAsReceived(tokenId, tokenNumber) {
+      try {
+        // Remove from UI immediately for better UX
+        const queueItem = document.getElementById(`queue-item-${tokenId}`);
+        if (queueItem) {
+          queueItem.style.opacity = '0.5';
+          queueItem.querySelector('.btn-received').disabled = true;
+          queueItem.querySelector('.btn-received').textContent = 'Processing...';
+        }
+
+        const response = await fetch('api/update_pharmacy_token.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token_id: tokenId, status: 'completed' })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // Remove from local queue data
+          queueData = queueData.filter(t => t.id !== tokenId);
+          
+          // Animate removal
+          if (queueItem) {
+            queueItem.style.transition = 'all 0.3s ease';
+            queueItem.style.transform = 'translateX(100%)';
+            queueItem.style.opacity = '0';
+            setTimeout(() => {
+              renderQueue();
+            }, 300);
+          } else {
+            renderQueue();
+          }
+          
+          showToast(`Token ${tokenNumber} marked as received`, 'success');
+        } else {
+          // Restore UI on error
+          if (queueItem) {
+            queueItem.style.opacity = '1';
+            queueItem.querySelector('.btn-received').disabled = false;
+            queueItem.querySelector('.btn-received').textContent = '✓ Received';
+          }
+          showToast(data.message || 'Update failed', 'error');
+        }
+      } catch (error) {
+        console.error('Error marking as received:', error);
+        showToast('Network error', 'error');
+        loadQueue(); // Refresh to restore state
       }
     }
 

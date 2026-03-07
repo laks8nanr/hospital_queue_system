@@ -188,6 +188,20 @@ if (params.get("success")) {
     errorDiv.style.display = 'block';
 }
 
+// Auto-fill patient ID if passed from registration (and save to localStorage)
+if (params.get("patient_id")) {
+    const patientId = params.get("patient_id");
+    document.getElementById('patientId').value = patientId;
+    // Store in localStorage for future logins
+    localStorage.setItem('savedPatientId', patientId);
+} else {
+    // Check localStorage for previously saved patient ID
+    const savedPatientId = localStorage.getItem('savedPatientId');
+    if (savedPatientId) {
+        document.getElementById('patientId').value = savedPatientId;
+    }
+}
+
 document.getElementById('loginForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
@@ -211,6 +225,10 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
 
         if (data.success) {
             sessionStorage.setItem('patientData', JSON.stringify(data.data));
+            // Save patient_id to localStorage for future auto-fill
+            if (data.data.patient_id) {
+                localStorage.setItem('savedPatientId', data.data.patient_id);
+            }
             const redirect = sessionStorage.getItem('afterLoginRedirect');
             if (redirect) {
                 sessionStorage.removeItem('afterLoginRedirect');

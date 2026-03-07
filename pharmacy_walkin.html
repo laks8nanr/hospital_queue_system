@@ -1,10 +1,10 @@
-<!-- Walk-in patient requirement selection -->
+<!-- Pharmacy walk-in patient type selection -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MediNova Hospital - Walk-in</title>
+  <title>MediNova Hospital - Pharmacy</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -37,7 +37,7 @@
     .page-title { text-align: center; margin-bottom: 30px; }
     .page-title h2 { color: #0a4d68; font-size: 1.5rem; font-weight: 600; }
     .page-title p { color: #666; font-size: 0.9rem; margin-top: 5px; }
-    .options-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
     .option-card {
       background: linear-gradient(135deg, #f8f9fa, #e9ecef);
       border-radius: 18px; padding: 30px 20px; text-align: center;
@@ -50,6 +50,7 @@
     }
     .option-icon { font-size: 3rem; margin-bottom: 15px; display: block; }
     .option-name { font-weight: 600; color: #2c3e50; font-size: 1.1rem; }
+    .option-desc { font-size: 0.8rem; color: #666; margin-top: 5px; }
     .back-link { display: block; text-align: center; margin-top: 25px; color: white; text-decoration: none; font-weight: 500; }
     .back-link:hover { text-decoration: underline; }
   </style>
@@ -71,38 +72,30 @@
 
   <div class="main-container">
     <div class="page-title">
-      <h2>🚶 Walk-in Patient</h2>
-      <p>Select your requirement</p>
+      <h2>💊 Pharmacy</h2>
+      <p>Select your patient type</p>
     </div>
 
     <div class="options-grid">
-      <div class="option-card" onclick="selectRequirement('consultation')">
-        <span class="option-icon">🩺</span>
-        <div class="option-name">Consultation</div>
+      <div class="option-card" onclick="selectPatientType('today')">
+        <span class="option-icon">🏥</span>
+        <div class="option-name">Today Patient</div>
+        <div class="option-desc">Visited hospital today</div>
       </div>
-      <div class="option-card" onclick="selectRequirement('lab')">
-        <span class="option-icon">🔬</span>
-        <div class="option-name">Lab Test</div>
-      </div>
-      <div class="option-card" onclick="selectRequirement('pharmacy')">
-        <span class="option-icon">💊</span>
-        <div class="option-name">Pharmacy</div>
+      <div class="option-card" onclick="selectPatientType('outside')">
+        <span class="option-icon">🚶</span>
+        <div class="option-name">Outside Patient</div>
+        <div class="option-desc">Direct pharmacy visit</div>
       </div>
     </div>
   </div>
 
-  <a href="index.html" class="back-link">← Back to Services</a>
+  <a href="walkin_page.html" class="back-link">← Back to Services</a>
 
 <script>
-  function selectRequirement(type) {
-    sessionStorage.setItem('selectedRequirement', type);
-    if (type === 'consultation') {
-      window.location.href = 'walkin.html';
-    } else if (type === 'lab') {
-      window.location.href = 'select_test.html';
-    } else if (type === 'pharmacy') {
-      window.location.href = 'pharmacy_walkin.html';
-    }
+  function selectPatientType(type) {
+    sessionStorage.setItem('pharmacyPatientType', type);
+    window.location.href = 'pharmacy_token.html?type=' + type;
   }
 </script>
 </body>

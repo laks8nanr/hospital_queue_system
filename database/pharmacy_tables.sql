@@ -29,8 +29,12 @@ CREATE TABLE IF NOT EXISTS pharmacy_staff (
     password VARCHAR(255) NOT NULL,
     name VARCHAR(100) NOT NULL,
     pharmacy_id INT NOT NULL,
+    counter_number VARCHAR(10) DEFAULT '1',
+    counter_name VARCHAR(50) DEFAULT 'Counter 1',
+    counter_type ENUM('cash', 'online', 'both') DEFAULT 'both',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (pharmacy_id) REFERENCES pharmacies(id)
+    FOREIGN KEY (pharmacy_id) REFERENCES pharmacies(id),
+    INDEX idx_counter (pharmacy_id, counter_number)
 );
 
 -- ============================================
@@ -65,18 +69,18 @@ CREATE TABLE IF NOT EXISTS pharmacy_tokens (
 -- ============================================
 INSERT INTO pharmacies (id, name, block, floor, wing, cash_counter, online_counter, description, is_active) VALUES
 (1, 'Main Pharmacy', 'A', '1', 'East', 'Counter A', 'Counter 1', 'Main hospital pharmacy - General medications', TRUE),
-(2, 'Emergency Pharmacy', 'B', 'Ground', 'West', 'Counter B', 'Counter 2', 'Emergency and critical care pharmacy', TRUE)
+(2, 'Pharmacy 2', 'B', 'Ground', 'West', 'Counter B', 'Counter 2', 'Emergency and critical care pharmacy', TRUE)
 ON DUPLICATE KEY UPDATE name = VALUES(name), block = VALUES(block), floor = VALUES(floor), wing = VALUES(wing), cash_counter = VALUES(cash_counter), online_counter = VALUES(online_counter);
 
 -- ============================================
 -- SAMPLE DATA - PHARMACY STAFF
 -- ============================================
-INSERT INTO pharmacy_staff (staff_id, password, name, pharmacy_id) VALUES
-('PHARM001', 'pharm123', 'Ravi Kumar', 1),
-('PHARM002', 'pharm123', 'Priya Sharma', 1),
-('PHARM003', 'pharm123', 'Suresh Nair', 2),
-('PHARM004', 'pharm123', 'Meena Das', 2)
-ON DUPLICATE KEY UPDATE name = VALUES(name);
+INSERT INTO pharmacy_staff (staff_id, password, name, pharmacy_id, counter_number, counter_name, counter_type) VALUES
+('PHARM001', 'pharm123', 'Ravi Kumar', 1, '1', 'Counter 1', 'online'),
+('PHARM002', 'pharm123', 'Priya Sharma', 1, 'A', 'Counter A', 'cash'),
+('PHARM003', 'pharm123', 'Suresh Nair', 2, '2', 'Counter 2', 'online'),
+('PHARM004', 'pharm123', 'Meena Das', 2, 'B', 'Counter B', 'cash')
+ON DUPLICATE KEY UPDATE name = VALUES(name), counter_number = VALUES(counter_number), counter_name = VALUES(counter_name), counter_type = VALUES(counter_type);
 
 -- ============================================
 -- SAMPLE PHARMACY TOKENS (for testing)

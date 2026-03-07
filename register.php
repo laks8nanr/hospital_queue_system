@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param("ssss", $patient_id, $name, $email, $hashedPassword);
 
     if ($stmt->execute()) {
-        header("Location: patient_login.html?success=Registration successful! Your Patient ID is: " . $patient_id);
+        header("Location: patient_login.html?success=Registration successful! Your Patient ID is: " . $patient_id . "&patient_id=" . $patient_id);
         exit();
     } else {
         header("Location: register.html?error=Registration failed. Please try again.");

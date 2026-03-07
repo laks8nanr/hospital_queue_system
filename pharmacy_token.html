@@ -360,6 +360,34 @@
       font-weight: 600;
     }
 
+    .available-list {
+      background: #e8f8f0;
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 15px;
+    }
+
+    .available-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #27ae60;
+      margin-bottom: 10px;
+    }
+
+    .available-item {
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(39,174,96,0.2);
+      font-size: 14px;
+      color: #1e8449;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .available-item:last-child {
+      border-bottom: none;
+    }
+
     .unavailable-list {
       background: #fdf2f2;
       border-radius: 10px;
@@ -375,14 +403,78 @@
     }
 
     .unavailable-item {
-      padding: 8px 0;
+      padding: 8px 12px;
       border-bottom: 1px solid rgba(231,76,60,0.2);
       font-size: 14px;
       color: #c0392b;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .unavailable-item:last-child {
       border-bottom: none;
+    }
+
+    /* Prescription Upload */
+    .prescription-section {
+      margin-top: 20px;
+    }
+
+    .prescription-upload-box {
+      border: 2px dashed #27ae60;
+      border-radius: 12px;
+      padding: 30px;
+      text-align: center;
+      background: #f8fff9;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .prescription-upload-box:hover {
+      background: #e8f8f0;
+      border-color: #1e8449;
+    }
+
+    .upload-icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+
+    .upload-text {
+      font-size: 16px;
+      font-weight: 600;
+      color: #27ae60;
+      margin-bottom: 5px;
+    }
+
+    .upload-hint {
+      font-size: 12px;
+      color: #7f8c8d;
+    }
+
+    .prescription-preview {
+      margin-top: 15px;
+      text-align: center;
+    }
+
+    .prescription-preview img {
+      max-width: 100%;
+      max-height: 200px;
+      border-radius: 10px;
+      border: 2px solid #27ae60;
+    }
+
+    .remove-prescription {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 8px 16px;
+      background: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
     }
 
     /* Wait Time Display */
@@ -874,18 +966,14 @@
       </div>
       <div class="step" data-step="2">
         <div class="step-number">2</div>
-        <div class="step-label">Upload</div>
+        <div class="step-label">Confirm</div>
       </div>
       <div class="step" data-step="3">
         <div class="step-number">3</div>
-        <div class="step-label">Confirm</div>
+        <div class="step-label">Payment</div>
       </div>
       <div class="step" data-step="4">
         <div class="step-number">4</div>
-        <div class="step-label">Payment</div>
-      </div>
-      <div class="step" data-step="5">
-        <div class="step-number">5</div>
         <div class="step-label">Token</div>
       </div>
     </div>
@@ -900,37 +988,44 @@
         <div class="pharmacy-options" id="pharmacyOptions">
           <div style="text-align: center; color: #7f8c8d;">Loading pharmacies...</div>
         </div>
-        <button class="btn-primary" id="btnStep1" disabled onclick="goToStep(2)">Continue →</button>
-      </div>
-
-      <!-- Step 2: Upload Prescription -->
-      <div class="step-content" id="step2">
-        <div class="step-title">Upload Prescription</div>
-        <div class="upload-area" id="uploadArea" onclick="document.getElementById('prescriptionFile').click()">
-          <div class="upload-icon">📄</div>
-          <div class="upload-text">Click to upload prescription</div>
-          <div class="upload-hint">Supported: JPG, PNG, PDF (Max 5MB)</div>
-          <div class="file-preview" id="filePreview">
-            <div class="file-name" id="fileName"></div>
-            <button class="remove-file" onclick="removeFile(event)">Remove</button>
+        
+        <!-- Prescription Upload (for outside patients only) -->
+        <div class="prescription-section" id="prescriptionSection" style="display: none;">
+          <div class="step-title" style="margin-top: 20px;">Upload Prescription</div>
+          <div class="prescription-upload-box" id="prescriptionUploadBox">
+            <div class="upload-icon">📄</div>
+            <div class="upload-text">Tap to upload prescription</div>
+            <div class="upload-hint">JPG, PNG or PDF (max 5MB)</div>
+            <input type="file" id="prescriptionFile" accept="image/*,.pdf" style="display: none;" onchange="handlePrescriptionUpload(this)">
+          </div>
+          <div class="prescription-preview" id="prescriptionPreview" style="display: none;">
+            <img id="prescriptionImage" src="" alt="Prescription">
+            <button class="remove-prescription" onclick="removePrescription()">✕ Remove</button>
           </div>
         </div>
-        <input type="file" class="file-input" id="prescriptionFile" accept="image/*,.pdf" onchange="handleFileUpload(event)">
-        <button class="btn-primary" id="btnStep2" disabled onclick="checkMedicines()">Check Availability →</button>
-        <button class="btn-secondary" onclick="goToStep(1)">← Back</button>
+        
+        <button class="btn-primary" id="btnStep1" disabled onclick="proceedToConfirm()">Continue →</button>
       </div>
 
-      <!-- Step 3: Confirm (Medicine Availability + Wait Time) -->
-      <div class="step-content" id="step3">
+      <!-- Step 2: Confirm (Wait Time) -->
+      <div class="step-content" id="step2">
         <div class="step-title">Medicine Availability</div>
         
         <div class="medicines-section">
           <div class="medicine-status available" id="medicineStatus">
             <div class="medicine-status-icon">✓</div>
-            <div class="medicine-status-text">All medicines are available</div>
+            <div class="medicine-status-text">Checking availability...</div>
           </div>
+          
+          <!-- Available Medicines List -->
+          <div class="available-list" id="availableList" style="display: none;">
+            <div class="available-title">✓ Available Medicines:</div>
+            <div id="availableMedicines"></div>
+          </div>
+          
+          <!-- Unavailable Medicines List -->
           <div class="unavailable-list" id="unavailableList" style="display: none;">
-            <div class="unavailable-title">⚠️ Unavailable Medicines:</div>
+            <div class="unavailable-title">✗ Unavailable Medicines:</div>
             <div id="unavailableMedicines"></div>
           </div>
         </div>
@@ -942,12 +1037,12 @@
           <div class="wait-patients" id="waitPatients">3 patients ahead</div>
         </div>
 
-        <button class="btn-primary" onclick="goToStep(4)">Confirm & Continue →</button>
-        <button class="btn-secondary" onclick="goToStep(2)">← Back</button>
+        <button class="btn-primary" onclick="goToStep(3)">Confirm & Continue →</button>
+        <button class="btn-secondary" onclick="goToStep(1)">← Back</button>
       </div>
 
-      <!-- Step 4: Payment -->
-      <div class="step-content" id="step4">
+      <!-- Step 3: Payment -->
+      <div class="step-content" id="step3">
         <div class="step-title">Select Payment Method</div>
         
         <div class="payment-section">
@@ -1003,12 +1098,12 @@
           </div>
         </div>
 
-        <button class="btn-primary" id="btnStep4" disabled onclick="generateToken()">Generate Token →</button>
-        <button class="btn-secondary" id="btnBackStep3" onclick="goToStep(3)">← Back</button>
+        <button class="btn-primary" id="btnStep3" disabled onclick="generateToken()">Generate Token →</button>
+        <button class="btn-secondary" id="btnBackStep2" onclick="goToStep(2)">← Back</button>
       </div>
 
-      <!-- Step 5: Token & Queue (Final) -->
-      <div class="step-content" id="step5">
+      <!-- Step 4: Token & Queue (Final) -->
+      <div class="step-content" id="step4">
         <div class="token-card">
           <div class="token-label">Your Token Number</div>
           <div class="token-number" id="tokenNumber">PH1-001</div>
@@ -1077,19 +1172,61 @@
     let currentStep = 1;
     let selectedPharmacyId = null;
     let selectedPharmacy = null;
-    let uploadedFile = null;
     let selectedPaymentMethod = null;
     let patientData = null;
     let tokenData = null;
     let queueRefreshInterval = null;
+    let patientType = 'outside_patient'; // 'today_patient' or 'outside_patient'
+    let consultationData = null; // Verified consultation data for today patients
 
     // Initialize
     async function init() {
-      // Check if logged in
+      // Check patient type from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const typeParam = urlParams.get('type');
+      const verifiedParam = urlParams.get('verified');
+      
+      if (typeParam === 'today') {
+        patientType = 'today_patient';
+      } else if (typeParam === 'outside') {
+        patientType = 'outside_patient';
+      }
+
+      // For today patient, check if already verified
+      if (patientType === 'today_patient') {
+        const storedConsultation = sessionStorage.getItem('pharmacyConsultationData');
+        
+        if (verifiedParam === '1' && storedConsultation) {
+          // Already verified, proceed with pharmacy flow
+          consultationData = JSON.parse(storedConsultation);
+          patientData = JSON.parse(sessionStorage.getItem('patientData'));
+          document.getElementById('userInfoBar').style.display = 'flex';
+          document.getElementById('progressSteps').style.display = 'flex';
+          updateUserInfo();
+          await loadPharmacies();
+          return;
+        }
+        
+        // Check if logged in first
+        const storedData = sessionStorage.getItem('patientData');
+        if (!storedData) {
+          // Not logged in, redirect to login
+          sessionStorage.setItem('afterLoginRedirect', 'pharmacy_token.html?type=today');
+          window.location.href = 'patient_login.html';
+          return;
+        }
+        
+        // Logged in - auto verify using patient data
+        patientData = JSON.parse(storedData);
+        await autoVerifyTodayPatient();
+        return;
+      }
+
+      // For outside patient, check login and proceed normally
       const storedData = sessionStorage.getItem('patientData');
       if (!storedData) {
         // Not logged in, redirect to login
-        sessionStorage.setItem('afterLoginRedirect', 'pharmacy_token.html');
+        sessionStorage.setItem('afterLoginRedirect', 'pharmacy_token.html?type=outside');
         window.location.href = 'patient_login.html';
         return;
       }
@@ -1097,6 +1234,95 @@
       patientData = JSON.parse(storedData);
       updateUserInfo();
       await loadPharmacies();
+      // Show prescription upload for outside patients
+      document.getElementById('prescriptionSection').style.display = 'block';
+    }
+
+    // Auto verify today patient using logged-in patient data
+    async function autoVerifyTodayPatient() {
+      // Show verifying screen
+      document.getElementById('userInfoBar').style.display = 'none';
+      document.getElementById('progressSteps').style.display = 'none';
+      document.getElementById('formContainer').innerHTML = `
+        <div style="text-align: center; padding: 40px 20px;">
+          <div class="loading-spinner" style="margin: 0 auto 20px;"></div>
+          <h3 style="color: #2c3e50; margin-bottom: 10px;">Verifying Your Consultation...</h3>
+          <p style="color: #666;">Please wait while we check your records.</p>
+        </div>
+      `;
+
+      try {
+        const response = await fetch('api/verify_today_patient.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            patient_db_id: patientData.id,
+            patient_id: patientData.patient_id,
+            patient_phone: patientData.phone
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          consultationData = data.data;
+          
+          // Check if already has pharmacy token
+          if (data.data.already_has_pharmacy_token) {
+            showVerificationError(`You already have a pharmacy token (${data.data.existing_pharmacy_token}). Please use that token.`);
+            return;
+          }
+
+          // Show success and proceed
+          showVerificationSuccess();
+        } else {
+          showVerificationError(data.message || 'No completed consultation found for today.');
+        }
+      } catch (error) {
+        console.error('Error verifying:', error);
+        showVerificationError('Network error. Please try again.');
+      }
+    }
+
+    // Show verification error
+    function showVerificationError(message) {
+      document.getElementById('formContainer').innerHTML = `
+        <div style="text-align: center; padding: 20px;">
+          <div style="font-size: 64px; margin-bottom: 15px;">❌</div>
+          <h3 style="color: #e74c3c; margin-bottom: 15px;">Verification Failed</h3>
+          <div style="background: #fdf2f2; border-radius: 12px; padding: 20px; margin-bottom: 20px; color: #c0392b;">
+            ${message}
+          </div>
+          <button class="btn-secondary" onclick="window.location.href='pharmacy_walkin.html'">← Back to Options</button>
+          <button class="btn-secondary" style="margin-top: 10px;" onclick="window.location.reload()">🔄 Try Again</button>
+        </div>
+      `;
+    }
+
+    // Show verification success and proceed to pharmacy selection
+    function showVerificationSuccess() {
+      document.getElementById('formContainer').innerHTML = `
+        <div style="text-align: center; padding: 20px;">
+          <div style="font-size: 64px; margin-bottom: 15px;">✅</div>
+          <h3 style="color: #27ae60; margin-bottom: 10px;">Consultation Verified!</h3>
+          <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: left;">
+            <div style="margin-bottom: 10px;"><strong>Patient:</strong> ${consultationData.patient_name}</div>
+            <div style="margin-bottom: 10px;"><strong>Consultation Token:</strong> ${consultationData.token_number}</div>
+            <div style="margin-bottom: 10px;"><strong>Doctor:</strong> ${consultationData.doctor_name}</div>
+            <div><strong>Department:</strong> ${consultationData.department_name}</div>
+          </div>
+          <button class="btn-primary" onclick="proceedToPharmacy()">Continue to Pharmacy →</button>
+        </div>
+      `;
+    }
+
+    // Proceed to pharmacy selection after verification
+    async function proceedToPharmacy() {
+      // Store consultation data in sessionStorage for persistence
+      sessionStorage.setItem('pharmacyConsultationData', JSON.stringify(consultationData));
+      sessionStorage.setItem('pharmacyPatientType', patientType);
+      // Reload to show normal flow with stored data
+      window.location.href = 'pharmacy_token.html?type=today&verified=1';
     }
 
     // Update user info display
@@ -1192,68 +1418,106 @@
       document.getElementById('btnStep1').disabled = false;
     }
 
-    // Handle file upload
-    function handleFileUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
+    // Prescription upload handling
+    let prescriptionFile = null;
 
-      // Validate file
-      const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
-      if (!validTypes.includes(file.type)) {
-        showError('Please upload a valid image (JPG, PNG) or PDF file');
-        return;
+    document.addEventListener('DOMContentLoaded', function() {
+      const uploadBox = document.getElementById('prescriptionUploadBox');
+      if (uploadBox) {
+        uploadBox.addEventListener('click', function() {
+          document.getElementById('prescriptionFile').click();
+        });
       }
+    });
 
-      if (file.size > 5 * 1024 * 1024) { // 5MB
-        showError('File size must be less than 5MB');
-        return;
+    function handlePrescriptionUpload(input) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        
+        // Validate file size (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+          alert('File size must be less than 5MB');
+          return;
+        }
+        
+        prescriptionFile = file;
+        
+        // Show preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('prescriptionUploadBox').style.display = 'none';
+          document.getElementById('prescriptionPreview').style.display = 'block';
+          document.getElementById('prescriptionImage').src = e.target.result;
+        };
+        reader.readAsDataURL(file);
       }
-
-      uploadedFile = file;
-      document.getElementById('uploadArea').classList.add('has-file');
-      document.getElementById('filePreview').style.display = 'block';
-      document.getElementById('fileName').textContent = file.name;
-      document.getElementById('btnStep2').disabled = false;
-      hideError();
     }
 
-    // Remove uploaded file
-    function removeFile(event) {
-      event.stopPropagation();
-      uploadedFile = null;
+    function removePrescription() {
+      prescriptionFile = null;
       document.getElementById('prescriptionFile').value = '';
-      document.getElementById('uploadArea').classList.remove('has-file');
-      document.getElementById('filePreview').style.display = 'none';
-      document.getElementById('btnStep2').disabled = true;
+      document.getElementById('prescriptionUploadBox').style.display = 'block';
+      document.getElementById('prescriptionPreview').style.display = 'none';
     }
 
-    // Check medicine availability (simulated)
-    async function checkMedicines() {
+    // Proceed to confirm step (get estimated wait time and medicine availability)
+    async function proceedToConfirm() {
       showLoading(true, 'Checking medicine availability...');
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Simulate medicine availability check
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Simulated prescription medicines
+      const allMedicines = [
+        { name: 'Paracetamol 650mg', qty: '10 tablets' },
+        { name: 'Azithromycin 500mg', qty: '6 tablets' },
+        { name: 'Vitamin D3 60K', qty: '4 capsules' },
+        { name: 'Pantoprazole 40mg', qty: '10 tablets' },
+        { name: 'Cetirizine 10mg', qty: '10 tablets' }
+      ];
+      
+      // Randomly mark some as unavailable (30% chance per medicine)
+      const availableMedicines = [];
+      const unavailableMedicines = [];
+      
+      allMedicines.forEach(med => {
+        if (Math.random() > 0.3) {
+          availableMedicines.push(med);
+        } else {
+          unavailableMedicines.push(med);
+        }
+      });
 
-      // Simulated response - randomly decide if there are unavailable medicines
-      const hasUnavailable = Math.random() > 0.7; // 30% chance of unavailable
-
-      if (hasUnavailable) {
-        // Show some unavailable medicines
-        const unavailableMedicines = ['Paracetamol 650mg', 'Vitamin D3 60K'];
+      // Update status header
+      if (unavailableMedicines.length > 0) {
         document.getElementById('medicineStatus').className = 'medicine-status partial';
         document.getElementById('medicineStatus').innerHTML = `
           <div class="medicine-status-icon">⚠️</div>
-          <div class="medicine-status-text">Some medicines are not available</div>
+          <div class="medicine-status-text">${availableMedicines.length} of ${allMedicines.length} medicines available</div>
         `;
-        document.getElementById('unavailableList').style.display = 'block';
-        document.getElementById('unavailableMedicines').innerHTML = 
-          unavailableMedicines.map(m => `<div class="unavailable-item">• ${m}</div>`).join('');
       } else {
         document.getElementById('medicineStatus').className = 'medicine-status available';
         document.getElementById('medicineStatus').innerHTML = `
           <div class="medicine-status-icon">✓</div>
-          <div class="medicine-status-text">All medicines are available</div>
+          <div class="medicine-status-text">All ${allMedicines.length} medicines are available</div>
         `;
+      }
+
+      // Show available medicines
+      if (availableMedicines.length > 0) {
+        document.getElementById('availableList').style.display = 'block';
+        document.getElementById('availableMedicines').innerHTML = 
+          availableMedicines.map(m => `<div class="available-item">✓ ${m.name} <span style="color:#666;font-size:12px;">(${m.qty})</span></div>`).join('');
+      } else {
+        document.getElementById('availableList').style.display = 'none';
+      }
+
+      // Show unavailable medicines
+      if (unavailableMedicines.length > 0) {
+        document.getElementById('unavailableList').style.display = 'block';
+        document.getElementById('unavailableMedicines').innerHTML = 
+          unavailableMedicines.map(m => `<div class="unavailable-item">✗ ${m.name} <span style="color:#999;font-size:12px;">(${m.qty})</span></div>`).join('');
+      } else {
         document.getElementById('unavailableList').style.display = 'none';
       }
 
@@ -1273,7 +1537,7 @@
       }
 
       showLoading(false);
-      goToStep(3);
+      goToStep(2);
     }
 
     // Generate random amount between 150 and 500
@@ -1286,8 +1550,8 @@
       // Reset payment state
       document.getElementById('paymentProcessing').style.display = 'none';
       document.getElementById('paymentSuccess').style.display = 'none';
-      document.getElementById('btnStep4').disabled = true;
-      document.getElementById('btnBackStep3').disabled = false;
+      document.getElementById('btnStep3').disabled = true;
+      document.getElementById('btnBackStep2').disabled = false;
 
       document.querySelectorAll('.payment-option').forEach(opt => {
         opt.classList.remove('selected');
@@ -1311,12 +1575,12 @@
         // For cash: show info and enable generate token
         document.getElementById('cashPaymentInfo').style.display = 'block';
         document.getElementById('onlinePaymentSection').style.display = 'none';
-        document.getElementById('btnStep4').disabled = false;
+        document.getElementById('btnStep3').disabled = false;
       } else if (method === 'online') {
         // For online: show pay button, token generation disabled until paid
         document.getElementById('cashPaymentInfo').style.display = 'none';
         document.getElementById('onlinePaymentSection').style.display = 'block';
-        document.getElementById('btnStep4').disabled = true;
+        document.getElementById('btnStep3').disabled = true;
       }
     }
 
@@ -1325,7 +1589,7 @@
       // Hide pay button, show processing
       document.getElementById('onlinePaymentSection').style.display = 'none';
       document.getElementById('paymentProcessing').style.display = 'block';
-      document.getElementById('btnBackStep3').disabled = true;
+      document.getElementById('btnBackStep2').disabled = true;
 
       // Disable payment option clicks
       document.querySelectorAll('.payment-option').forEach(opt => {
@@ -1340,7 +1604,7 @@
       document.getElementById('paymentSuccess').style.display = 'block';
 
       // Enable generate token button
-      document.getElementById('btnStep4').disabled = false;
+      document.getElementById('btnStep3').disabled = false;
     }
 
     // Generate token
@@ -1348,23 +1612,38 @@
       showLoading(true, 'Generating your token...');
 
       try {
+        // Use consultation patient name for today_patient, otherwise use account name
+        const patientName = (patientType === 'today_patient' && consultationData) 
+          ? consultationData.patient_name 
+          : patientData.name;
+
+        const requestBody = {
+          pharmacy_id: selectedPharmacyId,
+          patient_id: patientData.id,
+          patient_name: patientName,
+          patient_phone: patientData.phone,
+          payment_method: selectedPaymentMethod,
+          notes: '',
+          patient_type: patientType,
+          consultation_token_id: consultationData ? consultationData.consultation_token_id : null,
+          consultation_token_number: consultationData ? consultationData.token_number : null
+        };
+
+        console.log('Generating token with:', requestBody);
+
         const response = await fetch('api/generate_pharmacy_token.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            pharmacy_id: selectedPharmacyId,
-            patient_id: patientData.id,
-            patient_name: patientData.name,
-            patient_phone: patientData.phone,
-            payment_method: selectedPaymentMethod,
-            notes: `File: ${uploadedFile ? uploadedFile.name : 'None'}`
-          })
+          body: JSON.stringify(requestBody)
         });
 
         const data = await response.json();
 
         if (data.success) {
           tokenData = data.data;
+          // Clear stored consultation data after successful token generation
+          sessionStorage.removeItem('pharmacyConsultationData');
+          sessionStorage.removeItem('pharmacyPatientType');
           showFinalStep();
         } else {
           showError(data.message || 'Failed to generate token');
@@ -1396,7 +1675,7 @@
         document.getElementById('cashCounterRow').style.display = 'none';
       }
 
-      goToStep(5);
+      goToStep(4);
       document.getElementById('homeLink').style.display = 'none';
       document.getElementById('finalButtons').style.display = 'block';
 
@@ -1471,8 +1750,8 @@
       document.querySelectorAll('.step-content').forEach(c => c.classList.remove('active'));
       document.getElementById(`step${step}`).classList.add('active');
 
-      // Reset payment step when entering step 4
-      if (step === 4) {
+      // Reset payment step when entering step 3
+      if (step === 3) {
         selectedPaymentMethod = null;
         document.querySelectorAll('.payment-option').forEach(opt => {
           opt.classList.remove('selected');
@@ -1483,8 +1762,8 @@
         document.getElementById('onlinePaymentSection').style.display = 'none';
         document.getElementById('paymentProcessing').style.display = 'none';
         document.getElementById('paymentSuccess').style.display = 'none';
-        document.getElementById('btnStep4').disabled = true;
-        document.getElementById('btnBackStep3').disabled = false;
+        document.getElementById('btnStep3').disabled = true;
+        document.getElementById('btnBackStep2').disabled = false;
       }
     }
 

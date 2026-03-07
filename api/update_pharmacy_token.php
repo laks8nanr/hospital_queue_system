@@ -49,7 +49,12 @@ $token = $result->fetch_assoc();
 $check_stmt->close();
 
 // Update token status
-$update_sql = "UPDATE pharmacy_tokens SET status = ?, updated_at = NOW() WHERE id = ?";
+// If completing, also mark as paid (medicine received = payment collected)
+if ($status === 'completed') {
+    $update_sql = "UPDATE pharmacy_tokens SET status = ?, payment_status = 'paid', updated_at = NOW() WHERE id = ?";
+} else {
+    $update_sql = "UPDATE pharmacy_tokens SET status = ?, updated_at = NOW() WHERE id = ?";
+}
 $update_stmt = $conn->prepare($update_sql);
 $update_stmt->bind_param("si", $status, $token_id);
 

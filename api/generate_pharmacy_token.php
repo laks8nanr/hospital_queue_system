@@ -21,6 +21,12 @@ $patient_name = isset($data['patient_name']) ? trim($data['patient_name']) : '';
 $patient_phone = isset($data['patient_phone']) ? trim($data['patient_phone']) : '';
 $payment_method = isset($data['payment_method']) ? trim($data['payment_method']) : 'cash';
 $notes = isset($data['notes']) ? trim($data['notes']) : '';
+$patient_type = isset($data['patient_type']) ? trim($data['patient_type']) : 'outside_patient';
+$consultation_token_id = isset($data['consultation_token_id']) ? intval($data['consultation_token_id']) : null;
+$consultation_token_number = isset($data['consultation_token_number']) ? trim($data['consultation_token_number']) : null;
+
+// Set payment_status based on payment_method
+$payment_status = ($payment_method === 'online') ? 'paid' : 'not_paid';
 
 // Validate required fields
 if ($pharmacy_id <= 0) {
@@ -48,6 +54,10 @@ if ($pharmacy_result->num_rows === 0) {
 $pharmacy = $pharmacy_result->fetch_assoc();
 $check_stmt->close();
 
+// Get counter based on payment method
+$counter_number = ($payment_method === 'online') ? '1' : 'A';
+$counter_name = ($payment_method === 'online') ? $pharmacy['online_counter'] : $pharmacy['cash_counter'];
+
 // Generate token number based on pharmacy
 // Format: PH{pharmacy_id}-{sequence}
 $today = date('Y-m-d');
@@ -67,10 +77,12 @@ $count_stmt->close();
 $token_number = $prefix . str_pad($next_number, 3, '0', STR_PAD_LEFT);
 
 // Insert token
-$insert_sql = "INSERT INTO pharmacy_tokens (token_number, patient_name, patient_phone, patient_id, pharmacy_id, payment_method, notes, status) 
-               VALUES (?, ?, ?, ?, ?, ?, ?, 'waiting')";
+$insert_sql = "INSERT INTO pharmacy_tokens (token_number, patient_name, patient_phone, patient_id, patient_type, consultation_token_id, consultation_token_number, pharmacy_id, payment_method, payment_status, counter_number, counter_name, notes, status) 
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'waiting')";
 $insert_stmt = $conn->prepare($insert_sql);
-$insert_stmt->bind_param("sssiiss", $token_number, $patient_name, $patient_phone, $patient_id, $pharmacy_id, $payment_method, $notes);
+// Types: s=string, i=integer
+// token_number(s), patient_name(s), patient_phone(s), patient_id(i), patient_type(s), consultation_token_id(i), consultation_token_number(s), pharmacy_id(i), payment_method(s), payment_status(s), counter_number(s), counter_name(s), notes(s)
+$insert_stmt->bind_param("sssisisissss", $token_number, $patient_name, $patient_phone, $patient_id, $patient_type, $consultation_token_id, $consultation_token_number, $pharmacy_id, $payment_method, $payment_status, $counter_number, $counter_name, $notes);
 
 if ($insert_stmt->execute()) {
     $token_id = $conn->insert_id;

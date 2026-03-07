@@ -11,8 +11,9 @@ $status = isset($_GET['status']) ? $conn->real_escape_string($_GET['status']) : 
 $today = date('Y-m-d');
 
 // Build query
-$sql = "SELECT pt.id, pt.token_number, pt.patient_name, pt.patient_phone, 
-               pt.status, pt.prescription_number, pt.notes, pt.created_at, pt.updated_at,
+$sql = "SELECT pt.id, pt.token_number, pt.patient_name, pt.patient_phone, pt.patient_id,
+               pt.status, pt.payment_method, pt.payment_status, pt.counter_number, pt.counter_name,
+               pt.prescription_number, pt.notes, pt.created_at, pt.updated_at,
                p.name as pharmacy_name, p.block, p.floor, p.wing
         FROM pharmacy_tokens pt
         JOIN pharmacies p ON pt.pharmacy_id = p.id
